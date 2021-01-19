@@ -1,0 +1,12 @@
+FROM dpage/pgadmin4
+
+# Grant our actions root access while building the container, since the source
+# Docker image will set the user to pgadmin.
+USER root
+
+# Eliminate the warning: "sudo: setrlimit(RLIMIT_CORE): Operation not permitted"
+# See also: https://github.com/sudo-project/sudo/issues/42
+RUN echo "Set disable_coredump false" | tee -a /etc/sudo.conf
+
+# Restore the user to pgadmin; setup is complete!
+USER pgadmin

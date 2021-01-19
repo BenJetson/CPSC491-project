@@ -1,0 +1,66 @@
+version: "3"
+
+services:
+  db:
+    container_name: db
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    ports:
+      - 5432:5432
+    restart: always
+    volumes:
+      - persistent-dbstore:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=demo
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  flyway:
+    # See also: https://stackoverflow.com/a/55264711
+    container_name: flyway
+    image: flyway/flyway
+    command: >
+      -url=jdbc:postgresql://db:5432/demo
+      -schemas=public
+      -user=postgres
+      -password=postgres
+      -connectRetries=60 migrate
+    volumes:
+      - ./db/migrations:/flyway/sql
+    depends_on:
+      - db
+
+  pgadmin:
+    container_name: pgadmin
+    restart: unless-stopped
+    build:
+      context: ./db
+      dockerfile: Dockerfile-pgadmin
+    environment:
+      - PGADMIN_LISTEN_PORT=5050
+      - PGADMIN_DEFAULT_EMAIL=admin@postgres.local
+      - PGADMIN_DEFAULT_PASSWORD=postgres
+      # Send the pgAdmin access logs to the null device to reduce noise.
+      - GUNICORN_ACCESS_LOGFILE=/dev/null
+      # Only log critical pgAdmin errors; these usually do not concern us.
+      - PGADMIN_CONFIG_CONSOLE_LOG_LEVEL=50
+    ports:
+      - 5050:5050
+    depends_on:
+      - flyway
+    links:
+      - db
+    tty: true
+    volumes:
+      - ./db/docker/servers.json:/pgadmin4/servers.json
+      - persistent-pgadmin:/root/.pgadmin
+
+volumes:
+  persistent-dbstore:
+    # this volume stores the database contents, so that they will persist across
+    # container rebuilds unless destroyed.
+  persistent-pgadmin:
+    # this volume stores some pgAdmin internal data, which most notably serves
+    # to let it remember the database password and CSRF tokens across container
+    # rebuilds.
