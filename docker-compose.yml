@@ -6,8 +6,8 @@ services:
     build:
       context: ./db
       dockerfile: Dockerfile
-    ports:
-      - 5432:5432
+    # ports:
+    #   - 5432:5432
     restart: always
     volumes:
       - persistent-dbstore:/var/lib/postgresql/data
@@ -62,13 +62,21 @@ services:
     build:
       context: ./web
       dockerfile: Dockerfile
-    ports:
-      - 3000:3000
+    # ports:
+    #   - 3000:3000
     volumes:
       - ./web/:/mnt/app/
       # We need to keep the node modules in the container separate from the
       # modules on the host, since they likely are different operating systems.
       - persistent-node-modules:/mnt/app/node_modules/
+
+  nginx:
+    container_name: nginx
+    image: nginx:stable
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 80:80
 
 volumes:
   persistent-dbstore:
