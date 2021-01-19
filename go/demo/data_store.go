@@ -1,4 +1,4 @@
 package demo
 
-type Store interface {
+type DataStore interface {
 }
