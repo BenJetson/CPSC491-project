@@ -57,6 +57,19 @@ services:
       - persistent-pgadmin-root:/root/.pgadmin
       - persistent-pgadmin-var:/var/lib/pgadmin/
 
+  webapp:
+    container_name: webapp
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    volumes:
+      - ./web/:/mnt/app/
+      # We need to keep the node modules in the container separate from the
+      # modules on the host, since they likely are different operating systems.
+      - persistent-node-modules:/mnt/app/node_modules/
+
 volumes:
   persistent-dbstore:
     # this volume stores the database contents, so that they will persist across
@@ -69,3 +82,5 @@ volumes:
     # this volume stores some pgAdmin internal data, which most notably serves
     # to let it remember the database password and CSRF tokens across container
     # rebuilds.
+  persistent-node-modules:
+    # this volume persists the node modules across container rebuilds.
