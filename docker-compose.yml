@@ -54,13 +54,18 @@ services:
     tty: true
     volumes:
       - ./db/docker/servers.json:/pgadmin4/servers.json
-      - persistent-pgadmin:/root/.pgadmin
+      - persistent-pgadmin-root:/root/.pgadmin
+      - persistent-pgadmin-var:/var/lib/pgadmin/
 
 volumes:
   persistent-dbstore:
     # this volume stores the database contents, so that they will persist across
     # container rebuilds unless destroyed.
-  persistent-pgadmin:
+  persistent-pgadmin-root:
+    # this volume stores some pgAdmin internal data, which most notably serves
+    # to let it remember the database password and CSRF tokens across container
+    # rebuilds.
+  persistent-pgadmin-var:
     # this volume stores some pgAdmin internal data, which most notably serves
     # to let it remember the database password and CSRF tokens across container
     # rebuilds.
