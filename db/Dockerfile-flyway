@@ -1,0 +1,1 @@
+FROM flyway/flyway
