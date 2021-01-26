@@ -80,6 +80,12 @@ services:
     ports:
       - 80:80
 
+  mail:
+    container_name: mail
+    image: mailhog/mailhog
+    ports:
+      - 8025:8025
+
 volumes:
   persistent-dbstore:
     # this volume stores the database contents, so that they will persist across
