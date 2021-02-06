@@ -1,7 +1,13 @@
 trigger:
   branches:
     include:
-      - "*"
+      - main
+      - develop
+      - starter-pipeline
+      - feature/*
+      - bugfix/*
+      - hotfix/*
+      - release/*
 
 stages:
   - stage: Lint
