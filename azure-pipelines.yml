@@ -1,0 +1,27 @@
+trigger:
+  branches:
+    include:
+      - "*"
+
+stages:
+  - stage: Lint
+    jobs:
+      - job: LintGo
+        displayName: Lint Go
+        steps:
+          - task: GoTool@0
+            displayName: Install Go
+            inputs:
+              version: "1.15"
+          - displayName: Install golangci-lint
+            script: |
+              curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
+              sh -s -- -b $(go env GOPATH)/bin v1.35.2
+          - displayName: Run golangci-lint
+            workingDirectory: go
+            script: golangci-lint
+
+      # - job: LintJS
+      #   displayName: Lint JavaScript
+      #   steps:
+      #     -
