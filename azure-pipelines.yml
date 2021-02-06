@@ -22,7 +22,7 @@ stages:
               sh -s -- -b $(go env GOPATH)/bin v1.35.2 && \
               echo '##vso[task.prependpath]$(HOME)/go/bin'
             displayName: Install golangci-lint
-          - script: golangci-lint
+          - script: golangci-lint run
             workingDirectory: go
             displayName: Run golangci-lint
 
