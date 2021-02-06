@@ -23,7 +23,7 @@ stages:
               echo '##vso[task.prependpath]$(HOME)/go/bin'
             displayName: Install golangci-lint
           - script: golangci-lint run
-            workingDirectory: go
+            workingDirectory: go/demo
             displayName: Run golangci-lint
 
       # - job: LintJS
@@ -45,7 +45,7 @@ stages:
             displayName: Test Go
             inputs:
               command: "test"
-              workingDirectory: go
+              workingDirectory: go/demo
 
   # - stage: Build
 
