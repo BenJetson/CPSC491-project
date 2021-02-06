@@ -30,3 +30,22 @@ stages:
       #   displayName: Lint JavaScript
       #   steps:
       #     -
+
+  - stage: Test
+    jobs:
+      - job: TestGo
+        displayName: Test Go
+        steps:
+          - task: GoTool@0
+            displayName: Install Go
+            inputs:
+              version: "1.15"
+          - task: Go@0
+            displayName: Test Go
+            inputs:
+              command: "test"
+              workingDirectory: go
+
+  # - stage: Build
+
+  # - stage: Deploy
