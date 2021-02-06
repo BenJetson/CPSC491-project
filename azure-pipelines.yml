@@ -40,6 +40,7 @@ stages:
             displayName: Install Go
             inputs:
               version: "1.15"
+          - script: ls
           - task: Go@0
             displayName: Test Go
             inputs:
