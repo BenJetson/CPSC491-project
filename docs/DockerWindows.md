@@ -47,7 +47,7 @@ These instructions assume WSL 2 and Docker Desktop are already installed.
 1. Enter the `ubuntu` directory.
 1. Select the folder at the path `home/YOUR_USERNAME/cpsc491`.
 1. Wait for the folder to open (will take several minutes the first time).
-1. Visit [http://localhost](http://localhost) in a browser.
+1. Visit [http://localhost:8000](http://localhost:8000) in a browser.
 1. Find `web/src/App.js` and make an edit and SAVE.
 1. Wait for the app to recompile. You can watch the terminal window to see
    progress.
