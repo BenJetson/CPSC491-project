@@ -23,11 +23,8 @@ services:
       context: ./db
       dockerfile: Dockerfile-flyway
     command: >
-      -url=jdbc:postgresql://db:5432/demo
-      -schemas=public
-      -user=postgres
-      -password=postgres
-      -connectRetries=60 migrate
+      -url=jdbc:postgresql://db:5432/demo -schemas=public -user=postgres
+      -password=postgres -connectRetries=60 migrate
     volumes:
       - ./db/migrations:/flyway/sql
     depends_on:
