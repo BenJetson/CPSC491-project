@@ -1,3 +1,4 @@
+
 # Fix WSL 1 to Update to WSL 2
 
 These instructions assume that Windows 10 is fully updated on the system.
@@ -31,4 +32,4 @@ dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /nores
 
 4. Retry the "set default version" command from the beginning steps..
 5. Restart your system.
-6. The system should be updated and you should now be able to continue with the Docker instructions.
+6. The system should be updated. You should now be able to continue with the Docker instructions.
