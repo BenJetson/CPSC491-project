@@ -11,6 +11,7 @@ import (
 	"github.com/BenJetson/go-api-demo/go/demo"
 )
 
+// Config specifies how to connect to the database server.
 type Config struct {
 	Host     string
 	Port     int
@@ -25,6 +26,7 @@ type database struct {
 	cfg    Config
 }
 
+// NewDataStore creates a new database handle.
 func NewDataStore(logger *logrus.Entry, cfg Config) (demo.DataStore, error) {
 	// FIXME must initialize *sqlx.DB
 	return &database{
@@ -33,6 +35,7 @@ func NewDataStore(logger *logrus.Entry, cfg Config) (demo.DataStore, error) {
 	}, nil
 }
 
+// NewDataStoreFromEnv creates a new database from the environment variables.
 func NewDataStoreFromEnv(logger *logrus.Entry) (demo.DataStore, error) {
 	cfg := Config{
 		Host:     os.Getenv("DB_HOST"),
