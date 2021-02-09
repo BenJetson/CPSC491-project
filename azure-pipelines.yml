@@ -26,10 +26,27 @@ stages:
             workingDirectory: go/demo
             displayName: Run golangci-lint
 
-      # - job: LintJS
-      #   displayName: Lint JavaScript
-      #   steps:
-      #     -
+      - job: LintJS
+        displayName: Lint JavaScript
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: "14.x"
+            displayName: Install Node.js
+          - task: Cache@2
+            inputs:
+              key: 'yarn | "$(Agent.OS)" | yarn.lock'
+              restoreKeys: |
+                yarn | "$(Agent.OS)"
+                yarn
+              path: web/node_modules
+            displayName: Cache Node Modules (yarn)
+          - script: yarn install
+            workingDirectory: web
+            displayName: Install Node packages (yarn)
+          - script: npx eslint .
+            workingDirectory: web
+            displayName: Run eslint
 
   - stage: Test
     jobs:
