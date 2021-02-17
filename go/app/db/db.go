@@ -20,34 +20,41 @@ type Config struct {
 	Database string
 }
 
+func NewConfigFromEnv() (cfg Config, err error) {
+	// First, let us check to ensure the environment variables are set.
+	for _, key := range []string{"HOST", "PORT", "USER", "PASS", "DATABASE"} {
+		key = "DB_" + key
+		if len(os.Getenv(key)) < 1 {
+			err = errors.Errorf("must set %s", key)
+			return
+		}
+	}
+
+	// Variables are set. Store values in configuration.
+	cfg.Host = os.Getenv("DB_HOST")
+	cfg.Username = os.Getenv("DB_USER")
+	cfg.Password = os.Getenv("DB_PASS")
+	cfg.Database = os.Getenv("DB_DATABASE")
+
+	if cfg.Port, err = strconv.Atoi(os.Getenv("DB_PORT")); err != nil {
+		err = errors.New("DB_PORT must be an integer")
+		return
+	}
+
+	return
+}
+
 type database struct {
 	*sqlx.DB
-	logger *logrus.Entry
+	logger *logrus.Logger
 	cfg    Config
 }
 
 // NewDataStore creates a new database handle.
-func NewDataStore(logger *logrus.Entry, cfg Config) (app.DataStore, error) {
+func NewDataStore(logger *logrus.Logger, cfg Config) (app.DataStore, error) {
 	// FIXME must initialize *sqlx.DB
 	return &database{
 		logger: logger,
 		cfg:    cfg,
 	}, nil
-}
-
-// NewDataStoreFromEnv creates a new database from the environment variables.
-func NewDataStoreFromEnv(logger *logrus.Entry) (demo.DataStore, error) {
-	cfg := Config{
-		Host:     os.Getenv("DB_HOST"),
-		Username: os.Getenv("DB_USER"),
-		Password: os.Getenv("DB_PASS"),
-		Database: os.Getenv("DB_DATABASE"),
-	}
-
-	var err error
-	if cfg.Port, err = strconv.Atoi(os.Getenv("DB_PORT")); err != nil {
-		return nil, errors.Wrap(err, "failed to parse DB port from env")
-	}
-
-	return NewDataStore(logger, cfg)
 }
