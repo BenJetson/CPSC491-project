@@ -20,6 +20,8 @@ type Config struct {
 	Database string
 }
 
+// NewConfigFromEnv attempts to construct a new Config using data from
+// environment variables.
 func NewConfigFromEnv() (cfg Config, err error) {
 	// First, let us check to ensure the environment variables are set.
 	for _, key := range []string{"HOST", "PORT", "USER", "PASS", "DATABASE"} {
