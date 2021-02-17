@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -63,4 +64,40 @@ func (svr *Server) Start() error {
 	)
 
 	return svr.httpd.ListenAndServe()
+}
+
+// nolint: unused // TODO remove this once we use the JSON response method
+func (svr *Server) sendJSONResponse(w http.ResponseWriter, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+
+	e := json.NewEncoder(w)
+	if err := e.Encode(data); err != nil {
+		svr.logger.Errorf("could not encode response JSON: %v", err)
+	}
+}
+
+// nolint: unused // TODO remove this once we use the error response method
+type apiError struct {
+	Code        int    `json:"code"`
+	Status      string `json:"status"`
+	UserMessage string `json:"message,omitempty"`
+}
+
+// nolint: unused // TODO remove this once we use the error response method
+func (svr *Server) sendErrorResponse(w http.ResponseWriter, err error,
+	statusCode int, userMessage string, args ...interface{}) {
+
+	details := apiError{
+		Code:        statusCode,
+		Status:      http.StatusText(statusCode),
+		UserMessage: fmt.Sprintf(userMessage, args...),
+	}
+
+	svr.logger.
+		WithError(err).
+		WithField("details", details).
+		Error("encountered error when handling api request")
+
+	w.WriteHeader(statusCode)
+	svr.sendJSONResponse(w, details)
 }
