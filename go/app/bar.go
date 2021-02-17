@@ -1,4 +1,4 @@
-package demo
+package app
 
 // Bar stores arbitrary data, not very useful outside of the demo.
 type Bar struct {

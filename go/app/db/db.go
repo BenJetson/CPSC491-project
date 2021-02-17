@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/BenJetson/go-api-demo/go/demo"
+	"github.com/BenJetson/CPSC491-project/go/app"
 )
 
 // Config specifies how to connect to the database server.
@@ -27,7 +27,7 @@ type database struct {
 }
 
 // NewDataStore creates a new database handle.
-func NewDataStore(logger *logrus.Entry, cfg Config) (demo.DataStore, error) {
+func NewDataStore(logger *logrus.Entry, cfg Config) (app.DataStore, error) {
 	// FIXME must initialize *sqlx.DB
 	return &database{
 		logger: logger,

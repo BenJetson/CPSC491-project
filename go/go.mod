@@ -1,4 +1,4 @@
-module github.com/BenJetson/go-api-demo/go
+module github.com/BenJetson/CPSC491-project/go
 
 go 1.15
 
