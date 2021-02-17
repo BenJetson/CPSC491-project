@@ -7,11 +7,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Config specifies the configuration for an API server instance.
 type Config struct {
 	Port int
 	Tier string
 }
 
+// NewConfigFromEnv attempts to construct a new Config using data from
+// environment variables.
 func NewConfigFromEnv() (c Config, err error) {
 	c.Tier = os.Getenv("TIER")
 	if len(c.Tier) < 1 {

@@ -12,6 +12,7 @@ import (
 	"github.com/BenJetson/CPSC491-project/go/app"
 )
 
+// Server is a wrapper for http.Server that exposes our app's endpoints.
 type Server struct {
 	config Config
 	db     app.DataStore
@@ -19,6 +20,7 @@ type Server struct {
 	httpd  *http.Server
 }
 
+// NewServer creates a new Server given a logger, data store, and configuration.
 func NewServer(logger *logrus.Logger, db app.DataStore,
 	cfg Config) (*Server, error) {
 
@@ -51,6 +53,8 @@ func NewServer(logger *logrus.Logger, db app.DataStore,
 	return svr, nil
 }
 
+// Start will call ListenAndServe on the internal http.Server and log the
+// current configuration.
 func (svr *Server) Start() error {
 	svr.logger.Infof(
 		"Starting API server for tier %s on port %d.\n",
