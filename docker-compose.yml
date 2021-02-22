@@ -3,16 +3,15 @@ version: "3"
 services:
   db:
     container_name: db
+    hostname: postgres
     build:
       context: ./db
-      dockerfile: Dockerfile
-    # ports:
-    #   - 5432:5432
+    image: postgres:13
     restart: always
     volumes:
       - persistent-dbstore:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=demo
+      - POSTGRES_DB=app
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
 
@@ -23,7 +22,7 @@ services:
       context: ./db
       dockerfile: Dockerfile-flyway
     command: >
-      -url=jdbc:postgresql://db:5432/demo -schemas=public -user=postgres
+      -url=jdbc:postgresql://db:5432/app -schemas=public -user=postgres
       -password=postgres -connectRetries=60 migrate
     volumes:
       - ./db/migrations:/flyway/sql
@@ -68,6 +67,24 @@ services:
       # We need to keep the node modules in the container separate from the
       # modules on the host, since they likely are different operating systems.
       - persistent-node-modules:/mnt/app/node_modules/
+
+  api:
+    container_name: api
+    hostname: api
+    build:
+      context: ./go
+      dockerfile: Dockerfile
+    working_dir: /mnt/project
+    volumes:
+      - ./go:/mnt/project
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=app
+      - DB_USER=postgres
+      - DB_PASS=postgres
+      - TIER=local
+      - PORT=8080
 
   nginx:
     container_name: nginx
