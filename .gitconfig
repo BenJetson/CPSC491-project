@@ -1,0 +1,6 @@
+
+# VSCode editor configuration.
+.vscode/
+
+# Vim swap files.
+*.swp
