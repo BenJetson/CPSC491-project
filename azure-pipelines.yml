@@ -1,7 +1,6 @@
 trigger:
   - main
   - develop
-  - starter-pipeline
   - feature/*
   - bugfix/*
   - hotfix/*
