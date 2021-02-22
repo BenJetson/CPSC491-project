@@ -49,7 +49,7 @@ stages:
             displayName: Run eslint
 
       - job: LintPrettier
-        displayName: Check Prettier
+        displayName: Lint Prettier
         dependsOn: LintJS
         steps:
           - task: NodeTool@0
@@ -65,7 +65,7 @@ stages:
               path: node_modules
             displayName: Cache Node Modules (yarn)
           - script: npx prettier --check .
-            displayName: Check Prettier
+            displayName: Check Prettier Compliance
 
   - stage: Test
     jobs:
