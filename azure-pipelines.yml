@@ -119,7 +119,7 @@ stages:
           - script: yarn install
             workingDirectory: web
             displayName: Install Node packages (yarn)
-          - script: yarn Build
+          - script: yarn build
             workingDirectory: web
             displayName: React Build
           - publish: $(System.DefaultWorkingDirectory)/web/build
