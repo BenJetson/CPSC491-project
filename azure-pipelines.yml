@@ -96,7 +96,7 @@ stages:
           - task: Go@0
             displayName: Go Build
             inputs:
-              command: "build -o api main.go"
+              command: "build"
               workingDirectory: go/app/cmd/api
           - publish: $(System.DefaultWorkingDirectory)/go/app/cmd/api/api
             artifact: APIServer
