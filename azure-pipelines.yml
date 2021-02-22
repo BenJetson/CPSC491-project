@@ -124,4 +124,12 @@ stages:
           - publish: $(System.DefaultWorkingDirectory)/web/build
             artifact: ReactApp
 
+      - job: BuildDB
+        displayName: Build DB
+        steps:
+          # Could potentially add steps here to generate SchemaSpy docs.
+          # However, for now, this will just artifact the database migrations.
+          - publish: $(System.DefaultWorkingDirectory)/db/migrations
+            artifact: DBMigrations
+
   # - stage: Deploy
