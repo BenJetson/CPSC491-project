@@ -1,6 +1,7 @@
 import React from "react";
 import { HashRouter as Router, Switch, Route } from "react-router-dom";
 import { Container, ThemeProvider } from "@material-ui/core";
+import NavBar from "./NavBar";
 
 import defaultTheme from "./Theme";
 import ScrollSpy from "./components/ScrollSpy";
@@ -16,6 +17,7 @@ let App = () => {
     <ThemeProvider theme={defaultTheme}>
       <Router>
         <ScrollSpy />
+        <NavBar />
         <Container>
           <Switch>
             <Route path={"/login"}>

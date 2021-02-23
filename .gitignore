@@ -1,0 +1,9 @@
+
+# VSCode editor configuration.
+.vscode/
+
+# Vim swap files.
+*.swp
+
+# Make CERTAIN node_modules don't get into the repo.
+/node_modules
