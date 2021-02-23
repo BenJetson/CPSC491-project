@@ -1,7 +1,6 @@
 trigger:
   - main
   - develop
-  - starter-pipeline
   - feature/*
   - bugfix/*
   - hotfix/*
@@ -48,6 +47,27 @@ stages:
             workingDirectory: web
             displayName: Run eslint
 
+      - job: LintPrettier
+        displayName: Lint Prettier
+        dependsOn: LintJS
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: "14.x"
+            displayName: Install Node.js
+          # This step below counts on the fact that the LintJS job before it
+          # will install all of the Node modules and load them into the cache.
+          - task: Cache@2
+            inputs:
+              key: 'yarn | "$(Agent.OS)" | web/yarn.lock'
+              restoreKeys: |
+                yarn | "$(Agent.OS)"
+                yarn
+              path: node_modules
+            displayName: Cache Node Modules (yarn)
+          - script: npx prettier --check .
+            displayName: Check Prettier Compliance
+
   - stage: Test
     jobs:
       - job: TestGo
@@ -63,6 +83,53 @@ stages:
               command: "test"
               workingDirectory: go/app
 
-  # - stage: Build
+  - stage: Build
+    jobs:
+      - job: BuildGo
+        displayName: Build API Server (Go)
+        steps:
+          - task: GoTool@0
+            displayName: Install Go
+            inputs:
+              version: "1.15"
+          - task: Go@0
+            displayName: Go Build
+            inputs:
+              command: "build"
+              workingDirectory: go/app/cmd/api
+          - publish: $(System.DefaultWorkingDirectory)/go/app/cmd/api/api
+            artifact: APIServer
+
+      - job: BuildJS
+        displayName: Build React App (JS)
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: "14.x"
+            displayName: Install Node.js
+          - task: Cache@2
+            inputs:
+              key: 'yarn | "$(Agent.OS)" | web/yarn.lock'
+              restoreKeys: |
+                yarn | "$(Agent.OS)"
+                yarn
+              path: web/node_modules
+            displayName: Cache Node Modules (yarn)
+          - script: yarn install
+            workingDirectory: web
+            displayName: Install Node packages (yarn)
+          - script: yarn build
+            workingDirectory: web
+            displayName: React Build
+          - publish: $(System.DefaultWorkingDirectory)/web/build
+            artifact: ReactApp
+
+      - job: BuildDB
+        displayName: Build Database
+        steps:
+          # Could potentially add steps here to generate SchemaSpy docs.
+          # However, for now, this will just artifact the database migrations.
+          - publish: $(System.DefaultWorkingDirectory)/db/migrations
+            artifact: DBMigrations
 
   # - stage: Deploy
