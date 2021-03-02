@@ -3,8 +3,8 @@ CREATE TABLE role (
     title text NOT NULL
 );
 
-CREATE TABLE user (
-    user_id int PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+CREATE TABLE person (
+    person_id int PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     last_name text NOT NULL,
     first_name text NOT NULL,
     email text UNIQUE NOT NULL,
