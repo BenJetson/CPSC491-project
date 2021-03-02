@@ -89,6 +89,7 @@ stages:
               workingDirectory: go/app/cmd/api
           - publish: $(System.DefaultWorkingDirectory)/go/app/cmd/api/api
             artifact: APIServer
+            displayName: Publish Build Artifact
 
       - job: BuildJS
         displayName: Build React App (JS)
@@ -114,6 +115,7 @@ stages:
             displayName: React Build
           - publish: $(System.DefaultWorkingDirectory)/web/build
             artifact: ReactApp
+            displayName: Publish Build Artifact
 
       - job: BuildDB
         displayName: Build Database
@@ -122,6 +124,7 @@ stages:
           # However, for now, this will just artifact the database migrations.
           - publish: $(System.DefaultWorkingDirectory)/db/migrations
             artifact: DBMigrations
+            displayName: Publish Build Artifact
 
   - stage: Deploy
     jobs:
