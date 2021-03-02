@@ -144,10 +144,11 @@ stages:
           - download: current
             artifact: APIServer
           - script: ls -alR
+          - script: ls -alR $(Pipeline.Workspace)/APIServer
           - task: CopyFilesOverSSH@0
             inputs:
               sshEndpoint: Webserver
-              sourceFolder: APIServer
+              sourceFolder: $(Pipeline.Workspace)/APIServer
               targetFolder: /home/deployer/APIServer
               cleanTargetFolder: true
               failOnEmptySource: true
@@ -159,7 +160,8 @@ stages:
                 ls -lR
                 sudo systemctl stop api-dev
                 cp ~/APIServer/api /usr/local/bin/api-dev
-                chown -R deployer:application /usr/local/bin/*
+                chown -R deployer:application /usr/local/bin/api-dev
+                chmod +x /usr/local/bin/api-dev
                 sudo systemctl start api-dev
 
       - job: DeployReactApp
