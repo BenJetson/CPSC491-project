@@ -40,6 +40,8 @@ stages:
   #               yarn
   #             path: web/node_modules
   #           displayName: Cache Node Modules (yarn)
+  #           timeoutInMinutes: 3
+  #           continueOnError: true
   #         - script: yarn install
   #           workingDirectory: web
   #           displayName: Install Node packages (yarn)
@@ -65,6 +67,8 @@ stages:
   #               yarn
   #             path: node_modules
   #           displayName: Cache Node Modules (yarn)
+  #           timeoutInMinutes: 3
+  #           continueOnError: true
   #         - script: npx prettier --check .
   #           displayName: Check Prettier Compliance
 
@@ -115,6 +119,8 @@ stages:
                 yarn
               path: web/node_modules
             displayName: Cache Node Modules (yarn)
+            timeoutInMinutes: 3
+            continueOnError: true
           - script: yarn install
             workingDirectory: web
             displayName: Install Node packages (yarn)
