@@ -40,8 +40,7 @@ stages:
                 yarn
               path: web/node_modules
             displayName: Cache Node Modules (yarn)
-            timeoutInMinutes: 3
-            continueOnError: true
+            timeoutInMinutes: 5
           - script: yarn install
             workingDirectory: web
             displayName: Install Node packages (yarn)
@@ -106,8 +105,7 @@ stages:
                 yarn
               path: web/node_modules
             displayName: Cache Node Modules (yarn)
-            timeoutInMinutes: 3
-            continueOnError: true
+            timeoutInMinutes: 5
           - script: yarn install
             workingDirectory: web
             displayName: Install Node packages (yarn)
