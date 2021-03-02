@@ -136,8 +136,29 @@ stages:
     jobs:
       - job: DeployDB
         steps:
-          - script: echo // FIXME
-            displayName: Placeholder
+          - download: current
+            artifact: DBMigrations
+          - task: CopyFilesOverSSH@0
+            inputs:
+              sshEndpoint: Webserver
+              sourceFolder: $(Pipeline.Workspace)/DBMigrations
+              targetFolder: /home/deployer/DBMigrations
+              cleanTargetFolder: true
+              failOnEmptySource: true
+          - task: SSH@0
+            inputs:
+              sshEndpoint: Webserver
+              runOptions: inline
+              inline: |
+                cd DBMigrations
+                flyway # FIXME
+                # flyway \
+                #   -url=jdbc:postgresql://$(DB_HOST):$(DB_PORT)/$(DB_DATABASE) \
+                #   -schemas=public \
+                #   -user=$(DB_USER) \
+                #   -password=$(DB_PASS) \
+                #   -connectRetries=60 \
+                #   migrate
 
       - job: DeployAPI
         steps:
