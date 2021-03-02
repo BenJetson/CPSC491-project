@@ -132,4 +132,37 @@ stages:
           - publish: $(System.DefaultWorkingDirectory)/db/migrations
             artifact: DBMigrations
 
-  # - stage: Deploy
+  - stage: Deploy
+    jobs:
+      - job: DeployDB
+        steps:
+          - script: echo // FIXME
+            displayName: Placeholder
+
+      - job: DeployAPI
+        steps:
+          - download: current
+            artifact: APIServer
+          - script: ls -alR
+          - task: CopyFilesOverSSH@0
+            inputs:
+              sshEndpoint: Webserver
+              sourceFolder: APIServer
+              targetFolder: /home/deployer/APIServer
+              cleanTargetFolder: true
+              failOnEmptySource: true
+          - task: SSH@0
+            inputs:
+              sshEndpoint: Webserver
+              runOptions: inline
+              inline: |
+                ls -lR
+                sudo systemctl stop api-dev
+                cp ~/APIServer/api /usr/local/bin/api-dev
+                chown -R deployer:application /usr/local/bin/*
+                sudo systemctl start api-dev
+
+      - job: DeployReactApp
+        steps:
+          - script: echo // FIXME
+            displayName: Placeholder
