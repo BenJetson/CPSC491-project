@@ -9,12 +9,13 @@ import {
   Checkbox,
   FormControlLabel,
   TextField,
+  Avatar,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
-    marginTop: theme.spacing(8),
+    marginTop: theme.spacing(20),
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -34,11 +35,15 @@ let Login = () => {
   return (
     <Container component="main" maxWidth="xs">
       <Box className={classes.paper}>
-        <Typography component="h1" variant="h5">
-          Welcome
-        </Typography>
+        <img
+          alt="logo"
+          src="https://iconape.com/wp-content/files/zk/93042/svg/react.svg"
+          height="192"
+          width="192"
+        />
         <form className={classes.form} noValidate>
           <TextField
+            color="secondary"
             variant="outlined"
             margin="normal"
             required
@@ -50,6 +55,7 @@ let Login = () => {
             autoFocus
           />
           <TextField
+            color="secondary"
             variant="outlined"
             margin="normal"
             required
@@ -61,7 +67,7 @@ let Login = () => {
             autoComplete="current-password"
           />
           <FormControlLabel
-            control={<Checkbox value="remember" color="primary" />}
+            control={<Checkbox value="remember" color="secondary" />}
             label="Remember me"
           />
           <Button
@@ -70,6 +76,7 @@ let Login = () => {
             variant="contained"
             color="primary"
             className={classes.submit}
+            href="#/home"
           >
             Sign In
           </Button>
