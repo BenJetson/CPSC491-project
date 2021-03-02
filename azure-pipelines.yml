@@ -143,8 +143,6 @@ stages:
         steps:
           - download: current
             artifact: APIServer
-          - script: ls -alR
-          - script: ls -alR $(Pipeline.Workspace)/APIServer
           - task: CopyFilesOverSSH@0
             inputs:
               sshEndpoint: Webserver
@@ -157,7 +155,6 @@ stages:
               sshEndpoint: Webserver
               runOptions: inline
               inline: |
-                ls -lR
                 sudo systemctl stop api-dev
                 cp ~/APIServer/api /usr/local/bin/api-dev
                 chown -R deployer:application /usr/local/bin/api-dev
@@ -166,5 +163,20 @@ stages:
 
       - job: DeployReactApp
         steps:
-          - script: echo // FIXME
-            displayName: Placeholder
+          - download: current
+            artifact: ReactApp
+          - task: CopyFilesOverSSH@0
+            inputs:
+              sshEndpoint: Webserver
+              sourceFolder: $(Pipeline.Workspace)/ReactApp
+              targetFolder: /home/deployer/ReactApp
+              cleanTargetFolder: true
+              failOnEmptySource: true
+          - task: SSH@0
+            inputs:
+              sshEndpoint: Webserver
+              runOptions: inline
+              inline: |
+                rm -rf /var/www/dev/*
+                cp -r ~/ReactApp/* /var/www/dev
+                chown -R deployer:application /var/www/dev/*
