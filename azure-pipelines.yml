@@ -51,7 +51,6 @@ stages:
 
       - job: LintPrettier
         displayName: Lint Prettier
-        dependsOn: LintJS
         steps:
           - task: NodeTool@0
             inputs:
