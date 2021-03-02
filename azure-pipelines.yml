@@ -126,9 +126,11 @@ stages:
   - stage: Deploy
     jobs:
       - job: DeployDB
+        displayName: Deploy Database
         steps:
           - download: current
             artifact: DBMigrations
+            displayName: Download Build
           - task: CopyFilesOverSSH@0
             inputs:
               sshEndpoint: Webserver
@@ -136,6 +138,7 @@ stages:
               targetFolder: /home/deployer/DBMigrations
               cleanTargetFolder: true
               failOnEmptySource: true
+            displayName: Copy Files to Webserver
           - task: SSH@0
             inputs:
               sshEndpoint: Webserver
@@ -150,11 +153,13 @@ stages:
                 #   -password=$(DB_PASS) \
                 #   -connectRetries=60 \
                 #   migrate
+            displayName: Migrate Database (Flyway)
 
       - job: DeployAPI
         steps:
           - download: current
             artifact: APIServer
+            displayName: Download Build
           - task: CopyFilesOverSSH@0
             inputs:
               sshEndpoint: Webserver
@@ -162,6 +167,7 @@ stages:
               targetFolder: /home/deployer/APIServer
               cleanTargetFolder: true
               failOnEmptySource: true
+            displayName: Copy Files to Webserver
           - task: SSH@0
             inputs:
               sshEndpoint: Webserver
@@ -172,11 +178,13 @@ stages:
                 chown -R deployer:application /usr/local/bin/api-dev
                 chmod +x /usr/local/bin/api-dev
                 sudo systemctl start api-dev
+            displayName: Upgrade API Service
 
       - job: DeployReactApp
         steps:
           - download: current
             artifact: ReactApp
+            displayName: Download Build
           - task: CopyFilesOverSSH@0
             inputs:
               sshEndpoint: Webserver
@@ -184,6 +192,7 @@ stages:
               targetFolder: /home/deployer/ReactApp
               cleanTargetFolder: true
               failOnEmptySource: true
+            displayName: Copy Files to Webserver
           - task: SSH@0
             inputs:
               sshEndpoint: Webserver
@@ -192,3 +201,4 @@ stages:
                 rm -rf /var/www/dev/*
                 cp -r ~/ReactApp/* /var/www/dev
                 chown -R deployer:application /var/www/dev/*
+            displayName: Replace Web Root
