@@ -154,8 +154,10 @@ stages:
               inline: |
                 cd DBMigrations
                 env
-                echo "$(IS_PROD)"
-                export DB_DATABASE=$(( $IS_PROD ? 'prod' : 'dev' ))
+                echo "prod $(IS_PROD)"
+                echo "dev $(IS_DEV)"
+                # export DB_DATABASE=$(( $IS_PROD ? 'prod' : 'dev' ))
+                export DB_DATABASE='dev'
                 printf "prod: %s\ndb: %s\nuser: %s\nhost: %s\n" "$IS_PROD" "$DB_DATABASE" "$(DB_USER)" "$(DB_HOST)"
                 # flyway \
                 #   -url="jdbc:postgresql://$(DB_HOST):$(DB_PORT)/$DB_DATABASE" \
@@ -171,6 +173,7 @@ stages:
               DB_USER: $(DB_USER)
               DB_PASS: $(DB_PASS)
               IS_PROD: $(isMain)
+              IS_DEV: $(isDevelop)
 
       - job: DeployAPI
         displayName: Deploy API Service
