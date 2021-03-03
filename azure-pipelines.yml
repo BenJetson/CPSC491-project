@@ -155,9 +155,9 @@ stages:
               inline: |
                 cd DBMigrations
                 env
-                echo "nonProd $(NON_PROD)"
-                echo "prod $(IS_PROD)"
-                echo "dev $(IS_DEV)"
+                echo "nonProd $(nonProd)"
+                echo "prod $(isMain)"
+                echo "dev $(isDev)"
                 # export DB_DATABASE=$(( $IS_PROD ? 'prod' : 'dev' ))
                 export DB_DATABASE='dev'
                 printf "prod: %s\ndb: %s\nuser: %s\nhost: %s\n" "$IS_PROD" "$DB_DATABASE" "$(DB_USER)" "$(DB_HOST)"
