@@ -50,6 +50,7 @@ func NewServer(logger *logrus.Logger, db app.DataStore,
 	// Define routes.
 	router.Path("/login").Methods("POST").HandlerFunc(svr.handleLogin)
 	router.Path("/logout").Methods("POST").HandlerFunc(svr.handleLogout)
+	router.Path("/")
 
 	return svr, nil
 }
@@ -66,7 +67,31 @@ func (svr *Server) Start() error {
 	return svr.httpd.ListenAndServe()
 }
 
-// nolint: unused // TODO remove this once we use the JSON response method
+func (svr *Server) hostname() string {
+	switch svr.config.Tier {
+	case TierProduction:
+		return "app.teamxiv.space"
+	case TierDevelopment:
+		return "dev.teamxiv.space"
+	case TierLocal:
+		return "localhost:8000"
+	}
+
+	// This should not happen if NewConfigFromEnv is used.
+	panic("cannot fetch hostname for unknown tier")
+}
+
+func (svr *Server) useHTTPS() bool {
+	return svr.config.Tier != TierLocal
+}
+
+func (svr *Server) protocol() string {
+	if svr.useHTTPS() {
+		return "https"
+	}
+	return "http"
+}
+
 func (svr *Server) sendJSONResponse(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -76,14 +101,13 @@ func (svr *Server) sendJSONResponse(w http.ResponseWriter, data interface{}) {
 	}
 }
 
-// nolint: unused // TODO remove this once we use the error response method
 type apiError struct {
 	Code        int    `json:"code"`
 	Status      string `json:"status"`
 	UserMessage string `json:"message,omitempty"`
 }
 
-// nolint: unused // TODO remove this once we use the error response method
+// nolint: unparam // FIXME remove this later once user message gets used.
 func (svr *Server) sendErrorResponse(w http.ResponseWriter, err error,
 	statusCode int, userMessage string, args ...interface{}) {
 
