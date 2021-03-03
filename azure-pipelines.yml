@@ -9,7 +9,7 @@ trigger:
 variables:
   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
   isDevelop: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
-  nonProd: $[not($isMain)]
+  nonProd: $[not(variables['isMain'])]
 
 stages:
   # - stage: Lint
