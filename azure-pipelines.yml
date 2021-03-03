@@ -153,21 +153,15 @@ stages:
               sshEndpoint: Webserver
               runOptions: inline
               inline: |
-                cd DBMigrations
-                env
-                echo "nonProd $(nonProd)"
-                echo "prod $(isMain)"
-                echo "dev $(isDev)"
-                # export DB_DATABASE=$(( $IS_PROD ? 'prod' : 'dev' ))
-                export DB_DATABASE='dev'
-                printf "prod: %s\ndb: %s\nuser: %s\nhost: %s\n" "$IS_PROD" "$DB_DATABASE" "$(DB_USER)" "$(DB_HOST)"
-                # flyway \
-                #   -url="jdbc:postgresql://$(DB_HOST):$(DB_PORT)/$DB_DATABASE" \
-                #   -schemas=public \
-                #   -user="$(DB_USER)" \
-                #   -password="$(DB_PASS)" \
-                #   -connectRetries=60 \
-                #   migrate
+                export DB_DATABASE=`[ '$(isMain)' = 'True' ] && echo 'prod' || echo 'dev'`
+                echo '$(DB_PASS)' # FIXME
+                flyway \
+                  -url="jdbc:postgresql://$(DB_HOST):$(DB_PORT)/$DB_DATABASE" \
+                  -schemas=public \
+                  -user="$(DB_USER)" \
+                  -password="$(DB_PASS)" \
+                  -connectRetries=60 \
+                  migrate
             displayName: Migrate Database (Flyway)
             env:
               DB_HOST: $(DB_HOST)
