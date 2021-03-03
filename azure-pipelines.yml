@@ -9,6 +9,7 @@ trigger:
 variables:
   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
   isDevelop: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
+  nonProd: $[not($isMain)]
 
 stages:
   # - stage: Lint
@@ -154,6 +155,7 @@ stages:
               inline: |
                 cd DBMigrations
                 env
+                echo "nonProd $(NON_PROD)"
                 echo "prod $(IS_PROD)"
                 echo "dev $(IS_DEV)"
                 # export DB_DATABASE=$(( $IS_PROD ? 'prod' : 'dev' ))
@@ -174,6 +176,7 @@ stages:
               DB_PASS: $(DB_PASS)
               IS_PROD: $(isMain)
               IS_DEV: $(isDevelop)
+              NON_PROD: $(nonProd)
 
       - job: DeployAPI
         displayName: Deploy API Service
