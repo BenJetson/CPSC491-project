@@ -6,6 +6,10 @@ trigger:
   - hotfix/*
   - release/*
 
+variables:
+  isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  isDevelop: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
+
 stages:
   - stage: Lint
     jobs:
@@ -127,6 +131,7 @@ stages:
             displayName: Publish Build Artifact
 
   - stage: Deploy
+    condition: or(eq(variables.isMain, true), eq(variables.isDevelop, true))
     jobs:
       - job: DeployDB
         displayName: Deploy Database
