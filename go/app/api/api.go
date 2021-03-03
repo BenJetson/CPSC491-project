@@ -45,7 +45,7 @@ func NewServer(logger *logrus.Logger, db app.DataStore,
 	}
 
 	// Register global middleware.
-	// router.Use(mwf ...mux.MiddlewareFunc)
+	router.Use(svr.authContextMiddleware)
 
 	// Define routes.
 	router.Path("/login").Methods("POST").HandlerFunc(svr.handleLogin)
