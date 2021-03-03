@@ -50,7 +50,6 @@ func NewServer(logger *logrus.Logger, db app.DataStore,
 	// Define routes.
 	router.Path("/login").Methods("POST").HandlerFunc(svr.handleLogin)
 	router.Path("/logout").Methods("POST").HandlerFunc(svr.handleLogout)
-	router.Path("/")
 
 	return svr, nil
 }
@@ -67,6 +66,7 @@ func (svr *Server) Start() error {
 	return svr.httpd.ListenAndServe()
 }
 
+// hostname returns the server hostname.
 func (svr *Server) hostname() string {
 	switch svr.config.Tier {
 	case TierProduction:
@@ -81,10 +81,13 @@ func (svr *Server) hostname() string {
 	panic("cannot fetch hostname for unknown tier")
 }
 
+// useHTTPS returns true when Nginx is configured for HTTPS.
 func (svr *Server) useHTTPS() bool {
 	return svr.config.Tier != TierLocal
 }
 
+// protocol returns the protocol the app will use for communication.
+// nolint: unused // FIXME remove this once used.
 func (svr *Server) protocol() string {
 	if svr.useHTTPS() {
 		return "https"
@@ -92,6 +95,8 @@ func (svr *Server) protocol() string {
 	return "http"
 }
 
+// sendJSONResponse will marshal the given data to JSON and write it to the
+// http ResponseWriter.
 func (svr *Server) sendJSONResponse(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -101,12 +106,16 @@ func (svr *Server) sendJSONResponse(w http.ResponseWriter, data interface{}) {
 	}
 }
 
+// An apiError describes a problem that the server encountered while processing
+// a request, with an optional user message.
 type apiError struct {
 	Code        int    `json:"code"`
 	Status      string `json:"status"`
 	UserMessage string `json:"message,omitempty"`
 }
 
+// sendErrorResponse sends a completed apiError back to the user as JSON and
+// logs the error.
 // nolint: unparam // FIXME remove this later once user message gets used.
 func (svr *Server) sendErrorResponse(w http.ResponseWriter, err error,
 	statusCode int, userMessage string, args ...interface{}) {

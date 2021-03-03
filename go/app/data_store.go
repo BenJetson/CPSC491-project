@@ -8,6 +8,8 @@ type DataStore interface {
 	SessionStore
 }
 
+// PersonStore defines methods for working with app.Person objects in the
+// database.
 type PersonStore interface {
 	GetPersonByID(personID int) (Person, error)
 	GetPersonByEmail(email string) (Person, error)
@@ -21,6 +23,8 @@ type PersonStore interface {
 	DeactivatePerson(personID int) error
 }
 
+// SessionStore defines methods for working with app.Session objects in the
+// database.
 type SessionStore interface {
 	GetSessionsForPerson(personID int) ([]Session, error)
 	GetSessionByToken(token uuid.UUID) (Session, error)

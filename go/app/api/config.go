@@ -7,12 +7,19 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Tier represents a different instance of this application.
 type Tier string
 
 const (
-	TierProduction  Tier = "prod"
+	// TierProduction represents the production tier of this app running
+	// at app.teamxiv.space.
+	TierProduction Tier = "prod"
+	// TierDevelopment represents the development tier of this app running
+	// at dev.teamxiv.space.
 	TierDevelopment Tier = "dev"
-	TierLocal       Tier = "local"
+	// TierLocal represents the local tier of this app running on your local
+	// computer inside of Docker.
+	TierLocal Tier = "local"
 )
 
 // Config specifies the configuration for an API server instance.

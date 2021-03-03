@@ -94,7 +94,7 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (svr *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
-	s := svr.GetSessionFromContext(r.Context())
+	s := getSessionFromContext(r.Context())
 	if s != nil {
 		if err := svr.db.RevokeSession(s.Token); err != nil {
 			svr.sendErrorResponse(

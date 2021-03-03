@@ -55,7 +55,11 @@ func (svr *Server) authContextMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (svr *Server) GetSessionFromContext(ctx context.Context) *app.Session {
+// getSessionFromContext retrieves the session object from the request context
+// if one is available, and returns nil otherwise.
+//
+// This only works if authContextMiddleware has already run for this request.
+func getSessionFromContext(ctx context.Context) *app.Session {
 	s, ok := ctx.Value(contextKeySession).(app.Session)
 	if !ok {
 		return nil
