@@ -27,8 +27,5 @@ func (p Password) Verify(plaintext string) bool {
 
 	// CompareHashAndPassword returns nil error when the plaintext and hash
 	// match, and an error otherwise.
-	if bcrypt.CompareHashAndPassword(hashBytes, plainBytes) != nil {
-		return false
-	}
-	return true
+	return bcrypt.CompareHashAndPassword(hashBytes, plainBytes) == nil
 }
