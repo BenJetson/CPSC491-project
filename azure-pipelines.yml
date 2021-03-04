@@ -143,8 +143,8 @@ stages:
           - task: CopyFilesOverSSH@0
             inputs:
               sshEndpoint: Webserver
-              sourceFolder: $(Pipeline.Workspace)/DBMigrations-$(Build.BuildId)
-              targetFolder: /home/deployer/DBMigrations
+              sourceFolder: $(Pipeline.Workspace)/DBMigrations
+              targetFolder: /home/deployer/DBMigrations-$(Build.BuildId)
               cleanTargetFolder: true
               failOnEmptySource: true
             displayName: Copy Files to Webserver
@@ -156,6 +156,10 @@ stages:
                 export TIER=`[ '$(isMain)' = 'True' ] && echo 'prod' || echo 'dev'`
                 (
                   flock -x -w 300 200 || exit 1
+
+                  # Cleanup Trap
+                  trap "cd; rm -rf ~/DBMigrations-$(Build.BuildId)" \
+                    SIGINT SIGTERM ERR EXIT
 
                   cd ~/DBMigrations-$(Build.BuildId)
                   export DB_DATABASE="$TIER"
@@ -203,6 +207,10 @@ stages:
                 (
                   flock -x -w 300 200 || exit 1
 
+                  # Cleanup Trap
+                  trap "cd; rm -rf ~/APIServer-$(Build.BuildId)" \
+                    SIGINT SIGTERM ERR EXIT
+
                   sudo systemctl stop "api-$TIER"
                   cp ~/APIServer-$(Build.BuildId)/api "/usr/local/bin/api-$TIER"
                   chown -R deployer:application "/usr/local/bin/api-$TIER"
@@ -235,6 +243,10 @@ stages:
                 export TIER=`[ '$(isMain)' = 'True' ] && echo 'prod' || echo 'dev'`
                 (
                   flock -x -w 300 200 || exit 1
+
+                  # Cleanup Trap
+                  trap "cd; rm -rf ~/ReactApp-$(Build.BuildId)" \
+                    SIGINT SIGTERM ERR EXIT
 
                   rm -rf "/var/www/$TIER"/*
                   cp -r ~/ReactApp-$(Build.BuildId)/* "/var/www/$TIER"
