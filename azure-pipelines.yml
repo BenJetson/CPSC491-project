@@ -153,8 +153,8 @@ stages:
               sshEndpoint: Webserver
               runOptions: inline
               inline: |
+                cd ~/DBMigrations
                 export DB_DATABASE=`[ '$(isMain)' = 'True' ] && echo 'prod' || echo 'dev'`
-                echo '$(DB_PASS)' # FIXME
                 flyway \
                   -url="jdbc:postgresql://$(DB_HOST):$(DB_PORT)/$DB_DATABASE" \
                   -schemas=public \
