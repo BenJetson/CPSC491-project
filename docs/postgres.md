@@ -20,6 +20,6 @@ working with PostgreSQL
   `item_name type NOT NULL REFERENCES table_name(item_name) ON DELETE RESTRICT`
   - This makes a reference to the `item_name` column of the `table_name` table
     of the row.
-  - If there is an attempt to delete a row from `table_name` while
-    it is still referenced in the other table, it will stop the deletion from
-    happening until all references are deleted first.
+  - If there is an attempt to delete a row from `table_name` while it is still
+    referenced in the other table, it will stop the deletion from happening
+    until all references are deleted first.
