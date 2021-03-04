@@ -1,3 +1,4 @@
+<!-- prettier-ignore -->
 # Best practices for PostgreSQL
 
 These notes cover some of the best practices that have been discovered while
