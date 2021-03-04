@@ -223,5 +223,5 @@ stages:
                 export TIER=`[ '$(isMain)' = 'True' ] && echo 'prod' || echo 'dev'`
                 rm -rf "/var/www/$TIER"/*
                 cp -r ~/ReactApp/* "/var/www/$TIER"
-                chown -R deployer:application "/var/www/$TIER/*"
+                chown -R deployer:application "/var/www/$TIER"/*
             displayName: Replace Web Root
