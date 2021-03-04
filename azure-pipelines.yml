@@ -161,7 +161,7 @@ stages:
                   -user="$(DB_USER)" \
                   -password="$(DB_PASS)" \
                   -connectRetries=60 \
-                  -locations="filesystem:."
+                  -locations="filesystem:." \
                   migrate
             displayName: Migrate Database (Flyway)
             env:
