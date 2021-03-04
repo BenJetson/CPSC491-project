@@ -154,7 +154,8 @@ stages:
               runOptions: inline
               inline: |
                 cd ~/DBMigrations
-                export DB_DATABASE=`[ '$(isMain)' = 'True' ] && echo 'prod' || echo 'dev'`
+                export TIER=`[ '$(isMain)' = 'True' ] && echo 'prod' || echo 'dev'`
+                export DB_DATABASE="$TIER"
                 flyway \
                   -url="jdbc:postgresql://$(DB_HOST):$(DB_PORT)/$DB_DATABASE" \
                   -schemas=public \
@@ -192,11 +193,12 @@ stages:
               sshEndpoint: Webserver
               runOptions: inline
               inline: |
-                sudo systemctl stop api-dev
-                cp ~/APIServer/api /usr/local/bin/api-dev
-                chown -R deployer:application /usr/local/bin/api-dev
-                chmod +x /usr/local/bin/api-dev
-                sudo systemctl start api-dev
+                export TIER=`[ '$(isMain)' = 'True' ] && echo 'prod' || echo 'dev'`
+                sudo systemctl stop "api-$TIER"
+                cp ~/APIServer/api "/usr/local/bin/api-$TIER"
+                chown -R deployer:application "/usr/local/bin/api-$TIER"
+                chmod +x "/usr/local/bin/api-$TIER"
+                sudo systemctl start "api-$TIER"
             displayName: Upgrade API Service
 
       - job: DeployReactApp
@@ -218,7 +220,8 @@ stages:
               sshEndpoint: Webserver
               runOptions: inline
               inline: |
-                rm -rf /var/www/dev/*
-                cp -r ~/ReactApp/* /var/www/dev
-                chown -R deployer:application /var/www/dev/*
+                export TIER=`[ '$(isMain)' = 'True' ] && echo 'prod' || echo 'dev'`
+                rm -rf "/var/www/$TIER/*"
+                cp -r ~/ReactApp/* "/var/www/$TIER"
+                chown -R deployer:application "/var/www/$TIER/*"
             displayName: Replace Web Root
