@@ -132,7 +132,7 @@ stages:
             displayName: Publish Build Artifact
 
   - stage: Deploy
-    # condition: or(eq(variables.isMain, true), eq(variables.isDevelop, true))
+    condition: or(eq(variables.isMain, true), eq(variables.isDevelop, true))
     jobs:
       - job: DeployDB
         displayName: Deploy Database
