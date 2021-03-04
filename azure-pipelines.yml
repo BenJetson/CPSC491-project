@@ -49,7 +49,7 @@ stages:
           - script: yarn install
             workingDirectory: web
             displayName: Install Node packages (yarn)
-          - script: npx eslint .
+          - script: npx eslint --max-warnings=0 .
             workingDirectory: web
             displayName: Run eslint
 
