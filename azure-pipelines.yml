@@ -132,7 +132,7 @@ stages:
             displayName: Publish Build Artifact
 
   - stage: Deploy
-    condition: or(eq(variables.isMain, true), eq(variables.isDevelop, true))
+    # condition: or(eq(variables.isMain, true), eq(variables.isDevelop, true))
     jobs:
       - job: DeployDB
         displayName: Deploy Database
@@ -143,7 +143,7 @@ stages:
           - task: CopyFilesOverSSH@0
             inputs:
               sshEndpoint: Webserver
-              sourceFolder: $(Pipeline.Workspace)/DBMigrations
+              sourceFolder: $(Pipeline.Workspace)/DBMigrations-$(Build.BuildId)
               targetFolder: /home/deployer/DBMigrations
               cleanTargetFolder: true
               failOnEmptySource: true
@@ -153,17 +153,21 @@ stages:
               sshEndpoint: Webserver
               runOptions: inline
               inline: |
-                cd ~/DBMigrations
                 export TIER=`[ '$(isMain)' = 'True' ] && echo 'prod' || echo 'dev'`
-                export DB_DATABASE="$TIER"
-                timeout -k 5m 5m flyway \
-                  -url="jdbc:postgresql://$(DB_HOST):$(DB_PORT)/$DB_DATABASE" \
-                  -schemas=public \
-                  -user="$(DB_USER)" \
-                  -password="$(DB_PASS)" \
-                  -connectRetries=60 \
-                  -locations="filesystem:." \
-                  migrate
+                (
+                  flock -x -w 300 200 || exit 1
+
+                  cd ~/DBMigrations-$(Build.BuildId)
+                  export DB_DATABASE="$TIER"
+                  timeout -k 5m 5m flyway \
+                    -url="jdbc:postgresql://$(DB_HOST):$(DB_PORT)/$DB_DATABASE" \
+                    -schemas=public \
+                    -user="$(DB_USER)" \
+                    -password="$(DB_PASS)" \
+                    -connectRetries=60 \
+                    -locations="filesystem:." \
+                    migrate
+                ) 200>"/home/deployer/lock-$TIER"
             displayName: Migrate Database (Flyway)
             env:
               DB_HOST: $(DB_HOST)
@@ -186,7 +190,7 @@ stages:
             inputs:
               sshEndpoint: Webserver
               sourceFolder: $(Pipeline.Workspace)/APIServer
-              targetFolder: /home/deployer/APIServer
+              targetFolder: /home/deployer/APIServer-$(Build.BuildId)
               cleanTargetFolder: true
               failOnEmptySource: true
             displayName: Copy Files to Webserver
@@ -196,11 +200,15 @@ stages:
               runOptions: inline
               inline: |
                 export TIER=`[ '$(isMain)' = 'True' ] && echo 'prod' || echo 'dev'`
-                sudo systemctl stop "api-$TIER"
-                cp ~/APIServer/api "/usr/local/bin/api-$TIER"
-                chown -R deployer:application "/usr/local/bin/api-$TIER"
-                chmod +x "/usr/local/bin/api-$TIER"
-                sudo systemctl start "api-$TIER"
+                (
+                  flock -x -w 300 200 || exit 1
+
+                  sudo systemctl stop "api-$TIER"
+                  cp ~/APIServer-$(Build.BuildId)/api "/usr/local/bin/api-$TIER"
+                  chown -R deployer:application "/usr/local/bin/api-$TIER"
+                  chmod +x "/usr/local/bin/api-$TIER"
+                  sudo systemctl start "api-$TIER"
+                ) 200>"/home/deployer/lock-$TIER"
             displayName: Upgrade API Service
 
       - job: DeployReactApp
@@ -215,7 +223,7 @@ stages:
             inputs:
               sshEndpoint: Webserver
               sourceFolder: $(Pipeline.Workspace)/ReactApp
-              targetFolder: /home/deployer/ReactApp
+              targetFolder: /home/deployer/ReactApp-$(Build.BuildId)
               cleanTargetFolder: true
               failOnEmptySource: true
             displayName: Copy Files to Webserver
@@ -225,7 +233,11 @@ stages:
               runOptions: inline
               inline: |
                 export TIER=`[ '$(isMain)' = 'True' ] && echo 'prod' || echo 'dev'`
-                rm -rf "/var/www/$TIER"/*
-                cp -r ~/ReactApp/* "/var/www/$TIER"
-                chown -R deployer:application "/var/www/$TIER"/*
+                (
+                  flock -x -w 300 200 || exit 1
+
+                  rm -rf "/var/www/$TIER"/*
+                  cp -r ~/ReactApp-$(Build.BuildId)/* "/var/www/$TIER"
+                  chown -R deployer:application "/var/www/$TIER"/*
+                ) 200>"/home/deployer/lock-$TIER"
             displayName: Replace Web Root
