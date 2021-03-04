@@ -132,7 +132,7 @@ stages:
             displayName: Publish Build Artifact
 
   - stage: Deploy
-    condition: or(eq(variables.isMain, true), eq(variables.isDevelop, true))
+    # condition: or(eq(variables.isMain, true), eq(variables.isDevelop, true))
     jobs:
       - job: DeployDB
         displayName: Deploy Database
@@ -176,6 +176,8 @@ stages:
 
       - job: DeployAPI
         displayName: Deploy API Service
+        dependsOn:
+          - DeployDB
         steps:
           - download: current
             artifact: APIServer
@@ -203,6 +205,8 @@ stages:
 
       - job: DeployReactApp
         displayName: Deploy React App
+        dependsOn:
+          - DeployAPI
         steps:
           - download: current
             artifact: ReactApp
