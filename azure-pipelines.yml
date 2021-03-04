@@ -156,7 +156,7 @@ stages:
                 cd ~/DBMigrations
                 export DB_DATABASE=`[ '$(isMain)' = 'True' ] && echo 'prod' || echo 'dev'`
                 flyway \
-                  -url="jdbc:postgresql://$(DB_HOST):$(DB_PORT)/$DB_DATABASE" \
+                  -url="jdbc:postgresql:\/\/$(DB_HOST):$(DB_PORT)/$DB_DATABASE" \
                   -schemas=public \
                   -user="$(DB_USER)" \
                   -password="$(DB_PASS)" \
