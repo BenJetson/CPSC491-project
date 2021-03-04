@@ -12,71 +12,71 @@ variables:
   nonProd: $[eq(variables['isMain'], 'False')]
 
 stages:
-  # - stage: Lint
-  #   jobs:
-  #     - job: LintGo
-  #       displayName: Lint Go
-  #       steps:
-  #         - task: GoTool@0
-  #           displayName: Install Go
-  #           inputs:
-  #             version: "1.15"
-  #         - script: |
-  #             curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
-  #             sh -s -- -b $(go env GOPATH)/bin v1.35.2 && \
-  #             echo '##vso[task.prependpath]$(HOME)/go/bin'
-  #           displayName: Install golangci-lint
-  #         - script: golangci-lint run
-  #           workingDirectory: go/app
-  #           displayName: Run golangci-lint
+  - stage: Lint
+    jobs:
+      - job: LintGo
+        displayName: Lint Go
+        steps:
+          - task: GoTool@0
+            displayName: Install Go
+            inputs:
+              version: "1.15"
+          - script: |
+              curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
+              sh -s -- -b $(go env GOPATH)/bin v1.35.2 && \
+              echo '##vso[task.prependpath]$(HOME)/go/bin'
+            displayName: Install golangci-lint
+          - script: golangci-lint run
+            workingDirectory: go/app
+            displayName: Run golangci-lint
 
-  #     - job: LintJS
-  #       displayName: Lint JavaScript
-  #       steps:
-  #         - task: NodeTool@0
-  #           inputs:
-  #             versionSpec: "14.x"
-  #           displayName: Install Node.js
-  #         - task: Cache@2
-  #           inputs:
-  #             key: 'yarn | "$(Agent.OS)" | web/yarn.lock'
-  #             restoreKeys: |
-  #               yarn | "$(Agent.OS)"
-  #               yarn
-  #             path: web/node_modules
-  #           displayName: Cache Node Modules (yarn)
-  #           timeoutInMinutes: 5
-  #         - script: yarn install
-  #           workingDirectory: web
-  #           displayName: Install Node packages (yarn)
-  #         - script: npx eslint .
-  #           workingDirectory: web
-  #           displayName: Run eslint
+      - job: LintJS
+        displayName: Lint JavaScript
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: "14.x"
+            displayName: Install Node.js
+          - task: Cache@2
+            inputs:
+              key: 'yarn | "$(Agent.OS)" | web/yarn.lock'
+              restoreKeys: |
+                yarn | "$(Agent.OS)"
+                yarn
+              path: web/node_modules
+            displayName: Cache Node Modules (yarn)
+            timeoutInMinutes: 5
+          - script: yarn install
+            workingDirectory: web
+            displayName: Install Node packages (yarn)
+          - script: npx eslint .
+            workingDirectory: web
+            displayName: Run eslint
 
-  #     - job: LintPrettier
-  #       displayName: Lint Prettier
-  #       steps:
-  #         - task: NodeTool@0
-  #           inputs:
-  #             versionSpec: "14.x"
-  #           displayName: Install Node.js
-  #         - script: npx prettier --check .
-  #           displayName: Check Prettier Compliance
+      - job: LintPrettier
+        displayName: Lint Prettier
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: "14.x"
+            displayName: Install Node.js
+          - script: npx prettier --check .
+            displayName: Check Prettier Compliance
 
-  # - stage: Test
-  #   jobs:
-  #     - job: TestGo
-  #       displayName: Test Go
-  #       steps:
-  #         - task: GoTool@0
-  #           displayName: Install Go
-  #           inputs:
-  #             version: "1.15"
-  #         - task: Go@0
-  #           displayName: Test Go
-  #           inputs:
-  #             command: "test"
-  #             workingDirectory: go/app
+  - stage: Test
+    jobs:
+      - job: TestGo
+        displayName: Test Go
+        steps:
+          - task: GoTool@0
+            displayName: Install Go
+            inputs:
+              version: "1.15"
+          - task: Go@0
+            displayName: Test Go
+            inputs:
+              command: "test"
+              workingDirectory: go/app
 
   - stage: Build
     jobs:
