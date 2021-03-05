@@ -1,0 +1,21 @@
+steps:
+  - checkout: self
+    persistCredentials: "true"
+  - script: |
+      # Calculate Sprint Number
+      export WEEK_NO="`date +'%U'`"
+      export OFFSET=4
+      export SPRINT_NO="$((10#$WEEK_NO - 10#$OFFSET))"
+      export SPRINT_TAG="`printf 'sprint%02d' $SPRINT_NO`"
+
+      # Configure Git
+      git config user.name "Azure Pipelines"
+      git config user.email "noreply@clemson.edu"
+
+      # Tag latest code in develop and push.
+      git checkout origin/develop
+      git tag \
+        -a "$SPRINT_TAG" \
+        -m "Repository state at the end of Sprint $SPRINT_NO."
+      git push origin "$SPRINT_TAG"
+    displayName: Tag Develop
