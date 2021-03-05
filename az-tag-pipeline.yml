@@ -1,3 +1,11 @@
+schedules:
+  - cron: "0 0 * * 2" # 0th hour, 0th minute, any day, any month, on Tuesday (2)
+    displayName: Sprint End Tag
+    branches:
+      include:
+        - develop
+    always: "true"
+
 steps:
   - checkout: self
     persistCredentials: "true"
