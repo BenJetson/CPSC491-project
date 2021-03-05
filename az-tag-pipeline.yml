@@ -1,10 +1,12 @@
 trigger: none
 
 schedules:
-  - cron: "5 0 * * 2"
-    # Run on the 5th hour, 0th minute, any day, any month, every Tuesday (2).
+  - cron: "0 5 * * 2"
+    # Run on the 0th minute, 5th hour, any day, any month, every Tuesday (2).
     # Recall that Azure Pipelines servers use Coordinated Universal Time (UTC).
     # So this corresponds to 0:00 Tuesday in the Eastern time zone.
+    #
+    # See also: the crontab manpage (https://linux.die.net/man/5/crontab)
 
     displayName: Sprint End Tag
     branches:
