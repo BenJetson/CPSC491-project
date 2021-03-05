@@ -4,11 +4,11 @@ schedules:
     branches:
       include:
         - develop
-    always: "true"
+    always: true
 
 steps:
   - checkout: self
-    persistCredentials: "true"
+    persistCredentials: true
   - script: |
       # Calculate Sprint Number
       export WEEK_NO="`date +'%U'`"
