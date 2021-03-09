@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 
 	"github.com/BenJetson/CPSC491-project/go/app"
@@ -81,7 +80,11 @@ type authConfig struct {
 // requireAuth is a middleware that may be applied to a route or subrouter that
 // will enforce authentication requirements.
 // nolint: unused // FIXME: remove this once it gets used
-func (svr *Server) requireAuth(cfg authConfig) mux.MiddlewareFunc {
+func (svr *Server) requireAuth(
+	cfg authConfig,
+	handler http.HandlerFunc,
+) http.HandlerFunc {
+
 	// This will check the authConfig parameter values ONCE when the router is
 	// first instantiated and the app will not be allowed to start if there is
 	// a parameter mismatch.
@@ -90,40 +93,39 @@ func (svr *Server) requireAuth(cfg authConfig) mux.MiddlewareFunc {
 		panic("authConfig parameter mismatch")
 	}
 
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			s := getSessionFromContext(r.Context())
-			if s == nil {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		s := getSessionFromContext(r.Context())
+		if s == nil {
+			svr.sendErrorResponse(
+				w,
+				errors.New("endpoint requires auth but nil session"),
+				http.StatusUnauthorized,
+				"",
+			)
+			return
+		}
+
+		if cfg.requireRole {
+			hasRole := false
+			for _, r := range cfg.allowedRoles {
+				if r == s.Person.Role {
+					hasRole = true
+					break
+				}
+			}
+
+			if !hasRole {
 				svr.sendErrorResponse(
 					w,
-					errors.New("endpoint requires auth but nil session"),
-					http.StatusUnauthorized,
+					errors.Errorf("endpoint does not allow role %v", s.Person.Role),
+					http.StatusForbidden,
 					"",
 				)
 				return
 			}
+		}
 
-			if cfg.requireRole {
-				hasRole := false
-				for _, r := range cfg.allowedRoles {
-					if r == s.Person.Role {
-						hasRole = true
-						break
-					}
-				}
-
-				if !hasRole {
-					svr.sendErrorResponse(
-						w,
-						errors.Errorf("endpoint does not allow role %v", s.Person.Role),
-						http.StatusForbidden,
-						"",
-					)
-					return
-				}
-			}
-
-			next.ServeHTTP(w, r)
-		})
-	}
+		// User passed the auth check. Call the handler.
+		handler(w, r)
+	})
 }
