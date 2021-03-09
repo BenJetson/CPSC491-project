@@ -2,8 +2,8 @@ import React from "react";
 import { HashRouter as Router, Switch, Route } from "react-router-dom";
 import { Container, ThemeProvider } from "@material-ui/core";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import NavBar from "./NavBar";
-import Registration from "./Registration";
+import NavBar from "./components/NavBar";
+import Registration from "./components/Registration";
 
 import defaultTheme from "./Theme";
 import ScrollSpy from "./components/ScrollSpy";
