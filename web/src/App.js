@@ -2,7 +2,8 @@ import React from "react";
 import { HashRouter as Router, Switch, Route } from "react-router-dom";
 import { Container, ThemeProvider } from "@material-ui/core";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import NavBar from "./NavBar";
+import NavBar from "./components/NavBar";
+import Registration from "./components/Registration";
 
 import defaultTheme from "./Theme";
 import ScrollSpy from "./components/ScrollSpy";
@@ -24,6 +25,12 @@ let App = () => {
           <Route path={"/login"}>
             <Container>
               <Login />
+            </Container>
+          </Route>
+          <Route path={"/registration"}>
+            <NavBar />
+            <Container>
+              <Registration />
             </Container>
           </Route>
           <Route path={"/home"}>
