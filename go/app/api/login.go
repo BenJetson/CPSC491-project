@@ -80,7 +80,6 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
 	http.SetCookie(w, &http.Cookie{
 		Name:  sessionCookieKey,
 		Value: s.Token.String(),
@@ -90,6 +89,7 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		Domain:   svr.hostname(),
 		SameSite: http.SameSiteStrictMode,
 		Secure:   svr.useHTTPS(),
+		Path:     "/api",
 
 		// HttpOnly hides this cookie from JavaScript in browsers for security.
 		HttpOnly: true,
@@ -124,6 +124,7 @@ func (svr *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 		Domain:   svr.hostname(),
 		SameSite: http.SameSiteStrictMode,
 		Secure:   svr.useHTTPS(),
+		Path:     "/api",
 
 		// HttpOnly hides this cookie from JavaScript in browsers for security.
 		HttpOnly: true,
