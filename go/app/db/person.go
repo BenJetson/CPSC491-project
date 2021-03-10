@@ -1,6 +1,10 @@
 package db
 
-import "github.com/BenJetson/CPSC491-project/go/app"
+import (
+	"github.com/pkg/errors"
+
+	"github.com/BenJetson/CPSC491-project/go/app"
+)
 
 // GetPersonByID fetches a person given their ID number.
 func (db *database) GetPersonByID(personID int) (app.Person, error) {
@@ -9,7 +13,24 @@ func (db *database) GetPersonByID(personID int) (app.Person, error) {
 
 // GetPersonByEmail fetches a person given their email.
 func (db *database) GetPersonByEmail(email string) (app.Person, error) {
-	return app.Person{}, nil // TODO
+	var p app.Person
+
+	err := db.Get(&p, `
+		SELECT
+			person_id,
+			first_name,
+			last_name,
+			email,
+			role_id,
+			pass_hash,
+			is_deactivated
+		FROM person
+		WHERE email = $1
+	`, email)
+
+	// TODO get affiliations
+
+	return p, errors.Wrap(err, "failed to get person")
 }
 
 // CreatePerson creates a new person given the details. Ignores the ID field.

@@ -2,6 +2,7 @@ package db
 
 import (
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 
 	"github.com/BenJetson/CPSC491-project/go/app"
 )
@@ -18,7 +19,27 @@ func (db *database) GetSessionByToken(token uuid.UUID) (app.Session, error) {
 
 // CreateSession creates a new session, ignoring the ID field.
 func (db *database) CreateSession(s app.Session) error {
-	return nil // TODO
+	result, err := db.Exec(`
+		INSERT INTO session (
+			token,
+			person_id,
+			created_at,
+			expires_at
+		) VALUES ($1, $2, $3, $4)
+	`, s.Token, s.Person.ID, s.CreatedAt, s.ExpiresAt)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to insert session")
+	}
+
+	n, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to check result of session insert")
+	} else if n != 1 {
+		return errors.Errorf(" insert session ought to affect 1 row, found: %d", n)
+	}
+
+	return nil
 }
 
 // RevokeSession revokes an existing session.
