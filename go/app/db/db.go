@@ -33,7 +33,7 @@ func (cfg *Config) connectString() string {
 	buf.WriteString(fmt.Sprintf("password='%s' ", cfg.Password))
 	buf.WriteString(fmt.Sprintf("database='%s' ", cfg.Database))
 
-	tls := "verify-full"
+	tls := "require"
 	if cfg.DisableTLS {
 		tls = "disable"
 	}
