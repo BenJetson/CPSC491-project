@@ -17,4 +17,7 @@ type Person struct {
 	// IsDeactivated is true when a person's account is deactivated and
 	// therefore cannot be authenticated against.
 	IsDeactivated bool `db:"is_deactivated"`
+	// Affiliations is a list of organization IDs that this user is
+	// associated with.
+	Affiliations []int
 }
