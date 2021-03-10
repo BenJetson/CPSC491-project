@@ -10,7 +10,7 @@ CREATE TABLE session (
     is_revoked boolean NOT NULL DEFAULT FALSE
 );
 
-UPDATE TABLE person ADD (
-    pass_hash text NOT NULL,
-    is_deactivated boolean NOT NULL DEFAULT FALSE
-);
+ALTER TABLE person
+    ADD COLUMN pass_hash text NOT NULL,
+    ADD COLUMN is_deactivated boolean NOT NULL DEFAULT FALSE
+;
