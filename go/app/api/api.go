@@ -74,7 +74,7 @@ func (svr *Server) hostname() string {
 	case TierDevelopment:
 		return "dev.teamxiv.space"
 	case TierLocal:
-		return "localhost:8000"
+		return "localhost"
 	}
 
 	// This should not happen if NewConfigFromEnv is used.
@@ -128,7 +128,7 @@ func (svr *Server) sendErrorResponse(w http.ResponseWriter, err error,
 
 	svr.logger.
 		WithError(err).
-		WithField("details", details).
+		WithField("details", fmt.Sprintf("%+v", details)).
 		Error("encountered error when handling api request")
 
 	w.WriteHeader(statusCode)
