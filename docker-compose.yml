@@ -79,6 +79,9 @@ services:
       - DB_DATABASE=app
       - DB_USER=postgres
       - DB_PASS=postgres
+      # This will not be used in the production tier, but on local computers
+      # in Docker this must be set.
+      - DB_DANGER_DISABLE_TLS=accept danger and use unencrypted connection
       - TIER=local
       - PORT=8080
 
