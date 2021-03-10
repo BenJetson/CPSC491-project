@@ -5,6 +5,12 @@ trigger:
   - bugfix/*
   - hotfix/*
   - release/*
+  - "*"
+
+variables:
+  isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  isDevelop: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
+  nonProd: $[eq(variables['isMain'], 'False')]
 
 stages:
   - stage: Lint
@@ -40,6 +46,7 @@ stages:
                 yarn
               path: web/node_modules
             displayName: Cache Node Modules (yarn)
+            timeoutInMinutes: 5
           - script: yarn install
             workingDirectory: web
             displayName: Install Node packages (yarn)
@@ -49,22 +56,11 @@ stages:
 
       - job: LintPrettier
         displayName: Lint Prettier
-        dependsOn: LintJS
         steps:
           - task: NodeTool@0
             inputs:
               versionSpec: "14.x"
             displayName: Install Node.js
-          # This step below counts on the fact that the LintJS job before it
-          # will install all of the Node modules and load them into the cache.
-          - task: Cache@2
-            inputs:
-              key: 'yarn | "$(Agent.OS)" | web/yarn.lock'
-              restoreKeys: |
-                yarn | "$(Agent.OS)"
-                yarn
-              path: node_modules
-            displayName: Cache Node Modules (yarn)
           - script: npx prettier --check .
             displayName: Check Prettier Compliance
 
@@ -99,6 +95,7 @@ stages:
               workingDirectory: go/app/cmd/api
           - publish: $(System.DefaultWorkingDirectory)/go/app/cmd/api/api
             artifact: APIServer
+            displayName: Publish Build Artifact
 
       - job: BuildJS
         displayName: Build React App (JS)
@@ -115,6 +112,7 @@ stages:
                 yarn
               path: web/node_modules
             displayName: Cache Node Modules (yarn)
+            timeoutInMinutes: 5
           - script: yarn install
             workingDirectory: web
             displayName: Install Node packages (yarn)
@@ -123,6 +121,7 @@ stages:
             displayName: React Build
           - publish: $(System.DefaultWorkingDirectory)/web/build
             artifact: ReactApp
+            displayName: Publish Build Artifact
 
       - job: BuildDB
         displayName: Build Database
@@ -131,5 +130,127 @@ stages:
           # However, for now, this will just artifact the database migrations.
           - publish: $(System.DefaultWorkingDirectory)/db/migrations
             artifact: DBMigrations
+            displayName: Publish Build Artifact
 
-  # - stage: Deploy
+  - stage: Deploy
+    condition: or(eq(variables.isMain, true), eq(variables.isDevelop, true))
+    jobs:
+      - job: DeployDB
+        displayName: Deploy Database
+        steps:
+          - download: current
+            artifact: DBMigrations
+            displayName: Download Build
+          - task: CopyFilesOverSSH@0
+            inputs:
+              sshEndpoint: Webserver
+              sourceFolder: $(Pipeline.Workspace)/DBMigrations
+              targetFolder: /home/deployer/DBMigrations-$(Build.BuildId)
+              cleanTargetFolder: true
+              failOnEmptySource: true
+            displayName: Copy Files to Webserver
+          - task: SSH@0
+            inputs:
+              sshEndpoint: Webserver
+              runOptions: inline
+              inline: |
+                export TIER=`[ '$(isMain)' = 'True' ] && echo 'prod' || echo 'dev'`
+                (
+                  flock -x -w 300 200 || exit 1
+
+                  # Cleanup Trap
+                  trap "cd; rm -rf ~/DBMigrations-$(Build.BuildId)" \
+                    SIGINT SIGTERM ERR EXIT
+
+                  cd ~/DBMigrations-$(Build.BuildId)
+                  export DB_DATABASE="$TIER"
+                  timeout -k 5m 5m flyway \
+                    -url="jdbc:postgresql://$(DB_HOST):$(DB_PORT)/$DB_DATABASE" \
+                    -schemas=public \
+                    -user="$(DB_USER)" \
+                    -password="$(DB_PASS)" \
+                    -connectRetries=60 \
+                    -locations="filesystem:." \
+                    migrate
+                ) 200>"/home/deployer/lock-$TIER"
+            displayName: Migrate Database (Flyway)
+            env:
+              DB_HOST: $(DB_HOST)
+              DB_PORT: $(DB_PORT)
+              DB_USER: $(DB_USER)
+              DB_PASS: $(DB_PASS)
+              IS_PROD: $(isMain)
+              IS_DEV: $(isDevelop)
+              NON_PROD: $(nonProd)
+
+      - job: DeployAPI
+        displayName: Deploy API Service
+        dependsOn:
+          - DeployDB
+        steps:
+          - download: current
+            artifact: APIServer
+            displayName: Download Build
+          - task: CopyFilesOverSSH@0
+            inputs:
+              sshEndpoint: Webserver
+              sourceFolder: $(Pipeline.Workspace)/APIServer
+              targetFolder: /home/deployer/APIServer-$(Build.BuildId)
+              cleanTargetFolder: true
+              failOnEmptySource: true
+            displayName: Copy Files to Webserver
+          - task: SSH@0
+            inputs:
+              sshEndpoint: Webserver
+              runOptions: inline
+              inline: |
+                export TIER=`[ '$(isMain)' = 'True' ] && echo 'prod' || echo 'dev'`
+                (
+                  flock -x -w 300 200 || exit 1
+
+                  # Cleanup Trap
+                  trap "cd; rm -rf ~/APIServer-$(Build.BuildId)" \
+                    SIGINT SIGTERM ERR EXIT
+
+                  sudo systemctl stop "api-$TIER"
+                  cp ~/APIServer-$(Build.BuildId)/api "/usr/local/bin/api-$TIER"
+                  chown -R deployer:application "/usr/local/bin/api-$TIER"
+                  chmod +x "/usr/local/bin/api-$TIER"
+                  sudo systemctl start "api-$TIER"
+                ) 200>"/home/deployer/lock-$TIER"
+            displayName: Upgrade API Service
+
+      - job: DeployReactApp
+        displayName: Deploy React App
+        dependsOn:
+          - DeployAPI
+        steps:
+          - download: current
+            artifact: ReactApp
+            displayName: Download Build
+          - task: CopyFilesOverSSH@0
+            inputs:
+              sshEndpoint: Webserver
+              sourceFolder: $(Pipeline.Workspace)/ReactApp
+              targetFolder: /home/deployer/ReactApp-$(Build.BuildId)
+              cleanTargetFolder: true
+              failOnEmptySource: true
+            displayName: Copy Files to Webserver
+          - task: SSH@0
+            inputs:
+              sshEndpoint: Webserver
+              runOptions: inline
+              inline: |
+                export TIER=`[ '$(isMain)' = 'True' ] && echo 'prod' || echo 'dev'`
+                (
+                  flock -x -w 300 200 || exit 1
+
+                  # Cleanup Trap
+                  trap "cd; rm -rf ~/ReactApp-$(Build.BuildId)" \
+                    SIGINT SIGTERM ERR EXIT
+
+                  rm -rf "/var/www/$TIER"/*
+                  cp -r ~/ReactApp-$(Build.BuildId)/* "/var/www/$TIER"
+                  chown -R deployer:application "/var/www/$TIER"/*
+                ) 200>"/home/deployer/lock-$TIER"
+            displayName: Replace Web Root
