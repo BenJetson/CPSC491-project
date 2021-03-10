@@ -30,17 +30,22 @@ func (svr *Server) authContextMiddleware(next http.Handler) http.Handler {
 			}
 
 			s, err := svr.db.GetSessionByToken(token)
-			if err != nil {
-				// FIXME need a way to detect not found errors and return 401.
-				if err != nil {
-					svr.sendErrorResponse(
-						w,
-						errors.Wrap(err, "failed to retrieve session"),
-						http.StatusInternalServerError,
-						"",
-					)
-					return
-				}
+			if errors.Is(err, app.ErrNotFound) {
+				svr.sendErrorResponse(
+					w,
+					errors.Wrapf(err, "no session with token %s", token),
+					http.StatusUnauthorized,
+					"",
+				)
+				return
+			} else if err != nil {
+				svr.sendErrorResponse(
+					w,
+					errors.Wrap(err, "failed to retrieve session"),
+					http.StatusInternalServerError,
+					"",
+				)
+				return
 			}
 
 			if s.IsValid() {
@@ -234,7 +239,7 @@ func (svr *Server) requireIdentity(
 	svr.sendErrorResponse(
 		w,
 		errors.Errorf("user does not match required identity: %+v", cfg),
-		http.StatusUnauthorized,
+		http.StatusForbidden,
 		"",
 	)
 	return true
@@ -300,7 +305,7 @@ func (svr *Server) requireOrganization(
 	svr.sendErrorResponse(
 		w,
 		errors.Errorf("user does not match required organization: %+v", cfg),
-		http.StatusUnauthorized,
+		http.StatusForbidden,
 		"",
 	)
 	return false

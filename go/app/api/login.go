@@ -33,8 +33,15 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	p, err := svr.db.GetPersonByEmail(credentials.Email)
-	// FIXME need a way to detect not found errors and return 401.
-	if err != nil {
+	if errors.Is(err, app.ErrNotFound) {
+		svr.sendErrorResponse(
+			w,
+			errors.Wrapf(err, "no person by email %s", credentials.Email),
+			http.StatusUnauthorized,
+			"Email address or password was incorrect.",
+		)
+		return
+	} else if err != nil {
 		svr.sendErrorResponse(
 			w,
 			errors.Wrap(err, "failed to retrieve person"),
