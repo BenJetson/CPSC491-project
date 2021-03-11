@@ -1,12 +1,12 @@
+import React from "react";
 import {
   makeStyles,
   AppBar,
+  Box,
   Toolbar,
   Typography,
   Button,
-  IconButton,
 } from "@material-ui/core";
-import React from "react";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -27,14 +27,14 @@ export default function ButtonAppBar() {
     <Box className={classes.root}>
       <AppBar position="static">
         <Toolbar>
-          <IconButton
-            edge="start"
-            className={classes.menuButton}
-            color="inherit"
-            aria-label="menu"
-          ></IconButton>
           <Typography variant="h6" className={classes.title}></Typography>
-          <Button color="inherit">Logout</Button>
+          <Button
+            onClick={() => {
+              alert("clicked");
+            }}
+          >
+            Logout
+          </Button>
         </Toolbar>
       </AppBar>
     </Box>
