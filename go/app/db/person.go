@@ -1,10 +1,41 @@
 package db
 
 import (
+	"github.com/lib/pq"
 	"github.com/pkg/errors"
 
 	"github.com/BenJetson/CPSC491-project/go/app"
 )
+
+type dbPerson struct {
+	ID            int          `db:"person_id"`
+	FirstName     string       `db:"first_name"`
+	LastName      string       `db:"last_name"`
+	Email         string       `db:"email"`
+	Role          app.Role     `db:"role_id"`
+	Password      app.Password `db:"pass_hash"`
+	IsDeactivated bool         `db:"is_deactivated"`
+	Affiliations  pq.Int64Array
+}
+
+func (p *dbPerson) toPerson() app.Person {
+	out := app.Person{
+		ID:            p.ID,
+		FirstName:     p.FirstName,
+		LastName:      p.LastName,
+		Email:         p.Email,
+		Role:          p.Role,
+		Password:      p.Password,
+		IsDeactivated: p.IsDeactivated,
+		Affiliations:  make([]int, len(p.Affiliations)),
+	}
+
+	for i := range p.Affiliations {
+		out.Affiliations[i] = int(p.Affiliations[i])
+	}
+
+	return out
+}
 
 // GetPersonByID fetches a person given their ID number.
 func (db *database) GetPersonByID(personID int) (app.Person, error) {
@@ -13,24 +44,26 @@ func (db *database) GetPersonByID(personID int) (app.Person, error) {
 
 // GetPersonByEmail fetches a person given their email.
 func (db *database) GetPersonByEmail(email string) (app.Person, error) {
-	var p app.Person
+	var dbp dbPerson
 
-	err := db.Get(&p, `
+	err := db.Get(&dbp, `
 		SELECT
-			person_id,
-			first_name,
-			last_name,
-			email,
-			role_id,
-			pass_hash,
-			is_deactivated
-		FROM person
+			p.person_id,
+			p.first_name,
+			p.last_name,
+			p.email,
+			p.role_id,
+			p.pass_hash,
+			p.is_deactivated,
+			array_remove(array_agg(a.organization_id), NULL) as affiliations
+		FROM person p
+		LEFT JOIN affiliation a
+			ON p.person_id = a.person_id
 		WHERE email = $1
+		GROUP BY p.person_id
 	`, email)
 
-	// TODO get affiliations
-
-	return p, errors.Wrap(err, "failed to get person")
+	return dbp.toPerson(), errors.Wrap(err, "failed to get person")
 }
 
 // CreatePerson creates a new person given the details. Ignores the ID field.
