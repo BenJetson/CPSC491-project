@@ -97,6 +97,8 @@ services:
   mail:
     container_name: mail
     image: mailhog/mailhog
+    logging:
+      driver: none
     ports:
       - 8025:8025
 
