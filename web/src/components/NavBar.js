@@ -1,5 +1,4 @@
 import {
-  React,
   makeStyles,
   AppBar,
   Toolbar,
