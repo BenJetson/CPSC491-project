@@ -70,7 +70,7 @@ func (db *DB) DeactivatePerson(personID int) error {
 //
 
 // GetSessionsForPerson mocks fetching all sessions for a person.
-func (db *DB) GetSessionsForPerson(personID int) ([]app.Session, error) {
+func (db *DB) GetSessionsForPerson(personID int, includeInvalid bool) ([]app.Session, error) {
 	return nil, nil
 }
 
@@ -85,12 +85,12 @@ func (db *DB) CreateSession(s app.Session) error {
 }
 
 // RevokeSession mocks revoking a session.
-func (db *DB) RevokeSession(token uuid.UUID) error {
+func (db *DB) RevokeSession(sessionID int) error {
 	return nil
 }
 
 // RevokeSessionsForPersonExcept mocks revoking all sessions for a person
 // except for the session with matching token.
-func (db *DB) RevokeSessionsForPersonExcept(personID int, token uuid.UUID) error {
+func (db *DB) RevokeSessionsForPersonExcept(personID int, sessionID int) error {
 	return nil
 }

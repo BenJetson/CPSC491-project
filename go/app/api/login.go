@@ -103,7 +103,7 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 func (svr *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	s := getSessionFromContext(r.Context())
 	if s != nil {
-		if err := svr.db.RevokeSession(s.Token); err != nil {
+		if err := svr.db.RevokeSession(s.ID); err != nil {
 			svr.sendErrorResponse(
 				w,
 				errors.Wrap(err, "failed to revoke session"),

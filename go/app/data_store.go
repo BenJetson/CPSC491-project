@@ -26,11 +26,11 @@ type PersonStore interface {
 // SessionStore defines methods for working with app.Session objects in the
 // database.
 type SessionStore interface {
-	GetSessionsForPerson(personID int) ([]Session, error)
+	GetSessionsForPerson(personID int, includeInvalid bool) ([]Session, error)
 	GetSessionByToken(token uuid.UUID) (Session, error)
 
 	CreateSession(s Session) error
 
-	RevokeSession(token uuid.UUID) error
-	RevokeSessionsForPersonExcept(personID int, token uuid.UUID) error
+	RevokeSession(sessionID int) error
+	RevokeSessionsForPersonExcept(personID int, sessionID int) error
 }

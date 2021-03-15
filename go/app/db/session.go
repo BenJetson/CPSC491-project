@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -10,8 +11,63 @@ import (
 )
 
 // GetSessionsForPerson fetches all sessions for a given person with matching ID.
-func (db *database) GetSessionsForPerson(personID int) ([]app.Session, error) {
-	return nil, nil // TODO
+func (db *database) GetSessionsForPerson(
+	personID int,
+	includeInvalid bool,
+) ([]app.Session, error) {
+
+	// WARNING: if you change the logic here, make sure it matches the IsValid
+	// method logic of the app.Session type!
+
+	var params []interface{}
+	query := `
+		SELECT
+			s.session_id,
+			s.token,
+			s.created_at,
+			s.expires_at,
+			s.is_revoked,
+			p.person_id,
+			p.first_name,
+			p.last_name,
+			p.email,
+			p.role_id,
+			p.pass_hash,
+			p.is_deactivated,
+			array_remove(array_agg(a.organization_id), NULL) as affiliations
+		FROM session s
+		JOIN person p
+			ON s.person_id = p.person_id
+		LEFT JOIN affiliation a
+			ON p.person_id = a.person_id
+	`
+
+	if !includeInvalid {
+		now := time.Now()
+
+		query += `
+			WHERE
+				s.is_revoked = FALSE
+				AND p.is_deactivated = FALSE
+				AND $1::timestamptz > s.created_at
+				AND $1::timestamptz < s.expires_at
+		`
+
+		params = append(params, now)
+	}
+
+	query += `
+		GROUP BY s.person_id
+	`
+
+	var ss []app.Session
+	err := db.Select(ss, query, params...)
+
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, errors.Wrap(err, "failed to select sessions")
+	}
+
+	return ss, nil
 }
 
 // GetSessionByToken fetches the session with matching token.
@@ -78,8 +134,14 @@ func (db *database) CreateSession(s app.Session) error {
 }
 
 // RevokeSession revokes an existing session.
-func (db *database) RevokeSession(token uuid.UUID) error {
-	return nil // TODO
+func (db *database) RevokeSession(sessionID int) error {
+	_, err := db.Exec(`
+		UPDATE session SET
+			revoked = TRUE
+		WHERE session_id = $1
+	`, sessionID)
+
+	return errors.Wrap(err, "failed to revoke session")
 }
 
 // RevokeSessionsForPersonExcept revokes all sessions for a person except the one
@@ -88,6 +150,14 @@ func (db *database) RevokeSession(token uuid.UUID) error {
 // This is useful in a password change scenario where you might want to invalidate
 // all other login sessions except for the one where the user changed their
 // password from.
-func (db *database) RevokeSessionsForPersonExcept(personID int, token uuid.UUID) error {
-	return nil // TODO
+func (db *database) RevokeSessionsForPersonExcept(personID int, sessionID int) error {
+	_, err := db.Exec(`
+		UPDATE session SET
+			revoked = TRUE
+		WHERE
+			person_id = $1
+			AND session_id != $2
+	`, personID, sessionID)
+
+	return errors.Wrap(err, "failed to revoke sessions for person")
 }
