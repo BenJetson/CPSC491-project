@@ -65,7 +65,7 @@ func (db *database) GetPersonByEmail(email string) (app.Person, error) {
 		GROUP BY p.person_id
 	`, email)
 
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return app.Person{}, errors.Wrapf(
 			app.ErrNotFound,
 			"no such person by email of '%s'", email,
