@@ -1,6 +1,8 @@
 package db
 
 import (
+	"database/sql"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 
@@ -14,7 +16,40 @@ func (db *database) GetSessionsForPerson(personID int) ([]app.Session, error) {
 
 // GetSessionByToken fetches the session with matching token.
 func (db *database) GetSessionByToken(token uuid.UUID) (app.Session, error) {
-	return app.Session{}, nil // TODO
+	var s app.Session
+
+	err := db.Get(&s, `
+		SELECT
+			s.session_id,
+			s.token,
+			s.created_at,
+			s.expires_at,
+			s.is_revoked,
+			p.person_id,
+			p.first_name,
+			p.last_name,
+			p.email,
+			p.role_id,
+			p.pass_hash,
+			p.is_deactivated,
+			array_remove(array_agg(a.organization_id), NULL) as affiliations
+		FROM session s
+		JOIN person p
+			ON s.person_id = p.person_id
+		LEFT JOIN affiliation a
+			ON p.person_id = a.person_id
+		WHERE s.token = $1
+		GROUP BY s.person_id
+	`, token)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return app.Session{}, errors.Wrapf(
+			app.ErrNotFound,
+			"no such session by token '%s'", token,
+		)
+	}
+
+	return s, errors.Wrap(err, "failed to get session")
 }
 
 // CreateSession creates a new session, ignoring the ID field.
@@ -36,7 +71,7 @@ func (db *database) CreateSession(s app.Session) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to check result of session insert")
 	} else if n != 1 {
-		return errors.Errorf(" insert session ought to affect 1 row, found: %d", n)
+		return errors.Errorf("insert session ought to affect 1 row, found: %d", n)
 	}
 
 	return nil
