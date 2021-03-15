@@ -1,6 +1,8 @@
 package db
 
 import (
+	"database/sql"
+
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 
@@ -63,35 +65,164 @@ func (db *database) GetPersonByEmail(email string) (app.Person, error) {
 		GROUP BY p.person_id
 	`, email)
 
+	if err == sql.ErrNoRows {
+		return app.Person{}, errors.Wrapf(
+			app.ErrNotFound,
+			"no such person by email of '%s'", email,
+		)
+	}
+
 	return dbp.toPerson(), errors.Wrap(err, "failed to get person")
 }
 
 // CreatePerson creates a new person given the details. Ignores the ID field.
 func (db *database) CreatePerson(p app.Person) error {
-	return nil // TODO
+	result, err := db.Exec(`
+		INSERT INTO person (
+			first_name,
+			last_name,
+			email,
+			role_id,
+			pass_hash
+		) VALUES ($1, $2, $3, $4, $5)
+	`, p.FirstName, p.LastName, p.Email, p.Role, p.Password)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to insert person")
+	}
+
+	n, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to check result of person insert")
+	} else if n != 1 {
+		return errors.Errorf("insert person ought to affect 1 row, found: %d", n)
+	}
+
+	return nil
 }
 
 // UpdatePersonName updates a person's first and last name.
 func (db *database) UpdatePersonName(personID int, firstName string, lastName string) error {
-	return nil // TODO
+	result, err := db.Exec(`
+		UPDATE person SET
+			first_name = $1,
+			last_name = $2
+		WHERE person_id = $3
+	`, firstName, lastName, personID)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to update person name")
+	}
+
+	n, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to check result of person name update")
+	} else if n != 1 {
+		return errors.Wrapf(
+			app.ErrNotFound,
+			"no such person by id of %d", personID,
+		)
+	}
+
+	return nil
 }
 
 // UpdatePersonRole updates a person's role.
 func (db *database) UpdatePersonRole(personID int, roleType app.Role) error {
-	return nil // TODO
+	result, err := db.Exec(`
+		UPDATE person SET
+			role_id = $1
+		WHERE person_id = $2
+	`, roleType, personID)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to update person role")
+	}
+
+	n, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to check result of person role update")
+	} else if n != 1 {
+		return errors.Wrapf(
+			app.ErrNotFound,
+			"no such person by id of %d", personID,
+		)
+	}
+
+	return nil
 }
 
 // UpdatePersonPassword updates a person's password.
-func (db *database) UpdatePersonPassword(personID int, p app.Password) error {
-	return nil // TODO
+func (db *database) UpdatePersonPassword(personID int, newPass app.Password) error {
+	result, err := db.Exec(`
+		UPDATE person SET
+			pass_hash = $1
+		WHERE person_id = $2
+	`, newPass, personID)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to update person password")
+	}
+
+	n, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to check result of person password update")
+	} else if n != 1 {
+		return errors.Wrapf(
+			app.ErrNotFound,
+			"no such person by id of %d", personID,
+		)
+	}
+
+	return nil
 }
 
 // ActivatePerson activates a person's account.
 func (db *database) ActivatePerson(personID int) error {
-	return nil // TODO
+	result, err := db.Exec(`
+		UPDATE person SET
+			is_deactivated = FALSE
+		WHERE person_id = $1
+	`, personID)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to activate person")
+	}
+
+	n, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to check result of person activation")
+	} else if n != 1 {
+		return errors.Wrapf(
+			app.ErrNotFound,
+			"no such person by id of %d", personID,
+		)
+	}
+
+	return nil
 }
 
 // DeactivatePerson deactivates a person's account.
 func (db *database) DeactivatePerson(personID int) error {
-	return nil // TODO
+	result, err := db.Exec(`
+		UPDATE person SET
+			is_deactivated = TRUE
+		WHERE person_id = $1
+	`, personID)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to deactivate person")
+	}
+
+	n, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to check result of person deactivation")
+	} else if n != 1 {
+		return errors.Wrapf(
+			app.ErrNotFound,
+			"no such person by id of %d", personID,
+		)
+	}
+
+	return nil
 }
