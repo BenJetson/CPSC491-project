@@ -78,6 +78,7 @@ stages:
             inputs:
               command: "test"
               workingDirectory: go/app
+              arguments: "-v"
 
   - stage: Build
     jobs:
