@@ -1,6 +1,9 @@
 package app
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+	// "gopkg.in/guregu/null.v4"
+)
 
 // DataStore is the common interface for durable data storage.
 type DataStore interface {
@@ -16,7 +19,7 @@ type PersonStore interface {
 
 	CreatePerson(p Person) error
 
-	UpdatePersonName(personID int, firstName string, lastName string) error
+	UpdatePersonName(personID int, firstName, lastName string) error
 	UpdatePersonRole(personID int, roleType Role) error
 	UpdatePersonPassword(personID int, p Password) error
 	ActivatePerson(personID int) error
@@ -32,5 +35,5 @@ type SessionStore interface {
 	CreateSession(s Session) error
 
 	RevokeSession(sessionID int) error
-	RevokeSessionsForPersonExcept(personID int, sessionID int) error
+	RevokeSessionsForPersonExcept(personID, sessionID int) error
 }

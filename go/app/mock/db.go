@@ -39,7 +39,7 @@ func (db *DB) CreatePerson(p app.Person) error {
 }
 
 // UpdatePersonName mocks updating a person's name.
-func (db *DB) UpdatePersonName(personID int, firstName string, lastName string) error {
+func (db *DB) UpdatePersonName(personID int, firstName, lastName string) error {
 	return nil
 }
 
@@ -70,7 +70,11 @@ func (db *DB) DeactivatePerson(personID int) error {
 //
 
 // GetSessionsForPerson mocks fetching all sessions for a person.
-func (db *DB) GetSessionsForPerson(personID int, includeInvalid bool) ([]app.Session, error) {
+func (db *DB) GetSessionsForPerson(
+	personID int,
+	includeInvalid bool,
+) ([]app.Session, error) {
+
 	return nil, nil
 }
 
@@ -91,6 +95,6 @@ func (db *DB) RevokeSession(sessionID int) error {
 
 // RevokeSessionsForPersonExcept mocks revoking all sessions for a person
 // except for the session with matching token.
-func (db *DB) RevokeSessionsForPersonExcept(personID int, sessionID int) error {
+func (db *DB) RevokeSessionsForPersonExcept(personID, sessionID int) error {
 	return nil
 }

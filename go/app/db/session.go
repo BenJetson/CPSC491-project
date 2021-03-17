@@ -10,7 +10,7 @@ import (
 	"github.com/BenJetson/CPSC491-project/go/app"
 )
 
-// GetSessionsForPerson fetches all sessions for a given person with matching ID.
+// GetSessionsForPerson fetches all sessions for a given person of matching ID.
 func (db *database) GetSessionsForPerson(
 	personID int,
 	includeInvalid bool,
@@ -127,7 +127,8 @@ func (db *database) CreateSession(s app.Session) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to check result of session insert")
 	} else if n != 1 {
-		return errors.Errorf("insert session ought to affect 1 row, found: %d", n)
+		return errors.Errorf(
+			"insert session ought to affect 1 row, found: %d", n)
 	}
 
 	return nil
@@ -144,13 +145,16 @@ func (db *database) RevokeSession(sessionID int) error {
 	return errors.Wrap(err, "failed to revoke session")
 }
 
-// RevokeSessionsForPersonExcept revokes all sessions for a person except the one
-// with a matching token.
+// RevokeSessionsForPersonExcept revokes all sessions for a person except the
+// one with a matching token.
 //
-// This is useful in a password change scenario where you might want to invalidate
-// all other login sessions except for the one where the user changed their
-// password from.
-func (db *database) RevokeSessionsForPersonExcept(personID int, sessionID int) error {
+// This is useful in a password change scenario where you might want to
+// invalidate all other login sessions except for the one where the user changed
+// their password from.
+func (db *database) RevokeSessionsForPersonExcept(
+	personID, sessionID int,
+) error {
+
 	_, err := db.Exec(`
 		UPDATE session SET
 			revoked = TRUE

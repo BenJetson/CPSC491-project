@@ -95,14 +95,19 @@ func (db *database) CreatePerson(p app.Person) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to check result of person insert")
 	} else if n != 1 {
-		return errors.Errorf("insert person ought to affect 1 row, found: %d", n)
+		return errors.Errorf(
+			"insert person ought to affect 1 row, found: %d", n)
 	}
 
 	return nil
 }
 
 // UpdatePersonName updates a person's first and last name.
-func (db *database) UpdatePersonName(personID int, firstName string, lastName string) error {
+func (db *database) UpdatePersonName(
+	personID int,
+	firstName, lastName string,
+) error {
+
 	result, err := db.Exec(`
 		UPDATE person SET
 			first_name = $1,
@@ -153,7 +158,11 @@ func (db *database) UpdatePersonRole(personID int, roleType app.Role) error {
 }
 
 // UpdatePersonPassword updates a person's password.
-func (db *database) UpdatePersonPassword(personID int, newPass app.Password) error {
+func (db *database) UpdatePersonPassword(
+	personID int,
+	newPass app.Password,
+) error {
+
 	result, err := db.Exec(`
 		UPDATE person SET
 			pass_hash = $1
@@ -166,7 +175,8 @@ func (db *database) UpdatePersonPassword(personID int, newPass app.Password) err
 
 	n, err := result.RowsAffected()
 	if err != nil {
-		return errors.Wrap(err, "failed to check result of person password update")
+		return errors.Wrap(err,
+			"failed to check result of person password update")
 	} else if n != 1 {
 		return errors.Wrapf(
 			app.ErrNotFound,
