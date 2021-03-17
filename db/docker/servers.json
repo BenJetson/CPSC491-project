@@ -9,6 +9,16 @@
       "Host": "db",
       "SSLMode": "disable",
       "MaintenanceDB": "postgres"
+    },
+    "2": {
+      "Name": "TestDB",
+      "Group": "Servers",
+      "Port": 5432,
+      "Username": "testuser",
+      "Password": "testpass",
+      "Host": "testdb",
+      "SSLMode": "disable",
+      "MaintenanceDB": "postgres"
     }
   }
 }
