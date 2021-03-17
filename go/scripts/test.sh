@@ -12,6 +12,12 @@ make testdb-background
 SHOULD_FAIL=0
 
 cleanup() {
+    banner DATABASE LOGS
+    docker-compose logs testdb
+
+    banner FLYWAY LOGS
+    docker-compose logs flyway-testdb
+
     banner CLEANUP
     make stop-clean-testdb
 
