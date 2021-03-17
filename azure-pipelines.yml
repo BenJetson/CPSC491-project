@@ -85,6 +85,14 @@ stages:
             displayName: Install Tools
           - script: make testgo
             displayName: Run Tests
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFormat: "JUnit"
+              testResultsFiles: "gotest-results.xml"
+              searchFolder: "$(System.DefaultWorkingDirectory)/go"
+              failTaskOnFailedTests: true
+              buildPlatform: x64
+              publishRunAttachments: true
 
   - stage: Build
     jobs:
