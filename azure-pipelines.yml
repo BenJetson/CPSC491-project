@@ -81,7 +81,7 @@ stages:
                 tar xvz -
               sudo mv gotestsum /usr/local/bin/gotestsum
               cd /tmp
-              rm -f /tmp/gotestsum
+              rm -rf /tmp/gotestsum
             displayName: Install Tools
           - script: make testgo
             displayName: Run Tests
