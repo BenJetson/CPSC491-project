@@ -16,3 +16,6 @@
 
 # Air Build
 build/
+
+# JUnit test results file
+gotest-results.xml
