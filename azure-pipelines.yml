@@ -73,12 +73,18 @@ stages:
             displayName: Install Go
             inputs:
               version: "1.15"
-          - task: Go@0
-            displayName: Test Go
-            inputs:
-              command: "test"
-              workingDirectory: go/app
-              arguments: "-v"
+          - script: |
+              mkdir -p /tmp/gotestsum
+              cd /tmp/gotestsum
+              curl -sSfL \
+                https://github.com/gotestyourself/gotestsum/releases/download/v1.6.2/gotestsum_1.6.2_linux_amd64.tar.gz | \
+                tar xvz -
+              sudo mv gotestsum /usr/local/bin/gotestsum
+              cd /tmp
+              rm -f /tmp/gotestsum
+            displayName: Install Tools
+          - script: make testgo
+            displayName: Run Tests
 
   - stage: Build
     jobs:
