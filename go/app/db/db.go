@@ -31,7 +31,9 @@ func (cfg *Config) connectString() string {
 	buf.WriteString(fmt.Sprintf("port=%d ", cfg.Port))
 	buf.WriteString(fmt.Sprintf("user='%s' ", cfg.Username))
 	buf.WriteString(fmt.Sprintf("password='%s' ", cfg.Password))
-	buf.WriteString(fmt.Sprintf("database='%s' ", cfg.Database))
+	if len(cfg.Database) > 0 {
+		buf.WriteString(fmt.Sprintf("database='%s' ", cfg.Database))
+	}
 
 	tls := "require"
 	if cfg.DisableTLS {
@@ -83,8 +85,7 @@ type database struct {
 	cfg    Config
 }
 
-// NewDataStore creates a new database handle.
-func NewDataStore(logger *logrus.Logger, cfg Config) (app.DataStore, error) {
+func newDatabase(logger *logrus.Logger, cfg Config) (*database, error) {
 	handle, err := sqlx.Connect("postgres", cfg.connectString())
 	if err != nil {
 		return nil, errors.Wrap(err, "could not connect to database")
@@ -99,4 +100,9 @@ func NewDataStore(logger *logrus.Logger, cfg Config) (app.DataStore, error) {
 		logger: logger,
 		cfg:    cfg,
 	}, nil
+}
+
+// NewDataStore creates a new database handle.
+func NewDataStore(logger *logrus.Logger, cfg Config) (app.DataStore, error) {
+	return newDatabase(logger, cfg)
 }
