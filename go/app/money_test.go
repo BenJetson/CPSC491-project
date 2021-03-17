@@ -202,7 +202,7 @@ func TestMoneyString(t *testing.T) {
 		{
 			alias: "EnrichmentCenterFailure",
 			m:     MustMakeMoneyFromComponents(9999999999999999, 99),
-			// https://i1.theportalwiki.net/img/1/1d/Announcer_openingcourtesy01.wav
+			// i1.theportalwiki.net/img/1/1d/Announcer_openingcourtesy01.wav
 			expect: "$9,999,999,999,999,999.99",
 		},
 		{
