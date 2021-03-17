@@ -17,7 +17,8 @@ func makeHandle(tier string) http.HandlerFunc {
 		}{
 			fmt.Sprintf(
 				"You have successfully hit the %s tier of the API server. "+
-					"Unfortunately, this application is a stub and does nothing.",
+					"Unfortunately, this application is a stub and "+
+					"does nothing.",
 				tier,
 			),
 		}

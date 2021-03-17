@@ -829,7 +829,7 @@ func TestConvertToPoints(t *testing.T) {
 		"ACME": {
 			ID:   3,
 			Name: "ACME LLC",
-			// A point is worth $1.33, a strange amount for a mysterious company.
+			// A point is worth $1.33, strange amount for a mysterious company.
 			PointValue: MustMakeMoneyFromComponents(1, 33),
 		},
 	}

@@ -122,7 +122,10 @@ func (svr *Server) requireAuth(
 			if !hasRole {
 				svr.sendErrorResponse(
 					w,
-					errors.Errorf("endpoint does not allow role %v", s.Person.Role),
+					errors.Errorf(
+						"endpoint does not allow role %v",
+						s.Person.Role,
+					),
 					http.StatusForbidden,
 					"",
 				)
@@ -214,7 +217,7 @@ func (svr *Server) requireIdentity(
 				svr.sendErrorResponse(
 					w,
 					errors.Errorf(
-						"sponsor (person id %d) has affiliation count != 1 of %d",
+						"sponsor (person id %d) has multiple affiliations (%d)",
 						s.Person.ID,
 						len(s.Person.Affiliations),
 					),
@@ -227,8 +230,9 @@ func (svr *Server) requireIdentity(
 			target := s.Person.Affiliations[0]
 			for _, orgID := range p.Affiliations {
 				if target == orgID {
-					// PASS: Current user is a sponsor and the required identity is
-					// affiliated with the organization they are a sponsor of.
+					// PASS: Current user is a sponsor and the required identity
+					// is affiliated with the organization they have a sponsor
+					// role within.
 					return false
 				}
 			}
