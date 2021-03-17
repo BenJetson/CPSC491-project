@@ -78,7 +78,7 @@ stages:
               cd /tmp/gotestsum
               curl -sSfL -o gotestsum.tar.gz \
                 https://github.com/gotestyourself/gotestsum/releases/download/v1.6.2/gotestsum_1.6.2_linux_amd64.tar.gz
-              tar xvzf gotestsum.tar.gz
+              tar xzf gotestsum.tar.gz
               sudo mv gotestsum /usr/local/bin/gotestsum
               cd /tmp
               rm -rf /tmp/gotestsum
