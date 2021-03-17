@@ -74,8 +74,7 @@ stages:
             inputs:
               version: "1.15"
           - script: |
-              curl -sSL \
-                https://github.com/gotestyourself/gotestsum/releases/download/v1.6.2/gotestsum_1.6.2_linux_amd64.tar.gz
+              curl -sSL https://github.com/gotestyourself/gotestsum/releases/download/v1.6.2/gotestsum_1.6.2_linux_amd64.tar.gz | tar xvz -
             displayName: test download remove this
           - script: |
               mkdir -p /tmp/gotestsum
