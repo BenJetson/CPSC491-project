@@ -13,10 +13,10 @@ SHOULD_FAIL=0
 
 cleanup() {
     banner DATABASE LOGS
-    docker-compose logs testdb
+    docker-compose logs -t testdb
 
     banner FLYWAY LOGS
-    docker-compose logs flyway-testdb
+    docker-compose logs -t flyway-testdb
 
     banner CLEANUP
     make stop-clean-testdb
