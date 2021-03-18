@@ -123,6 +123,7 @@ stages:
             artifact: ReactApp
             displayName: Publish React Build Artifact
           - script: yarn build-storybook
+            workingDirectory: web
             displayName: Storybook Build
           - publish: $(System.DefaultWorkingDirectory)/web/storybook-static
             artifact: Storybook
