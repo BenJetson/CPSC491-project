@@ -1,10 +1,12 @@
 import React from "react";
 import Login from "./Login";
 
-export default {
+const StoryConfig = {
   title: "Login",
   component: Login,
 };
+
+export default StoryConfig;
 
 const Template = (args) => <Login {...args} />;
 

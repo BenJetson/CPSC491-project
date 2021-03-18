@@ -1,10 +1,12 @@
 import React from "react";
 import Registration from "./Registration";
 
-export default {
+const StoryConfig = {
   title: "Registration",
   component: Registration,
 };
+
+export default StoryConfig;
 
 const Template = (args) => <Registration {...args} />;
 
