@@ -52,16 +52,42 @@ set -e
 RETRY_COUNT=4
 WAIT_LENGTH=15
 
-DB_PARAMS=" \
-    host=localhost \
-    port=5432 \
-    dbname=app_template \
-    user=testuser \
-    password=testpass \
+banner DB PARAMETERS
+
+DB_PARAMS="
+    host=localhost
+    port=5432
+    dbname=app_template
+    user=testuser
+    password=testpass
 "
 
+LATEST_MIGRATION=$(
+    find db/migrations -type f -print0 |
+    xargs -0 basename |
+    sed -e "s/^V//" -e "s/_.*//" -e "s/^0//" -e "s/[^0-9]//g" |
+    sort |
+    tail -n 1
+)
+
+echo "Database migrations have been detected."
+echo "Most current DB migration is version $LATEST_MIGRATION."
+echo
+echo "Waiting for flyway to apply version $LATEST_MIGRATION before proceeding."
+
+WAIT_QUERY=" \
+    SELECT TRUE
+    FROM flyway_schema_history
+    WHERE
+        installed_rank = $LATEST_MIGRATION
+        AND success = TRUE
+"
+
+DB_CHECK="psql '$DB_PARAMS' -c 'SELECT TRUE' 1>/dev/null 2>&1"
+DB_READY="psql '$DB_PARAMS' -c '$WAIT_QUERY' 2>/dev/null | grep row"
+
 banner WAIT FOR DB
-while ! psql "$DB_PARAMS" -c "select 1" > /dev/null 2>&1; do
+while [[ $(eval "$DB_READY") != "(1 row)" ]]; do
     if [ $RETRY_COUNT -lt 1 ]; then
         SHOULD_FAIL=1
 
@@ -70,6 +96,8 @@ while ! psql "$DB_PARAMS" -c "select 1" > /dev/null 2>&1; do
         echo "ERROR: Test harness cannot start without database."
 
         exit 1
+    elif eval "$DB_CHECK"; then
+        echo "Connected to database, but migrations have not finished yet."
     fi
 
     ((RETRY_COUNT--))
@@ -84,7 +112,7 @@ while ! psql "$DB_PARAMS" -c "select 1" > /dev/null 2>&1; do
     echo "Retrying..."
 done;
 
-echo "Database is available! Tests may start."
+echo "Database is ready! Tests may start."
 
 banner RUN TESTS
 
