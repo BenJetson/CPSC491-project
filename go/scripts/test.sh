@@ -64,7 +64,7 @@ DB_PARAMS="
 
 LATEST_MIGRATION=$(
     find db/migrations -type f -print0 |
-    xargs -0 basename |
+    xargs basename |
     sed -e "s/^V//" -e "s/_.*//" -e "s/^0//" -e "s/[^0-9]//g" |
     sort |
     tail -n 1
