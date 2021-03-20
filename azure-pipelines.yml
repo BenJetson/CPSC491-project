@@ -106,7 +106,6 @@ stages:
             inputs:
               codeCoverageTool: Cobertura
               summaryFileLocation: $(System.DefaultWorkingDirectory)/go/results/cover.xml
-              reportDirectory: $(System.DefaultWorkingDirectory)/go/results
               failIfCoverageEmpty: true
             displayName: Publish Code Coverage
 
