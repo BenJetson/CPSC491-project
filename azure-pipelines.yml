@@ -74,6 +74,7 @@ stages:
             inputs:
               version: "1.15"
           - script: |
+              # Install gotestsum
               mkdir -p /tmp/gotestsum
               cd /tmp/gotestsum
               curl -sSfL -o gotestsum.tar.gz \
@@ -82,6 +83,10 @@ stages:
               sudo mv gotestsum /usr/local/bin/gotestsum
               cd /tmp
               rm -rf /tmp/gotestsum
+
+              # Install gocov & gocov-xml
+              go get github.com/axw/gocov/...
+              go get github.com/AlekSi/gocov-xml
             displayName: Install Tools
           - script: make testgo
             displayName: Run Tests

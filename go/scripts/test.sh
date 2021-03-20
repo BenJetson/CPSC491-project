@@ -150,6 +150,7 @@ go tool cover -func results/cover.out | \
 go tool cover \
     -html=results/cover.out \
     -o results/cover.html || onfail
-
+gocov convert results/cover.out | \
+    gocov-xml > results/cover.xml || onfail
 
 popd
