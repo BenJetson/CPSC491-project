@@ -57,6 +57,7 @@ trap ctrlc INT
 
 banner PREPARATION
 make testdb-background || onfail
+mkdir go/results
 
 # Make errors NOT halt the script
 set -e
@@ -133,20 +134,22 @@ cd ./go
 
 gotestsum \
     --format testname \
-    --junitfile gotest-results.xml \
+    --junitfile results/gotest-results.xml \
     --junitfile-testsuite-name relative \
     --junitfile-testcase-classname relative \
-    -- -coverprofile=cover.out ./... \
+    -- -coverprofile=results/cover.out ./... \
     || onfail
 
 banner COVERAGE REPORT
 
-go tool cover -func cover.out | \
+go tool cover -func results/cover.out | \
     sed -r \
         -e "s/^github.com\/BenJetson\/CPSC491-project\/go\///g" \
         -e "s/total:\t\t\t\t\t/total:/" \
     || onfail
-go tool cover -html=cover.out -o cover.html || onfail
+go tool cover \
+    -html=results/cover.out \
+    -o results/cover.html || onfail
 
 
 popd

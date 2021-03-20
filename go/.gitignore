@@ -20,3 +20,6 @@ build/
 
 # JUnit test results file
 gotest-results.xml
+
+# Test results folder
+/results
