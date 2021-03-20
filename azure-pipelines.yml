@@ -89,10 +89,17 @@ stages:
             inputs:
               testResultsFormat: "JUnit"
               testResultsFiles: "gotest-results.xml"
-              searchFolder: "$(System.DefaultWorkingDirectory)/go"
+              searchFolder: $(System.DefaultWorkingDirectory)/go/results
               failTaskOnFailedTests: true
               buildPlatform: x64
               publishRunAttachments: true
+            displayName: Publish Test Results
+          - task: PublishCodeCoverageResults@1
+            inputs:
+              summaryFileLocation: $(System.DefaultWorkingDirectory)/go/results/cover.out
+              reportDirectory: $(System.DefaultWorkingDirectory)/go/results
+              failIfCoverageEmpty: true
+            displayName: Publish Code Coverage
 
   - stage: Build
     jobs:
