@@ -87,6 +87,9 @@ stages:
               # Install gocov & gocov-xml
               go get github.com/axw/gocov/...
               go get github.com/AlekSi/gocov-xml
+
+              # Add Go tools to PATH
+              echo "##vso[task.prependpath]$(go env GOPATH)/bin"
             displayName: Install Tools
           - script: make testgo
             displayName: Run Tests
