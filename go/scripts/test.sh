@@ -6,10 +6,19 @@ banner() {
     echo
 }
 
-banner PREPARATION
-make testdb-background
-
 SHOULD_FAIL=0
+
+onfail() {
+    last_status=$?
+
+    if [ $SHOULD_FAIL -eq 0 ] || [ $last_status -ne 0 ]; then
+        echo
+        echo "<!> FAIL: the last command returned an exit code of $last_status,"
+        echo "          which will cause this build to fail after all steps."
+        echo
+        SHOULD_FAIL=$last_status
+    fi
+}
 
 cleanup() {
     banner DATABASE LOGS
@@ -46,13 +55,16 @@ ctrlc() {
 trap cleanup EXIT HUP QUIT TERM
 trap ctrlc INT
 
+banner PREPARATION
+make testdb-background || onfail
+
 # Make errors NOT halt the script
 set -e
 
+banner DB PARAMETERS
+
 RETRY_COUNT=4
 WAIT_LENGTH=15
-
-banner DB PARAMETERS
 
 DB_PARAMS="
     host=localhost
@@ -112,7 +124,7 @@ while [[ $(eval "$DB_READY") != "(1 row)" ]]; do
     echo "Retrying..."
 done;
 
-echo "Database is ready! Tests may start."
+echo "Database is ready; migrations applied! Tests may start."
 
 banner RUN TESTS
 
@@ -124,6 +136,17 @@ gotestsum \
     --junitfile gotest-results.xml \
     --junitfile-testsuite-name relative \
     --junitfile-testcase-classname relative \
-    || SHOULD_FAIL=$? # Use test exit code for failure status.
+    -- -coverprofile=cover.out ./... \
+    || onfail
+
+banner COVERAGE REPORT
+
+go tool cover -func cover.out | \
+    sed -r \
+        -e "s/^github.com\/BenJetson\/CPSC491-project\/go\///g" \
+        -e "s/[\s]{40}//" \
+    || onfail
+go tool cover -html=cover.out -o cover.html || onfail
+
 
 popd
