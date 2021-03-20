@@ -144,7 +144,7 @@ banner COVERAGE REPORT
 go tool cover -func cover.out | \
     sed -r \
         -e "s/^github.com\/BenJetson\/CPSC491-project\/go\///g" \
-        -e "s/\t\t\t\t\t//" \
+        -e "s/total:\t\t\t\t\t/total:/" \
     || onfail
 go tool cover -html=cover.out -o cover.html || onfail
 
