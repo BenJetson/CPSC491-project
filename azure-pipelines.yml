@@ -101,7 +101,8 @@ stages:
             displayName: Publish Test Results
           - task: PublishCodeCoverageResults@1
             inputs:
-              summaryFileLocation: $(System.DefaultWorkingDirectory)/go/results/cover.out
+              codeCoverageTool: Cobertura
+              summaryFileLocation: $(System.DefaultWorkingDirectory)/go/results/cover.xml
               reportDirectory: $(System.DefaultWorkingDirectory)/go/results
               failIfCoverageEmpty: true
             displayName: Publish Code Coverage
