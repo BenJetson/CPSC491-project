@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 
 // GetSessionsForPerson fetches all sessions for a given person of matching ID.
 func (db *database) GetSessionsForPerson(
+	ctx context.Context,
 	personID int,
 	includeInvalid bool,
 ) ([]app.Session, error) {
@@ -61,7 +63,7 @@ func (db *database) GetSessionsForPerson(
 	`
 
 	var ss []app.Session
-	err := db.Select(ss, query, params...)
+	err := db.SelectContext(ctx, ss, query, params...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, errors.Wrap(err, "failed to select sessions")
@@ -71,10 +73,14 @@ func (db *database) GetSessionsForPerson(
 }
 
 // GetSessionByToken fetches the session with matching token.
-func (db *database) GetSessionByToken(token uuid.UUID) (app.Session, error) {
+func (db *database) GetSessionByToken(
+	ctx context.Context,
+	token uuid.UUID,
+) (app.Session, error) {
+
 	var s app.Session
 
-	err := db.Get(&s, `
+	err := db.GetContext(ctx, &s, `
 		SELECT
 			s.session_id,
 			s.token,
@@ -109,8 +115,8 @@ func (db *database) GetSessionByToken(token uuid.UUID) (app.Session, error) {
 }
 
 // CreateSession creates a new session, ignoring the ID field.
-func (db *database) CreateSession(s app.Session) error {
-	result, err := db.Exec(`
+func (db *database) CreateSession(ctx context.Context, s app.Session) error {
+	result, err := db.ExecContext(ctx, `
 		INSERT INTO session (
 			token,
 			person_id,
@@ -135,8 +141,8 @@ func (db *database) CreateSession(s app.Session) error {
 }
 
 // RevokeSession revokes an existing session.
-func (db *database) RevokeSession(sessionID int) error {
-	_, err := db.Exec(`
+func (db *database) RevokeSession(ctx context.Context, sessionID int) error {
+	_, err := db.ExecContext(ctx, `
 		UPDATE session SET
 			revoked = TRUE
 		WHERE session_id = $1
@@ -152,10 +158,11 @@ func (db *database) RevokeSession(sessionID int) error {
 // invalidate all other login sessions except for the one where the user changed
 // their password from.
 func (db *database) RevokeSessionsForPersonExcept(
+	ctx context.Context,
 	personID, sessionID int,
 ) error {
 
-	_, err := db.Exec(`
+	_, err := db.ExecContext(ctx, `
 		UPDATE session SET
 			revoked = TRUE
 		WHERE

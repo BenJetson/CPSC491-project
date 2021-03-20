@@ -32,7 +32,7 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p, err := svr.db.GetPersonByEmail(credentials.Email)
+	p, err := svr.db.GetPersonByEmail(r.Context(), credentials.Email)
 	if errors.Is(err, app.ErrNotFound) {
 		svr.sendErrorResponse(
 			w,
@@ -70,7 +70,7 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 			"",
 		)
 		return
-	} else if err = svr.db.CreateSession(*s); err != nil {
+	} else if err = svr.db.CreateSession(r.Context(), *s); err != nil {
 		svr.sendErrorResponse(
 			w,
 			errors.Wrap(err, "failed to store login session"),
@@ -103,7 +103,7 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 func (svr *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	s := getSessionFromContext(r.Context())
 	if s != nil {
-		if err := svr.db.RevokeSession(s.ID); err != nil {
+		if err := svr.db.RevokeSession(r.Context(), s.ID); err != nil {
 			svr.sendErrorResponse(
 				w,
 				errors.Wrap(err, "failed to revoke session"),
