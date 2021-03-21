@@ -17,6 +17,16 @@ type loginRequest struct {
 	Password string `json:"password"`
 }
 
+func (req *loginRequest) validateFields() error {
+	if len(req.Email) < 1 {
+		return errors.New("email cannot be blank")
+	} else if len(req.Password) < 1 {
+		return errors.New("password cannot be blank")
+	}
+
+	return nil
+}
+
 func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	d := json.NewDecoder(r.Body)
 	d.DisallowUnknownFields()
@@ -30,6 +40,10 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 			"invalid login request format",
 		)
 		return
+	}
+
+	if err := credentials.validateFields(); err != nil {
+		svr.sendErrorResponse(w, err, http.StatusBadRequest, "")
 	}
 
 	p, err := svr.db.GetPersonByEmail(r.Context(), credentials.Email)
