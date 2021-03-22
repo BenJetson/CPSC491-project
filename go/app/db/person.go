@@ -46,7 +46,33 @@ func (db *database) GetPersonByID(
 	personID int,
 ) (app.Person, error) {
 
-	return app.Person{}, nil // TODO
+	var dbp dbPerson
+
+	err := db.GetContext(ctx, &dbp, `
+		SELECT
+			p.person_id,
+			p.first_name,
+			p.last_name,
+			p.email,
+			p.role_id,
+			p.pass_hash,
+			p.is_deactivated,
+			array_remove(array_agg(a.organization_id), NULL) as affiliations
+		FROM person p
+		LEFT JOIN affiliation a
+			ON p.person_id = a.person_id
+		WHERE p.person_id = $1
+		GROUP BY p.person_id
+	`, personID)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return app.Person{}, errors.Wrapf(
+			app.ErrNotFound,
+			"no such person by id of '%d'", personID,
+		)
+	}
+
+	return dbp.toPerson(), errors.Wrap(err, "failed to get person")
 }
 
 // GetPersonByEmail fetches a person given their email.
