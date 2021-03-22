@@ -129,7 +129,6 @@ func (svr *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Destroy the session cookie on the client.
-	w.WriteHeader(http.StatusOK)
 	http.SetCookie(w, &http.Cookie{
 		Name: sessionCookieKey,
 
