@@ -139,3 +139,29 @@ func (db *DB) RevokeSessionsForPersonExcept(
 
 	return nil
 }
+
+//
+//
+// ApplicationStore methods
+//
+//
+
+// CreateApplication mocks creating an application in the database.
+func (db *DB) CreateApplication(
+	ctx context.Context,
+	a app.Application,
+) (int, error) {
+
+	return 0, nil
+}
+
+// UpdateApplicationApproval mocks setting application approval.
+func (db *DB) UpdateApplicationApproval(
+	ctx context.Context,
+	appID int,
+	status bool,
+	reason string,
+) error {
+
+	return nil
+}

@@ -11,6 +11,7 @@ import (
 type DataStore interface {
 	PersonStore
 	SessionStore
+	ApplicationStore
 }
 
 // PersonStore defines methods for working with app.Person objects in the
@@ -51,5 +52,18 @@ type SessionStore interface {
 	RevokeSessionsForPersonExcept(
 		ctx context.Context,
 		personID, sessionID int,
+	) error
+}
+
+// ApplicationStore defines methods for working with app.Application objects
+// in the database.
+type ApplicationStore interface {
+	CreateApplication(ctx context.Context, a Application) (int, error)
+
+	UpdateApplicationApproval(
+		ctx context.Context,
+		appID int,
+		status bool,
+		reason string,
 	) error
 }
