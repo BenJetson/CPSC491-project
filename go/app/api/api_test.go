@@ -16,7 +16,6 @@ func newTestAPI(
 ) (*Server, *logrus.Logger, *logtest.Hook) {
 
 	logger, hook := logtest.NewNullLogger()
-	logger.Error("Helloerror")
 
 	api, err := NewServer(logger, db, Config{
 		Tier: TierLocal,
