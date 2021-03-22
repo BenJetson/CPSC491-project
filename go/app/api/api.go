@@ -19,6 +19,7 @@ type Server struct {
 	db     app.DataStore
 	logger *logrus.Logger
 	httpd  *http.Server
+	router *mux.Router
 }
 
 // NewServer creates a new Server given a logger, data store, and configuration.
@@ -42,10 +43,11 @@ func NewServer(logger *logrus.Logger, db app.DataStore,
 		config: cfg,
 		db:     db,
 		logger: logger,
+		router: router,
 	}
 
 	// Register global middleware.
-	// router.Use(mwf ...mux.MiddlewareFunc)
+	router.Use(svr.authContextMiddleware)
 
 	// Define routes.
 	router.Path("/login").Methods("POST").HandlerFunc(svr.handleLogin)
@@ -66,7 +68,37 @@ func (svr *Server) Start() error {
 	return svr.httpd.ListenAndServe()
 }
 
-// nolint: unused // TODO remove this once we use the JSON response method
+// hostname returns the server hostname.
+func (svr *Server) hostname() string {
+	switch svr.config.Tier {
+	case TierProduction:
+		return "app.teamxiv.space"
+	case TierDevelopment:
+		return "dev.teamxiv.space"
+	case TierLocal:
+		return "localhost"
+	}
+
+	// This should not happen if NewConfigFromEnv is used.
+	panic("cannot fetch hostname for unknown tier")
+}
+
+// useHTTPS returns true when Nginx is configured for HTTPS.
+func (svr *Server) useHTTPS() bool {
+	return svr.config.Tier != TierLocal
+}
+
+// protocol returns the protocol the app will use for communication.
+// nolint: unused // FIXME remove this once used.
+func (svr *Server) protocol() string {
+	if svr.useHTTPS() {
+		return "https"
+	}
+	return "http"
+}
+
+// sendJSONResponse will marshal the given data to JSON and write it to the
+// http ResponseWriter.
 func (svr *Server) sendJSONResponse(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -76,14 +108,17 @@ func (svr *Server) sendJSONResponse(w http.ResponseWriter, data interface{}) {
 	}
 }
 
-// nolint: unused // TODO remove this once we use the error response method
+// An apiError describes a problem that the server encountered while processing
+// a request, with an optional user message.
 type apiError struct {
 	Code        int    `json:"code"`
 	Status      string `json:"status"`
 	UserMessage string `json:"message,omitempty"`
 }
 
-// nolint: unused // TODO remove this once we use the error response method
+// sendErrorResponse sends a completed apiError back to the user as JSON and
+// logs the error.
+// nolint: unparam // FIXME remove this later once user message gets used.
 func (svr *Server) sendErrorResponse(w http.ResponseWriter, err error,
 	statusCode int, userMessage string, args ...interface{}) {
 
@@ -95,7 +130,7 @@ func (svr *Server) sendErrorResponse(w http.ResponseWriter, err error,
 
 	svr.logger.
 		WithError(err).
-		WithField("details", details).
+		WithField("details", fmt.Sprintf("%+v", details)).
 		Error("encountered error when handling api request")
 
 	w.WriteHeader(statusCode)
