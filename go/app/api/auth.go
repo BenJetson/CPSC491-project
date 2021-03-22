@@ -29,7 +29,7 @@ func (svr *Server) authContextMiddleware(next http.Handler) http.Handler {
 				return
 			}
 
-			s, err := svr.db.GetSessionByToken(token)
+			s, err := svr.db.GetSessionByToken(r.Context(), token)
 			if errors.Is(err, app.ErrNotFound) {
 				svr.sendErrorResponse(
 					w,
@@ -196,7 +196,7 @@ func (svr *Server) requireIdentity(
 		// sponsored by, then check to see if the current user is a sponsor
 		// for that organization.
 
-		p, err := svr.db.GetPersonByID(cfg.personID)
+		p, err := svr.db.GetPersonByID(r.Context(), cfg.personID)
 		if err != nil {
 			// FAIL: could not verify identity due to database problem.
 			svr.sendErrorResponse(

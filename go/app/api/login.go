@@ -17,6 +17,16 @@ type loginRequest struct {
 	Password string `json:"password"`
 }
 
+func (req *loginRequest) validateFields() error {
+	if len(req.Email) < 1 {
+		return errors.New("email cannot be blank")
+	} else if len(req.Password) < 1 {
+		return errors.New("password cannot be blank")
+	}
+
+	return nil
+}
+
 func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	d := json.NewDecoder(r.Body)
 	d.DisallowUnknownFields()
@@ -32,7 +42,11 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p, err := svr.db.GetPersonByEmail(credentials.Email)
+	if err := credentials.validateFields(); err != nil {
+		svr.sendErrorResponse(w, err, http.StatusBadRequest, "")
+	}
+
+	p, err := svr.db.GetPersonByEmail(r.Context(), credentials.Email)
 	if errors.Is(err, app.ErrNotFound) {
 		svr.sendErrorResponse(
 			w,
@@ -70,7 +84,7 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 			"",
 		)
 		return
-	} else if err = svr.db.CreateSession(*s); err != nil {
+	} else if err = svr.db.CreateSession(r.Context(), *s); err != nil {
 		svr.sendErrorResponse(
 			w,
 			errors.Wrap(err, "failed to store login session"),
@@ -103,7 +117,7 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 func (svr *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	s := getSessionFromContext(r.Context())
 	if s != nil {
-		if err := svr.db.RevokeSession(s.ID); err != nil {
+		if err := svr.db.RevokeSession(r.Context(), s.ID); err != nil {
 			svr.sendErrorResponse(
 				w,
 				errors.Wrap(err, "failed to revoke session"),
@@ -115,7 +129,6 @@ func (svr *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Destroy the session cookie on the client.
-	w.WriteHeader(http.StatusOK)
 	http.SetCookie(w, &http.Cookie{
 		Name: sessionCookieKey,
 

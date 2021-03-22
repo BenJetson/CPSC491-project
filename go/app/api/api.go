@@ -19,6 +19,7 @@ type Server struct {
 	db     app.DataStore
 	logger *logrus.Logger
 	httpd  *http.Server
+	router *mux.Router
 }
 
 // NewServer creates a new Server given a logger, data store, and configuration.
@@ -42,6 +43,7 @@ func NewServer(logger *logrus.Logger, db app.DataStore,
 		config: cfg,
 		db:     db,
 		logger: logger,
+		router: router,
 	}
 
 	// Register global middleware.
