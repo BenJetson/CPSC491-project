@@ -84,7 +84,7 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 			"",
 		)
 		return
-	} else if err = svr.db.CreateSession(r.Context(), *s); err != nil {
+	} else if _, err = svr.db.CreateSession(r.Context(), *s); err != nil {
 		svr.sendErrorResponse(
 			w,
 			errors.Wrap(err, "failed to store login session"),

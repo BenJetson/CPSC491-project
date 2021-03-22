@@ -47,8 +47,12 @@ func (db *loginMockDB) GetSessionByToken(
 	return db.sessionByToken, db.sessionByTokenErr
 }
 
-func (db *loginMockDB) CreateSession(_ context.Context, _ app.Session) error {
-	return db.createSessionErr
+func (db *loginMockDB) CreateSession(
+	_ context.Context,
+	_ app.Session,
+) (int, error) {
+
+	return 0, db.createSessionErr
 }
 
 func (db *loginMockDB) RevokeSession(_ context.Context, _ int) error {
