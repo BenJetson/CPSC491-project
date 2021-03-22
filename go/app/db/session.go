@@ -115,29 +115,23 @@ func (db *database) GetSessionByToken(
 }
 
 // CreateSession creates a new session, ignoring the ID field.
-func (db *database) CreateSession(ctx context.Context, s app.Session) error {
-	result, err := db.ExecContext(ctx, `
+func (db *database) CreateSession(
+	ctx context.Context,
+	s app.Session,
+) (int, error) {
+
+	var id int
+	err := db.GetContext(ctx, &id, `
 		INSERT INTO session (
 			token,
 			person_id,
 			created_at,
 			expires_at
 		) VALUES ($1, $2, $3, $4)
+		RETURNING session_id
 	`, s.Token, s.Person.ID, s.CreatedAt, s.ExpiresAt)
 
-	if err != nil {
-		return errors.Wrap(err, "failed to insert session")
-	}
-
-	n, err := result.RowsAffected()
-	if err != nil {
-		return errors.Wrap(err, "failed to check result of session insert")
-	} else if n != 1 {
-		return errors.Errorf(
-			"insert session ought to affect 1 row, found: %d", n)
-	}
-
-	return nil
+	return id, errors.Wrap(err, "failed to insert session")
 }
 
 // RevokeSession revokes an existing session.

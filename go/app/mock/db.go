@@ -44,8 +44,8 @@ func (db *DB) GetPersonByEmail(
 }
 
 // CreatePerson mocks creating a new person.
-func (db *DB) CreatePerson(ctx context.Context, p app.Person) error {
-	return nil
+func (db *DB) CreatePerson(ctx context.Context, p app.Person) (int, error) {
+	return 0, nil
 }
 
 // UpdatePersonName mocks updating a person's name.
@@ -121,8 +121,8 @@ func (db *DB) GetSessionByToken(
 }
 
 // CreateSession mocks creating a new session.
-func (db *DB) CreateSession(ctx context.Context, s app.Session) error {
-	return nil
+func (db *DB) CreateSession(ctx context.Context, s app.Session) (int, error) {
+	return 0, nil
 }
 
 // RevokeSession mocks revoking a session.

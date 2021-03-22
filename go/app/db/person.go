@@ -85,8 +85,13 @@ func (db *database) GetPersonByEmail(
 }
 
 // CreatePerson creates a new person given the details. Ignores the ID field.
-func (db *database) CreatePerson(ctx context.Context, p app.Person) error {
-	result, err := db.ExecContext(ctx, `
+func (db *database) CreatePerson(
+	ctx context.Context,
+	p app.Person,
+) (int, error) {
+
+	var id int
+	err := db.GetContext(ctx, &id, `
 		INSERT INTO person (
 			first_name,
 			last_name,
@@ -94,21 +99,10 @@ func (db *database) CreatePerson(ctx context.Context, p app.Person) error {
 			role_id,
 			pass_hash
 		) VALUES ($1, $2, $3, $4, $5)
+		RETURNING person_id
 	`, p.FirstName, p.LastName, p.Email, p.Role, p.Password)
 
-	if err != nil {
-		return errors.Wrap(err, "failed to insert person")
-	}
-
-	n, err := result.RowsAffected()
-	if err != nil {
-		return errors.Wrap(err, "failed to check result of person insert")
-	} else if n != 1 {
-		return errors.Errorf(
-			"insert person ought to affect 1 row, found: %d", n)
-	}
-
-	return nil
+	return id, errors.Wrap(err, "failed to insert person")
 }
 
 // UpdatePersonName updates a person's first and last name.
