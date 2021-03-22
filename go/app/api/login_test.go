@@ -55,6 +55,19 @@ func (db *loginMockDB) RevokeSession(_ context.Context, _ int) error {
 	return db.revokeSessionErr
 }
 
+func testSessionTokenInject(_ *testing.T, r *http.Request, token uuid.UUID) {
+	if token == uuid.Nil {
+		return
+	}
+
+	c := http.Cookie{
+		Name:  sessionCookieKey,
+		Value: token.String(),
+	}
+
+	r.Header.Add("Cookie", c.String())
+}
+
 func TestHandleLogin(t *testing.T) {
 	db := &loginMockDB{}
 	api, _, _ := newTestAPI(t, db)
@@ -199,6 +212,115 @@ func TestHandleLogin(t *testing.T) {
 
 			r := httptest.NewRequest("POST", "/login", body)
 			w := httptest.NewRecorder()
+
+			api.router.ServeHTTP(w, r)
+
+			assert.Equal(t, tc.expectCode, w.Code)
+
+			res := w.Result()
+			defer res.Body.Close()
+
+			jar := res.Cookies()
+
+			var loginCookieIsSet, willDestroyLoginCookie bool
+			for _, c := range jar {
+				if c.Name == sessionCookieKey {
+					loginCookieIsSet = true
+
+					if c.MaxAge < 0 {
+						willDestroyLoginCookie = true
+					}
+
+					break
+				}
+			}
+
+			assert.Equal(
+				t,
+				tc.expectCookie || tc.expectDestroyCookie,
+				loginCookieIsSet,
+				"cookie presence expectation mismatch",
+			)
+			assert.Equal(t, tc.expectDestroyCookie, willDestroyLoginCookie,
+				"cookie destruction expectation mismatch")
+		})
+	}
+}
+
+func TestHandleLogout(t *testing.T) {
+	db := &loginMockDB{}
+	api, _, _ := newTestAPI(t, db)
+
+	pass, err := app.NewPassword("zxcvbnJKL")
+	require.NoError(t, err)
+
+	p := app.Person{
+		FirstName: "Billy Joe",
+		LastName:  "Bob",
+		Email:     "jack@box.net",
+		Password:  pass,
+	}
+
+	s, err := app.NewSession(p)
+	require.NoError(t, err)
+
+	testCases := []struct {
+		alias               string
+		sessionToken        uuid.UUID
+		dbSessionByToken    app.Session
+		dbSessionByTokenErr error
+		dbRevokeSessionErr  error
+		expectCode          int
+		expectCookie        bool
+		expectDestroyCookie bool
+	}{
+		{
+			alias:              "RevokeSessionError",
+			sessionToken:       s.Token,
+			dbSessionByToken:   *s,
+			dbRevokeSessionErr: errors.New("please file cherwell ticket"),
+			expectCode:         http.StatusInternalServerError,
+		},
+		{
+			alias:               "SessionByTokenError",
+			sessionToken:        s.Token,
+			dbSessionByToken:    *s,
+			dbSessionByTokenErr: errors.New("aaaack! failed with fire"),
+			expectCode:          http.StatusInternalServerError,
+		},
+		{
+			alias:               "NoSessionButRevokeErr",
+			dbRevokeSessionErr:  errors.New("this should not matter"),
+			expectCode:          http.StatusOK,
+			expectCookie:        true,
+			expectDestroyCookie: true,
+		},
+		{
+			alias:               "NoSession",
+			expectCode:          http.StatusOK,
+			expectCookie:        true,
+			expectDestroyCookie: true,
+		},
+		{
+			alias:               "Success",
+			sessionToken:        s.Token,
+			dbSessionByToken:    *s,
+			expectCode:          http.StatusOK,
+			expectCookie:        true,
+			expectDestroyCookie: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.alias, func(t *testing.T) {
+			db.revokeSessionErr = tc.dbRevokeSessionErr
+			db.sessionByToken = tc.dbSessionByToken
+			db.sessionByTokenErr = tc.dbSessionByTokenErr
+
+			r := httptest.NewRequest("POST", "/logout", nil)
+			w := httptest.NewRecorder()
+
+			testSessionTokenInject(t, r, tc.sessionToken)
 
 			api.router.ServeHTTP(w, r)
 
