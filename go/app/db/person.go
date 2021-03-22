@@ -205,7 +205,6 @@ func (db *database) UpdatePersonPassword(
 
 // ActivatePerson activates a person's account.
 func (db *database) ActivatePerson(ctx context.Context, personID int) error {
-
 	result, err := db.ExecContext(ctx, `
 		UPDATE person SET
 			is_deactivated = FALSE
