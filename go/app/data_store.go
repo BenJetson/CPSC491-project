@@ -58,6 +58,19 @@ type SessionStore interface {
 // ApplicationStore defines methods for working with app.Application objects
 // in the database.
 type ApplicationStore interface {
+	GetApplicationByID(
+		ctx context.Context,
+		appID int,
+	) (Application, error)
+	GetApplicationsForPerson(
+		ctx context.Context,
+		personID int,
+	) ([]Application, error)
+	GetApplicationsForOrganization(
+		ctx context.Context,
+		orgID int,
+	) ([]Application, error)
+
 	CreateApplication(ctx context.Context, a Application) (int, error)
 
 	UpdateApplicationApproval(
