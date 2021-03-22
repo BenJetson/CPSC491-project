@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,7 +16,9 @@ func TestCreatePerson(t *testing.T) {
 	p, err := app.NewPassword("aoa")
 	require.NoError(t, err)
 
-	err = db.CreatePerson(app.Person{
+	ctx := context.Background()
+
+	err = db.CreatePerson(ctx, app.Person{
 		FirstName: "Ben",
 		LastName:  "Godfrey",
 		Email:     "bfgodfr@clemson.edu",
