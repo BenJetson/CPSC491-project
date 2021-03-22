@@ -8,6 +8,7 @@ import Registration from "./components/Registration";
 import defaultTheme from "./Theme";
 import ScrollSpy from "./components/ScrollSpy";
 import Login from "./components/Login";
+import Application from "./components/Application";
 
 //app should always go to login page unless logged in
 //if logged in, app should default to home page
@@ -31,6 +32,12 @@ let App = () => {
             <NavBar />
             <Container>
               <Registration />
+            </Container>
+          </Route>
+          <Route path={"/application"}>
+            <NavBar />
+            <Container>
+              <Application />
             </Container>
           </Route>
           <Route path={"/home"}>
