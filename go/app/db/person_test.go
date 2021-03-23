@@ -194,3 +194,211 @@ func TestGetPersonByEmail(t *testing.T) {
 		assert.True(t, errors.Is(err, app.ErrNotFound))
 	})
 }
+
+func TestUpdatePersonName(t *testing.T) {
+	db := newTestDB(t)
+	defer db.cleanup(t)
+
+	ctx := context.Background()
+
+	p := app.Person{
+		ID:           1,
+		FirstName:    "Ben",
+		LastName:     "Godfrey",
+		Email:        "bfgodfr@clemson.edu",
+		Password:     `zxcvbn`,
+		Role:         app.RoleAdmin,
+		Affiliations: make([]int, 0),
+	}
+	_, err := db.CreatePerson(ctx, p)
+	require.NoError(t, err)
+
+	t.Run("DoUpdate", func(t *testing.T) {
+		err = db.UpdatePersonName(ctx, 1, "Bogus", "Bill")
+
+		db.assertCount(t, "person", 1)
+		db.assertCountOf(t, "person", 1, `
+			person_id = 1
+			AND first_name = $1
+			AND last_name = $2
+			AND email = $3
+			AND pass_hash = $4
+			AND role_id = $5
+		`, "Bogus", "Bill", p.Email, p.Password, p.Role)
+	})
+
+	t.Run("NoSuchPerson", func(t *testing.T) {
+		err = db.UpdatePersonName(ctx, 723, "Foo", "Bar")
+		require.Error(t, err)
+		assert.True(t, errors.Is(err, app.ErrNotFound))
+	})
+}
+
+func TestUpdatePersonRole(t *testing.T) {
+	db := newTestDB(t)
+	defer db.cleanup(t)
+
+	ctx := context.Background()
+
+	p := app.Person{
+		ID:           1,
+		FirstName:    "Ben",
+		LastName:     "Godfrey",
+		Email:        "bfgodfr@clemson.edu",
+		Password:     `zxcvbn`,
+		Role:         app.RoleAdmin,
+		Affiliations: make([]int, 0),
+	}
+	_, err := db.CreatePerson(ctx, p)
+	require.NoError(t, err)
+
+	t.Run("DoUpdate", func(t *testing.T) {
+		err = db.UpdatePersonRole(ctx, 1, app.RoleSponsor)
+
+		db.assertCount(t, "person", 1)
+		db.assertCountOf(t, "person", 1, `
+			person_id = 1
+			AND first_name = $1
+			AND last_name = $2
+			AND email = $3
+			AND pass_hash = $4
+			AND role_id = $5
+		`, p.FirstName, p.LastName, p.Email, p.Password, app.RoleSponsor)
+	})
+
+	t.Run("NoSuchPerson", func(t *testing.T) {
+		err = db.UpdatePersonRole(ctx, 111, app.RoleDriver)
+		require.Error(t, err)
+		assert.True(t, errors.Is(err, app.ErrNotFound))
+	})
+}
+
+func TestUpdatePersonPassword(t *testing.T) {
+	db := newTestDB(t)
+	defer db.cleanup(t)
+
+	ctx := context.Background()
+
+	pass1, err := app.NewPassword("aoa")
+	require.NoError(t, err)
+
+	pass2, err := app.NewPassword("asdf")
+	require.NoError(t, err)
+
+	pass3, err := app.NewPassword("ijkl")
+	require.NoError(t, err)
+
+	p := app.Person{
+		ID:           1,
+		FirstName:    "Ben",
+		LastName:     "Godfrey",
+		Email:        "bfgodfr@clemson.edu",
+		Password:     pass1,
+		Role:         app.RoleAdmin,
+		Affiliations: make([]int, 0),
+	}
+	_, err = db.CreatePerson(ctx, p)
+	require.NoError(t, err)
+
+	t.Run("DoUpdate", func(t *testing.T) {
+		err = db.UpdatePersonPassword(ctx, 1, pass2)
+
+		db.assertCount(t, "person", 1)
+		db.assertCountOf(t, "person", 1, `
+			person_id = 1
+			AND first_name = $1
+			AND last_name = $2
+			AND email = $3
+			AND pass_hash = $4
+			AND role_id = $5
+		`, p.FirstName, p.LastName, p.Email, pass2, p.Role)
+	})
+
+	t.Run("NoSuchPerson", func(t *testing.T) {
+		err = db.UpdatePersonPassword(ctx, 494942, pass3)
+		require.Error(t, err)
+		assert.True(t, errors.Is(err, app.ErrNotFound))
+	})
+}
+
+func TestDeactivatePerson(t *testing.T) {
+	db := newTestDB(t)
+	defer db.cleanup(t)
+
+	ctx := context.Background()
+
+	p := app.Person{
+		ID:           1,
+		FirstName:    "Ben",
+		LastName:     "Godfrey",
+		Email:        "bfgodfr@clemson.edu",
+		Password:     `zxcvbn`,
+		Role:         app.RoleAdmin,
+		Affiliations: make([]int, 0),
+	}
+	_, err := db.CreatePerson(ctx, p)
+	require.NoError(t, err)
+
+	t.Run("DoUpdate", func(t *testing.T) {
+		err = db.DeactivatePerson(ctx, 1)
+
+		db.assertCount(t, "person", 1)
+		db.assertCountOf(t, "person", 1, `
+			person_id = 1
+			AND first_name = $1
+			AND last_name = $2
+			AND email = $3
+			AND pass_hash = $4
+			AND role_id = $5
+			AND is_deactivated = TRUE
+		`, p.FirstName, p.LastName, p.Email, p.Password, p.Role)
+	})
+
+	t.Run("NoSuchPerson", func(t *testing.T) {
+		err = db.DeactivatePerson(ctx, 122)
+		require.Error(t, err)
+		assert.True(t, errors.Is(err, app.ErrNotFound))
+	})
+}
+
+func TestActivatePerson(t *testing.T) {
+	db := newTestDB(t)
+	defer db.cleanup(t)
+
+	ctx := context.Background()
+
+	p := app.Person{
+		ID:           1,
+		FirstName:    "Ben",
+		LastName:     "Godfrey",
+		Email:        "bfgodfr@clemson.edu",
+		Password:     `zxcvbn`,
+		Role:         app.RoleAdmin,
+		Affiliations: make([]int, 0),
+	}
+	_, err := db.CreatePerson(ctx, p)
+	require.NoError(t, err)
+
+	err = db.DeactivatePerson(ctx, 1)
+	require.NoError(t, err)
+
+	t.Run("DoUpdate", func(t *testing.T) {
+		err = db.ActivatePerson(ctx, 1)
+
+		db.assertCount(t, "person", 1)
+		db.assertCountOf(t, "person", 1, `
+			first_name = $1
+			AND last_name = $2
+			AND email = $3
+			AND pass_hash = $4
+			AND role_id = $5
+			AND is_deactivated = FALSE
+		`, p.FirstName, p.LastName, p.Email, p.Password, p.Role)
+	})
+
+	t.Run("NoSuchPerson", func(t *testing.T) {
+		err = db.ActivatePerson(ctx, 122)
+		require.Error(t, err)
+		assert.True(t, errors.Is(err, app.ErrNotFound))
+	})
+}
