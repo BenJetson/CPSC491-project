@@ -21,3 +21,7 @@ reset-db: stop
 	docker-compose rm -s -f -v db
 	docker volume rm cpsc491_persistent-dbstore
 	@printf "\n🧼 DB has been erased. Re-run flyway to construct new DB.\n"
+
+.PHONY: storybook
+storybook:
+	docker-compose up storybook
