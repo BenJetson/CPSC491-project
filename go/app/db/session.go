@@ -11,6 +11,26 @@ import (
 	"github.com/BenJetson/CPSC491-project/go/app"
 )
 
+type dbSession struct {
+	dbPerson
+	ID        int       `db:"session_id"`
+	Token     uuid.UUID `db:"token"`
+	CreatedAt time.Time `db:"created_at"`
+	ExpiresAt time.Time `db:"expires_at"`
+	IsRevoked bool      `db:"is_revoked"`
+}
+
+func (s *dbSession) toSession() app.Session {
+	return app.Session{
+		Person:    s.dbPerson.toPerson(),
+		ID:        s.ID,
+		Token:     s.Token,
+		CreatedAt: s.CreatedAt,
+		ExpiresAt: s.ExpiresAt,
+		IsRevoked: s.IsRevoked,
+	}
+}
+
 // GetSessionsForPerson fetches all sessions for a given person of matching ID.
 func (db *database) GetSessionsForPerson(
 	ctx context.Context,
@@ -21,7 +41,6 @@ func (db *database) GetSessionsForPerson(
 	// WARNING: if you change the logic here, make sure it matches the IsValid
 	// method logic of the app.Session type!
 
-	var params []interface{}
 	query := `
 		SELECT
 			s.session_id,
@@ -42,31 +61,43 @@ func (db *database) GetSessionsForPerson(
 			ON s.person_id = p.person_id
 		LEFT JOIN affiliation a
 			ON p.person_id = a.person_id
+		WHERE s.person_id = $1
 	`
+	params := []interface{}{personID}
 
 	if !includeInvalid {
-		now := time.Now()
-
 		query += `
-			WHERE
-				s.is_revoked = FALSE
-				AND p.is_deactivated = FALSE
-				AND $1::timestamptz > s.created_at
-				AND $1::timestamptz < s.expires_at
+			AND s.is_revoked = FALSE
+			AND p.is_deactivated = FALSE
 		`
 
-		params = append(params, now)
+		// // TODO timestamp checks in the future.
+		//
+		// now := time.Now().UTC()
+		// params = append(params, now)
+		// query += `
+		// 	AND $2::timestamptz >= s.created_at::timestamptz
+		// 	AND $2::timestamptz < s.expires_at::timestamptz
+		// `
 	}
 
 	query += `
-		GROUP BY s.person_id
+		GROUP BY
+			s.session_id,
+			p.person_id,
+			a.person_id
 	`
 
-	var ss []app.Session
-	err := db.SelectContext(ctx, ss, query, params...)
+	var dbss []dbSession
+	err := db.SelectContext(ctx, &dbss, query, params...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, errors.Wrap(err, "failed to select sessions")
+	}
+
+	ss := make([]app.Session, len(dbss))
+	for idx, dbs := range dbss {
+		ss[idx] = dbs.toSession()
 	}
 
 	return ss, nil
@@ -138,7 +169,7 @@ func (db *database) CreateSession(
 func (db *database) RevokeSession(ctx context.Context, sessionID int) error {
 	_, err := db.ExecContext(ctx, `
 		UPDATE session SET
-			revoked = TRUE
+			is_revoked = TRUE
 		WHERE session_id = $1
 	`, sessionID)
 
@@ -158,7 +189,7 @@ func (db *database) RevokeSessionsForPersonExcept(
 
 	_, err := db.ExecContext(ctx, `
 		UPDATE session SET
-			revoked = TRUE
+			is_revoked = TRUE
 		WHERE
 			person_id = $1
 			AND session_id != $2

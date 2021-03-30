@@ -11,14 +11,14 @@ import (
 )
 
 type dbPerson struct {
-	ID            int          `db:"person_id"`
-	FirstName     string       `db:"first_name"`
-	LastName      string       `db:"last_name"`
-	Email         string       `db:"email"`
-	Role          app.Role     `db:"role_id"`
-	Password      app.Password `db:"pass_hash"`
-	IsDeactivated bool         `db:"is_deactivated"`
-	Affiliations  pq.Int64Array
+	ID            int           `db:"person_id"`
+	FirstName     string        `db:"first_name"`
+	LastName      string        `db:"last_name"`
+	Email         string        `db:"email"`
+	Role          app.Role      `db:"role_id"`
+	Password      app.Password  `db:"pass_hash"`
+	IsDeactivated bool          `db:"is_deactivated"`
+	Affiliations  pq.Int64Array `db:"affiliations"`
 }
 
 func (p *dbPerson) toPerson() app.Person {

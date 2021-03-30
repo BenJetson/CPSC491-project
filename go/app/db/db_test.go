@@ -1,6 +1,7 @@
 package db
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"testing"
@@ -115,4 +116,17 @@ func (db *testDB) assertCountOf(
 
 func (db *testDB) assertCount(t *testing.T, tableName string, expect int) {
 	db.assertCountOf(t, tableName, expect, "TRUE")
+}
+
+func assertEqualJSON(t *testing.T, expect, actual interface{}) {
+	actualJSONb, err := json.MarshalIndent(actual, "", "    ")
+	require.NoError(t, err)
+
+	expectJSONb, err := json.MarshalIndent(expect, "", "    ")
+	require.NoError(t, err)
+
+	actualJSON := string(actualJSONb)
+	expectJSON := string(expectJSONb)
+
+	assert.Equal(t, expectJSON, actualJSON)
 }

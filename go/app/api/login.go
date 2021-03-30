@@ -44,6 +44,7 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	if err := credentials.validateFields(); err != nil {
 		svr.sendErrorResponse(w, err, http.StatusBadRequest, "")
+		return
 	}
 
 	p, err := svr.db.GetPersonByEmail(r.Context(), credentials.Email)

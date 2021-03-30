@@ -13,14 +13,14 @@ const SessionLength = 6 * time.Hour
 
 // A Session represents an individual user session with our app.
 type Session struct {
+	// Person holds the user that this session belongs to.
+	Person
 	// ID is the session's identifying number. It is not secret.
 	ID int `db:"session_id"`
 	// Token is a unique, securely random generated UUIDv4 that also uniquely
 	// identifies this session. It must be kept secret between our API server
 	// and the web browser for the session.
 	Token uuid.UUID `db:"token"`
-	// Person holds the user that this session belongs to.
-	Person Person
 	// CreatedAt is the timestamp that this session was started at.
 	CreatedAt time.Time `db:"created_at"`
 	// ExpiresAt is the timestamp when this session will expire permanently.
@@ -32,7 +32,7 @@ type Session struct {
 // NewSession creates a new login session with a secure random token for a given
 // person. It shall expire after SessionLength time has passed.
 func NewSession(p Person) (*Session, error) {
-	now := time.Now()
+	now := time.Now().UTC().Round(time.Second)
 
 	token, err := uuid.NewRandom()
 	if err != nil {
@@ -49,7 +49,7 @@ func NewSession(p Person) (*Session, error) {
 
 // IsValid determines whether or not a session is still valid.
 func (s *Session) IsValid() bool {
-	now := time.Now()
+	now := time.Now().UTC()
 
 	return !s.IsRevoked &&
 		!s.Person.IsDeactivated &&
