@@ -1,7 +1,7 @@
 # Application Handler Functions
-​
-Notes on setup for the application handler functions
-​
+
+​Notes on setup for the application handler functions ​
+
 - Before starting on the handler functions, the database drivers must be
   implemented
 - The handler functions to implement come from the database drivers
