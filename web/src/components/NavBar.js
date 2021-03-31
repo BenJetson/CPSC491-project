@@ -20,23 +20,23 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function ButtonAppBar() {
+const ButtonAppBar = () => {
   const classes = useStyles();
+
+  const doLogout = () => {
+    fetch("/api/logout", { method: "POST" });
+  };
 
   return (
     <Box className={classes.root}>
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" className={classes.title}></Typography>
-          <Button
-            onClick={() => {
-              alert("clicked");
-            }}
-          >
-            Logout
-          </Button>
+          <Button onClick={doLogout}>Logout</Button>
         </Toolbar>
       </AppBar>
     </Box>
   );
-}
+};
+
+export default ButtonAppBar;
