@@ -1,12 +1,13 @@
 import React from "react";
 import {
-  makeStyles,
   AppBar,
-  Box,
+  Button,
+  IconButton,
   Toolbar,
   Typography,
-  Button,
+  makeStyles,
 } from "@material-ui/core";
+import { Menu as MenuIcon } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -20,7 +21,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ButtonAppBar = () => {
+const NavBar = () => {
   const classes = useStyles();
 
   const doLogout = () => {
@@ -39,4 +40,4 @@ const ButtonAppBar = () => {
   );
 };
 
-export default ButtonAppBar;
+export default NavBar;

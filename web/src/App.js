@@ -1,14 +1,14 @@
 import React from "react";
-import { HashRouter as Router, Switch, Route } from "react-router-dom";
-import { Container, ThemeProvider } from "@material-ui/core";
-import CssBaseline from "@material-ui/core/CssBaseline";
+import { HashRouter as Router, Route, Switch } from "react-router-dom";
+import { Container, CssBaseline, ThemeProvider } from "@material-ui/core";
+
+import Application from "./components/Application";
+import Login from "./components/Login";
 import NavBar from "./components/NavBar";
 import Registration from "./components/Registration";
+import ScrollSpy from "./components/ScrollSpy";
 
 import defaultTheme from "./Theme";
-import ScrollSpy from "./components/ScrollSpy";
-import Login from "./components/Login";
-import Application from "./components/Application";
 
 //app should always go to login page unless logged in
 //if logged in, app should default to home page

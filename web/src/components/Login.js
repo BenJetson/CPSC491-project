@@ -1,14 +1,16 @@
+import React from "react";
+import { Link as RouterLink } from "react-router-dom";
 import {
-  Container,
   Box,
   Button,
+  Checkbox,
+  Container,
+  FormControlLabel,
   Grid,
   Link,
-  Checkbox,
-  FormControlLabel,
   TextField,
+  makeStyles,
 } from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -73,18 +75,25 @@ let Login = () => {
             variant="contained"
             color="primary"
             className={classes.submit}
-            href="#/home"
+            /*
+             * ATTENTION: the below link should likely be removed once some
+             * actual form processing logic is there. Otherwise, this will just
+             * link to the login page regardless of whether or not credentials
+             * have been validated or accepted.
+             */
+            component={RouterLink}
+            to="/home"
           >
             Sign In
           </Button>
           <Grid container>
             <Grid item xs>
-              <Link href="#/forgotpassword" variant="body2">
+              <Link component={RouterLink} to="/forgotpassword" variant="body2">
                 Forgot password?
               </Link>
             </Grid>
             <Grid item>
-              <Link href="#/signup" variant="body2">
+              <Link component={RouterLink} to="/signup" variant="body2">
                 {"Don't have an account? Sign Up"}
               </Link>
             </Grid>
