@@ -151,7 +151,13 @@ stages:
             displayName: React Build
           - publish: $(System.DefaultWorkingDirectory)/web/build
             artifact: ReactApp
-            displayName: Publish Build Artifact
+            displayName: Publish React Build Artifact
+          - script: yarn build-storybook
+            workingDirectory: web
+            displayName: Storybook Build
+          - publish: $(System.DefaultWorkingDirectory)/web/storybook-static
+            artifact: Storybook
+            displayName: Publish Storybook Build Artifact
 
       - job: BuildDB
         displayName: Build Database

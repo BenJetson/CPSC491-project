@@ -38,3 +38,7 @@ testdb-background: stop-clean-testdb
 .PHONY: testgo
 testgo:
 	@./go/scripts/test.sh
+
+.PHONY: storybook
+storybook:
+	docker-compose up storybook
