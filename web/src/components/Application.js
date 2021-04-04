@@ -18,7 +18,7 @@ const useStyles = makeStyles({
   },
 });
 
-export default function SimpleCard() {
+const ApplicationCard = ({ companyName, status, reason }) => {
   const classes = useStyles();
   //const bull = <span className={classes.bullet}>•</span>;
 
@@ -32,20 +32,24 @@ export default function SimpleCard() {
         >
           Application Overview
         </Typography>
+        <Typography variant="h4" component="h2">
+          {companyName}
+        </Typography>
         <Typography variant="h5" component="h2">
-          Clemson Global Shipping company
+          Status
         </Typography>
         <Typography className={classes.pos} color="textSecondary">
-          Status
-          <br />
-          {"In Progress"}
+          {status}
         </Typography>
-        <Typography variant="body2" component="p">
+        <Typography variant="h5" component="h2">
           Reason
-          <br />
-          {'"Awaiting more information requested from driver"'}
+        </Typography>
+        <Typography className={classes.pos} color="textSecondary">
+          {reason}
         </Typography>
       </CardContent>
     </Card>
   );
-}
+};
+
+export default ApplicationCard;

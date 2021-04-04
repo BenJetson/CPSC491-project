@@ -37,7 +37,11 @@ let App = () => {
           <Route path={"/application"}>
             <NavBar />
             <Container>
-              <Application />
+              <Application
+                status={"pending"}
+                companyName={"Clemson Shipping"}
+                reason={"just too cool"}
+              />
             </Container>
           </Route>
           <Route path={"/home"}>
