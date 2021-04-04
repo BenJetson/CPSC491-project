@@ -7,7 +7,6 @@ import {
   Typography,
   makeStyles,
 } from "@material-ui/core";
-import { Menu as MenuIcon } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) => ({
   root: {
