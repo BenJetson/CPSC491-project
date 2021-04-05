@@ -2,12 +2,11 @@ import React from "react";
 import {
   AppBar,
   Button,
-  IconButton,
+  Box,
   Toolbar,
   Typography,
   makeStyles,
 } from "@material-ui/core";
-import { Menu as MenuIcon } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -24,23 +23,19 @@ const useStyles = makeStyles((theme) => ({
 const NavBar = () => {
   const classes = useStyles();
 
+  const doLogout = () => {
+    fetch("/api/logout", { method: "POST" });
+  };
+
   return (
-    <div className={classes.root}>
+    <Box className={classes.root}>
       <AppBar position="static">
         <Toolbar>
-          <IconButton
-            edge="start"
-            className={classes.menuButton}
-            color="inherit"
-            aria-label="menu"
-          >
-            <MenuIcon />
-          </IconButton>
           <Typography variant="h6" className={classes.title}></Typography>
-          <Button color="inherit">Logout</Button>
+          <Button onClick={doLogout}>Logout</Button>
         </Toolbar>
       </AppBar>
-    </div>
+    </Box>
   );
 };
 

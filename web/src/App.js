@@ -2,6 +2,7 @@ import React from "react";
 import { HashRouter as Router, Route, Switch } from "react-router-dom";
 import { Container, CssBaseline, ThemeProvider } from "@material-ui/core";
 
+import Application from "./components/Application";
 import Login from "./components/Login";
 import NavBar from "./components/NavBar";
 import Registration from "./components/Registration";
@@ -31,6 +32,16 @@ let App = () => {
             <NavBar />
             <Container>
               <Registration />
+            </Container>
+          </Route>
+          <Route path={"/application"}>
+            <NavBar />
+            <Container>
+              <Application
+                status={"pending"}
+                companyName={"Clemson Shipping"}
+                reason={"just too cool"}
+              />
             </Container>
           </Route>
           <Route path={"/home"}>
