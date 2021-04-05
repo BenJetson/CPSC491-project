@@ -53,6 +53,19 @@ func NewServer(logger *logrus.Logger, db app.DataStore,
 	router.Path("/login").Methods("POST").HandlerFunc(svr.handleLogin)
 	router.Path("/logout").Methods("POST").HandlerFunc(svr.handleLogout)
 
+	appRouter := router.Path("/applications").Subrouter()
+
+	appRouter.Path("/submit").Methods("POST").
+		HandlerFunc(svr.handleSubmitApplication)
+	appRouter.Path("/id/{appID}").Methods("GET").
+		HandlerFunc(svr.handleGetApplicationByID)
+	appRouter.Path("/person/{personID}").Methods("GET").
+		HandlerFunc(svr.handleGetApplicationsForPerson)
+	appRouter.Path("/organization/{orgID}").Methods("GET").
+		HandlerFunc(svr.handleGetApplicationsForOrganization)
+	appRouter.Path("/approve/{appID}").Methods("POST").
+		HandlerFunc(svr.handleApproveApplication)
+
 	return svr, nil
 }
 
