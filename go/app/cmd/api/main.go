@@ -5,6 +5,7 @@ import (
 
 	"github.com/BenJetson/CPSC491-project/go/app/api"
 	"github.com/BenJetson/CPSC491-project/go/app/db"
+	"github.com/BenJetson/CPSC491-project/go/app/etsy"
 )
 
 func main() {
@@ -25,7 +26,12 @@ func main() {
 		logger.Fatalln(err)
 	}
 
-	svr, err := api.NewServer(logger, db, svrCfg)
+	cv, err := etsy.NewClientFromEnv()
+	if err != nil {
+		logger.Fatalln(err)
+	}
+
+	svr, err := api.NewServer(logger, db, cv, svrCfg)
 	if err != nil {
 		logger.Fatalln(err)
 	}

@@ -17,13 +17,14 @@ import (
 type Server struct {
 	config Config
 	db     app.DataStore
+	cv     app.CommerceVendor
 	logger *logrus.Logger
 	httpd  *http.Server
 	router *mux.Router
 }
 
 // NewServer creates a new Server given a logger, data store, and configuration.
-func NewServer(logger *logrus.Logger, db app.DataStore,
+func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 	cfg Config) (*Server, error) {
 
 	if logger == nil {
@@ -42,6 +43,7 @@ func NewServer(logger *logrus.Logger, db app.DataStore,
 		httpd:  httpd,
 		config: cfg,
 		db:     db,
+		cv:     cv,
 		logger: logger,
 		router: router,
 	}
