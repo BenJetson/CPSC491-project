@@ -70,7 +70,7 @@ func testSessionTokenInject(_ *testing.T, r *http.Request, token uuid.UUID) {
 
 func TestHandleLogin(t *testing.T) {
 	db := &loginMockDB{}
-	api, _, _ := newTestAPI(t, db)
+	api, _, _ := newTestAPI(t, db, nil)
 
 	pass, err := app.NewPassword("zxcvbnJKL")
 	require.NoError(t, err)
@@ -249,7 +249,7 @@ func TestHandleLogin(t *testing.T) {
 
 func TestHandleLogout(t *testing.T) {
 	db := &loginMockDB{}
-	api, _, _ := newTestAPI(t, db)
+	api, _, _ := newTestAPI(t, db, nil)
 
 	pass, err := app.NewPassword("zxcvbnJKL")
 	require.NoError(t, err)
