@@ -49,10 +49,10 @@ func NewSession(p Person) (*Session, error) {
 
 // IsValid determines whether or not a session is still valid.
 func (s *Session) IsValid() bool {
-	now := time.Now().UTC()
+	now := time.Now().UTC().Round(time.Second)
 
 	return !s.IsRevoked &&
 		!s.Person.IsDeactivated &&
-		now.After(s.CreatedAt) &&
+		(now.After(s.CreatedAt) || now.Equal(s.CreatedAt)) &&
 		now.Before(s.ExpiresAt)
 }
