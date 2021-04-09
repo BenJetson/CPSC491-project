@@ -125,6 +125,9 @@ services:
       - DB_DANGER_DISABLE_TLS=accept danger and use unencrypted connection
       - TIER=local
       - PORT=8080
+      # This will pass through the environment variable from the host computer
+      # to the container at the time of running "make" or "docker-compose up".
+      - ETSY_API_KEY
 
   nginx:
     container_name: nginx

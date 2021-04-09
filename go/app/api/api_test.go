@@ -13,11 +13,12 @@ import (
 func newTestAPI(
 	t *testing.T,
 	db app.DataStore,
+	cv app.CommerceVendor,
 ) (*Server, *logrus.Logger, *logtest.Hook) {
 
 	logger, hook := logtest.NewNullLogger()
 
-	api, err := NewServer(logger, db, Config{
+	api, err := NewServer(logger, db, cv, Config{
 		Tier: TierLocal,
 		Port: 8080,
 	})
