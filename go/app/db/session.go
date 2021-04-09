@@ -71,14 +71,12 @@ func (db *database) GetSessionsForPerson(
 			AND p.is_deactivated = FALSE
 		`
 
-		// // TODO timestamp checks in the future.
-		//
-		// now := time.Now().UTC()
-		// params = append(params, now)
-		// query += `
-		// 	AND $2::timestamptz >= s.created_at::timestamptz
-		// 	AND $2::timestamptz < s.expires_at::timestamptz
-		// `
+		now := time.Now().UTC().Round(time.Second)
+		params = append(params, now)
+		query += `
+			AND $2::timestamptz >= s.created_at::timestamptz
+			AND $2::timestamptz < s.expires_at::timestamptz
+		`
 	}
 
 	query += `

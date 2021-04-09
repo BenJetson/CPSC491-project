@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -126,10 +127,33 @@ func TestGetSessionsForPerson(t *testing.T) {
 	err = db.RevokeSession(ctx, 6)
 	require.NoError(t, err)
 
+	// Add one invalid session each.
+	s, err = app.NewSession(p1)
+	require.NoError(t, err)
+	require.NotNil(t, s)
+
+	s.CreatedAt = time.Now().UTC().AddDate(0, 0, 1) // future
+
+	_, err = db.CreateSession(ctx, *s)
+	require.NoError(t, err)
+
+	ss1 = append(ss1, *s)
+
+	s, err = app.NewSession(p2)
+	require.NoError(t, err)
+	require.NotNil(t, s)
+
+	s.ExpiresAt = time.Now().UTC().Add(-1 * time.Hour) // past
+
+	_, err = db.CreateSession(ctx, *s)
+	require.NoError(t, err)
+
+	ss2 = append(ss2, *s)
+
 	var rss1, rss2 []app.Session
 	rss1 = append(rss1, ss1[0:2]...)
 	rss1 = append(rss1, ss1[4])
-	rss2 = append(rss2, ss2[1:]...)
+	rss2 = append(rss2, ss2[1:len(ss2)-1]...)
 
 	t.Run("GetFor1ExcludeInvalid", func(t *testing.T) {
 		ss, err = db.GetSessionsForPerson(ctx, 1, false)
