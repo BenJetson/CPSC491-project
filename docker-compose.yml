@@ -1,4 +1,4 @@
-version: "3"
+version: "3.9"
 
 services:
   db:
@@ -24,6 +24,32 @@ services:
       - ./db/migrations:/flyway/sql
     depends_on:
       - db
+
+  testdb:
+    container_name: testdb
+    hostname: testdb
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=app_template
+      - POSTGRES_USER=testuser
+      - POSTGRES_PASSWORD=testpass
+    profiles:
+      - testdb
+    ports:
+      - 5432:5432
+
+  flyway-testdb:
+    container_name: flyway-testdb
+    image: flyway/flyway
+    command: >
+      -url=jdbc:postgresql://testdb:5432/app_template -schemas=public
+      -user=testuser -password=testpass -connectRetries=60 migrate
+    volumes:
+      - ./db/migrations:/flyway/sql
+    depends_on:
+      - testdb
+    profiles:
+      - testdb
 
   pgadmin:
     container_name: pgadmin
@@ -64,6 +90,21 @@ services:
       # modules on the host, since they likely are different operating systems.
       - persistent-node-modules:/mnt/app/node_modules/
 
+  storybook:
+    container_name: storybook
+    image: node:lts-buster
+    working_dir: /mnt/app
+    command: /bin/bash -c "yarn && yarn storybook"
+    ports:
+      - 6006:6006
+    volumes:
+      - ./web/:/mnt/app/
+      # We need to keep the node modules in the container separate from the
+      # modules on the host, since they likely are different operating systems.
+      - persistent-node-modules:/mnt/app/node_modules/
+    profiles:
+      - storybook
+
   api:
     container_name: api
     hostname: api
@@ -79,8 +120,14 @@ services:
       - DB_DATABASE=app
       - DB_USER=postgres
       - DB_PASS=postgres
+      # This will not be used in the production tier, but on local computers
+      # in Docker this must be set.
+      - DB_DANGER_DISABLE_TLS=accept danger and use unencrypted connection
       - TIER=local
       - PORT=8080
+      # This will pass through the environment variable from the host computer
+      # to the container at the time of running "make" or "docker-compose up".
+      - ETSY_API_KEY
 
   nginx:
     container_name: nginx
@@ -94,6 +141,8 @@ services:
   mail:
     container_name: mail
     image: mailhog/mailhog
+    logging:
+      driver: none
     ports:
       - 8025:8025
 

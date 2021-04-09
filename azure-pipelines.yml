@@ -5,6 +5,7 @@ trigger:
   - bugfix/*
   - hotfix/*
   - release/*
+  - "*"
 
 variables:
   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
@@ -72,11 +73,43 @@ stages:
             displayName: Install Go
             inputs:
               version: "1.15"
-          - task: Go@0
-            displayName: Test Go
+          - script: |
+              # Install gotestsum
+              mkdir -p /tmp/gotestsum
+              cd /tmp/gotestsum
+              curl -sSfL -o gotestsum.tar.gz \
+                https://github.com/gotestyourself/gotestsum/releases/download/v1.6.2/gotestsum_1.6.2_linux_amd64.tar.gz
+              tar xzf gotestsum.tar.gz
+              sudo mv gotestsum /usr/local/bin/gotestsum
+              cd /tmp
+              rm -rf /tmp/gotestsum
+
+              # Install gocov & gocov-xml
+              go get github.com/axw/gocov/...
+              go get github.com/AlekSi/gocov-xml
+
+              # Add Go tools to PATH
+              echo "##vso[task.prependpath]$(go env GOPATH)/bin"
+            displayName: Install Tools
+          - script: make testgo
+            displayName: Run Tests
+          - task: PublishTestResults@2
             inputs:
-              command: "test"
-              workingDirectory: go/app
+              testResultsFormat: "JUnit"
+              testResultsFiles: "gotest-results.xml"
+              searchFolder: $(System.DefaultWorkingDirectory)/go/results
+              failTaskOnFailedTests: true
+              buildPlatform: x64
+              publishRunAttachments: true
+            condition: always()
+            displayName: Publish Test Results
+          - task: PublishCodeCoverageResults@1
+            inputs:
+              codeCoverageTool: Cobertura
+              summaryFileLocation: $(System.DefaultWorkingDirectory)/go/results/cover.xml
+              failIfCoverageEmpty: true
+            condition: always()
+            displayName: Publish Code Coverage
 
   - stage: Build
     jobs:
@@ -120,7 +153,13 @@ stages:
             displayName: React Build
           - publish: $(System.DefaultWorkingDirectory)/web/build
             artifact: ReactApp
-            displayName: Publish Build Artifact
+            displayName: Publish React Build Artifact
+          - script: yarn build-storybook
+            workingDirectory: web
+            displayName: Storybook Build
+          - publish: $(System.DefaultWorkingDirectory)/web/storybook-static
+            artifact: Storybook
+            displayName: Publish Storybook Build Artifact
 
       - job: BuildDB
         displayName: Build Database

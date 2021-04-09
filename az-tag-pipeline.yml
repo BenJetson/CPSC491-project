@@ -1,0 +1,37 @@
+trigger: none
+
+schedules:
+  - cron: "0 5 * * 2"
+    # Run on the 0th minute, 5th hour, any day, any month, every Tuesday (2).
+    # Recall that Azure Pipelines servers use Coordinated Universal Time (UTC).
+    # So this corresponds to 0:00 Tuesday in the Eastern time zone.
+    #
+    # See also: the crontab manpage (https://linux.die.net/man/5/crontab)
+
+    displayName: Sprint End Tag
+    branches:
+      include:
+        - develop
+    always: true
+
+steps:
+  - checkout: self
+    persistCredentials: true
+  - script: |
+      # Calculate Sprint Number
+      export WEEK_NO="`date +'%U'`"
+      export OFFSET=4
+      export SPRINT_NO="$((10#$WEEK_NO - 10#$OFFSET))"
+      export SPRINT_TAG="`printf 'sprint%02d' $SPRINT_NO`"
+
+      # Configure Git
+      git config user.name "Azure Pipelines"
+      git config user.email "noreply@clemson.edu"
+
+      # Tag latest code in develop and push.
+      git checkout origin/develop
+      git tag \
+        -a "$SPRINT_TAG" \
+        -m "Repository state at the end of Sprint $SPRINT_NO."
+      git push origin "$SPRINT_TAG"
+    displayName: Tag Develop
