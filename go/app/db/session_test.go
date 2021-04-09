@@ -400,3 +400,109 @@ func TestRevokeSession(t *testing.T) {
 		})
 	}
 }
+
+func TestRevokeSessionsForPersonExcept(t *testing.T) {
+	db := newTestDB(t)
+	defer db.cleanup(t)
+
+	ctx := context.Background()
+
+	p1 := app.Person{
+		ID:           1,
+		FirstName:    "Ben",
+		LastName:     "Godfrey",
+		Email:        "bfgodfr@clemson.edu",
+		Password:     `qwerty`,
+		Role:         app.RoleAdmin,
+		Affiliations: make([]int, 0),
+	}
+	_, err := db.CreatePerson(ctx, p1)
+	require.NoError(t, err)
+
+	p2 := app.Person{
+		ID:           2,
+		FirstName:    "Roger",
+		LastName:     "Van Scoy",
+		Email:        "vanscoy@clemson.edu",
+		Password:     `zxcvbn`,
+		Role:         app.RoleSponsor,
+		Affiliations: make([]int, 0),
+	}
+	_, err = db.CreatePerson(ctx, p2)
+	require.NoError(t, err)
+
+	var s *app.Session
+	var ss1, ss2 []app.Session
+
+	assertSessionPresence := func(t *testing.T) {
+		db.assertCount(t, "session", len(ss1)+len(ss2))
+
+		for _, s := range append(ss1, ss2...) {
+			db.assertCountOf(t, "session", 1, `
+				token = $1
+				AND person_id = $2
+				AND created_at = $3::timestamptz
+				AND expires_at = $4::timestamptz
+				AND session_id = $5
+			`, s.Token, s.Person.ID, s.CreatedAt, s.ExpiresAt, s.ID)
+		}
+	}
+
+	// Create sessions
+	for i := 0; i < 57; i++ {
+		p := p1
+		if i%2 == 0 {
+			p = p2
+		}
+
+		s, err = app.NewSession(p)
+		require.NoError(t, err)
+		require.NotNil(t, s)
+
+		s.ID, err = db.CreateSession(ctx, *s)
+		require.NoError(t, err)
+		assert.NotZero(t, s.ID)
+
+		if i%2 == 0 {
+			ss2 = append(ss2, *s)
+		} else {
+			ss1 = append(ss1, *s)
+		}
+
+		assertSessionPresence(t)
+	}
+
+	t.Run("NoSuchPersonOrSession", func(t *testing.T) {
+		err = db.RevokeSessionsForPersonExcept(ctx, 92, 482)
+		require.NoError(t, err, "this should not be an error condition, "+
+			"since person may have had zero sessions")
+
+		assertSessionPresence(t)
+	})
+
+	t.Run("RevokePerson1", func(t *testing.T) {
+		for i := range ss1 {
+			if i != 9 {
+				ss1[i].IsRevoked = true
+			}
+		}
+
+		err = db.RevokeSessionsForPersonExcept(ctx, p1.ID, ss1[9].ID)
+		require.NoError(t, err)
+
+		assertSessionPresence(t)
+	})
+
+	t.Run("RevokePerson2", func(t *testing.T) {
+		for i := range ss2 {
+			if i != 18 {
+				ss2[i].IsRevoked = true
+			}
+		}
+
+		err = db.RevokeSessionsForPersonExcept(ctx, p2.ID, ss2[18].ID)
+		require.NoError(t, err)
+
+		assertSessionPresence(t)
+	})
+}
