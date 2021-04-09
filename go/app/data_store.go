@@ -22,7 +22,7 @@ type PersonStore interface {
 	) (Person, error)
 	GetPersonByEmail(ctx context.Context, email string) (Person, error)
 
-	CreatePerson(ctx context.Context, p Person) error
+	CreatePerson(ctx context.Context, p Person) (int, error)
 
 	UpdatePersonName(
 		ctx context.Context,
@@ -45,7 +45,7 @@ type SessionStore interface {
 	) ([]Session, error)
 	GetSessionByToken(ctx context.Context, token uuid.UUID) (Session, error)
 
-	CreateSession(ctx context.Context, s Session) error
+	CreateSession(ctx context.Context, s Session) (int, error)
 
 	RevokeSession(ctx context.Context, sessionID int) error
 	RevokeSessionsForPersonExcept(

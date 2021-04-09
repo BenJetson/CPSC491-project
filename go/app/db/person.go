@@ -11,14 +11,14 @@ import (
 )
 
 type dbPerson struct {
-	ID            int          `db:"person_id"`
-	FirstName     string       `db:"first_name"`
-	LastName      string       `db:"last_name"`
-	Email         string       `db:"email"`
-	Role          app.Role     `db:"role_id"`
-	Password      app.Password `db:"pass_hash"`
-	IsDeactivated bool         `db:"is_deactivated"`
-	Affiliations  pq.Int64Array
+	ID            int           `db:"person_id"`
+	FirstName     string        `db:"first_name"`
+	LastName      string        `db:"last_name"`
+	Email         string        `db:"email"`
+	Role          app.Role      `db:"role_id"`
+	Password      app.Password  `db:"pass_hash"`
+	IsDeactivated bool          `db:"is_deactivated"`
+	Affiliations  pq.Int64Array `db:"affiliations"`
 }
 
 func (p *dbPerson) toPerson() app.Person {
@@ -46,7 +46,33 @@ func (db *database) GetPersonByID(
 	personID int,
 ) (app.Person, error) {
 
-	return app.Person{}, nil // TODO
+	var dbp dbPerson
+
+	err := db.GetContext(ctx, &dbp, `
+		SELECT
+			p.person_id,
+			p.first_name,
+			p.last_name,
+			p.email,
+			p.role_id,
+			p.pass_hash,
+			p.is_deactivated,
+			array_remove(array_agg(a.organization_id), NULL) as affiliations
+		FROM person p
+		LEFT JOIN affiliation a
+			ON p.person_id = a.person_id
+		WHERE p.person_id = $1
+		GROUP BY p.person_id
+	`, personID)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return app.Person{}, errors.Wrapf(
+			app.ErrNotFound,
+			"no such person by id of '%d'", personID,
+		)
+	}
+
+	return dbp.toPerson(), errors.Wrap(err, "failed to get person")
 }
 
 // GetPersonByEmail fetches a person given their email.
@@ -85,8 +111,13 @@ func (db *database) GetPersonByEmail(
 }
 
 // CreatePerson creates a new person given the details. Ignores the ID field.
-func (db *database) CreatePerson(ctx context.Context, p app.Person) error {
-	result, err := db.ExecContext(ctx, `
+func (db *database) CreatePerson(
+	ctx context.Context,
+	p app.Person,
+) (int, error) {
+
+	var id int
+	err := db.GetContext(ctx, &id, `
 		INSERT INTO person (
 			first_name,
 			last_name,
@@ -94,21 +125,10 @@ func (db *database) CreatePerson(ctx context.Context, p app.Person) error {
 			role_id,
 			pass_hash
 		) VALUES ($1, $2, $3, $4, $5)
+		RETURNING person_id
 	`, p.FirstName, p.LastName, p.Email, p.Role, p.Password)
 
-	if err != nil {
-		return errors.Wrap(err, "failed to insert person")
-	}
-
-	n, err := result.RowsAffected()
-	if err != nil {
-		return errors.Wrap(err, "failed to check result of person insert")
-	} else if n != 1 {
-		return errors.Errorf(
-			"insert person ought to affect 1 row, found: %d", n)
-	}
-
-	return nil
+	return id, errors.Wrap(err, "failed to insert person")
 }
 
 // UpdatePersonName updates a person's first and last name.

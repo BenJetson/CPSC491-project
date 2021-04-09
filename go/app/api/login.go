@@ -44,6 +44,7 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	if err := credentials.validateFields(); err != nil {
 		svr.sendErrorResponse(w, err, http.StatusBadRequest, "")
+		return
 	}
 
 	p, err := svr.db.GetPersonByEmail(r.Context(), credentials.Email)
@@ -84,7 +85,7 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 			"",
 		)
 		return
-	} else if err = svr.db.CreateSession(r.Context(), *s); err != nil {
+	} else if _, err = svr.db.CreateSession(r.Context(), *s); err != nil {
 		svr.sendErrorResponse(
 			w,
 			errors.Wrap(err, "failed to store login session"),

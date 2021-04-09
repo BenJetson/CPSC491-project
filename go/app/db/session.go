@@ -11,6 +11,26 @@ import (
 	"github.com/BenJetson/CPSC491-project/go/app"
 )
 
+type dbSession struct {
+	dbPerson
+	ID        int       `db:"session_id"`
+	Token     uuid.UUID `db:"token"`
+	CreatedAt time.Time `db:"created_at"`
+	ExpiresAt time.Time `db:"expires_at"`
+	IsRevoked bool      `db:"is_revoked"`
+}
+
+func (s *dbSession) toSession() app.Session {
+	return app.Session{
+		Person:    s.dbPerson.toPerson(),
+		ID:        s.ID,
+		Token:     s.Token,
+		CreatedAt: s.CreatedAt,
+		ExpiresAt: s.ExpiresAt,
+		IsRevoked: s.IsRevoked,
+	}
+}
+
 // GetSessionsForPerson fetches all sessions for a given person of matching ID.
 func (db *database) GetSessionsForPerson(
 	ctx context.Context,
@@ -21,7 +41,6 @@ func (db *database) GetSessionsForPerson(
 	// WARNING: if you change the logic here, make sure it matches the IsValid
 	// method logic of the app.Session type!
 
-	var params []interface{}
 	query := `
 		SELECT
 			s.session_id,
@@ -42,31 +61,41 @@ func (db *database) GetSessionsForPerson(
 			ON s.person_id = p.person_id
 		LEFT JOIN affiliation a
 			ON p.person_id = a.person_id
+		WHERE s.person_id = $1
 	`
+	params := []interface{}{personID}
 
 	if !includeInvalid {
-		now := time.Now()
-
 		query += `
-			WHERE
-				s.is_revoked = FALSE
-				AND p.is_deactivated = FALSE
-				AND $1::timestamptz > s.created_at
-				AND $1::timestamptz < s.expires_at
+			AND s.is_revoked = FALSE
+			AND p.is_deactivated = FALSE
 		`
 
+		now := time.Now().UTC().Round(time.Second)
 		params = append(params, now)
+		query += `
+			AND $2::timestamptz >= s.created_at::timestamptz
+			AND $2::timestamptz < s.expires_at::timestamptz
+		`
 	}
 
 	query += `
-		GROUP BY s.person_id
+		GROUP BY
+			s.session_id,
+			p.person_id,
+			a.person_id
 	`
 
-	var ss []app.Session
-	err := db.SelectContext(ctx, ss, query, params...)
+	var dbss []dbSession
+	err := db.SelectContext(ctx, &dbss, query, params...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, errors.Wrap(err, "failed to select sessions")
+	}
+
+	ss := make([]app.Session, len(dbss))
+	for idx, dbs := range dbss {
+		ss[idx] = dbs.toSession()
 	}
 
 	return ss, nil
@@ -78,9 +107,9 @@ func (db *database) GetSessionByToken(
 	token uuid.UUID,
 ) (app.Session, error) {
 
-	var s app.Session
+	var dbs dbSession
 
-	err := db.GetContext(ctx, &s, `
+	err := db.GetContext(ctx, &dbs, `
 		SELECT
 			s.session_id,
 			s.token,
@@ -101,7 +130,10 @@ func (db *database) GetSessionByToken(
 		LEFT JOIN affiliation a
 			ON p.person_id = a.person_id
 		WHERE s.token = $1
-		GROUP BY s.person_id
+		GROUP BY
+			s.session_id,
+			p.person_id,
+			a.person_id
 	`, token)
 
 	if errors.Is(err, sql.ErrNoRows) {
@@ -111,44 +143,52 @@ func (db *database) GetSessionByToken(
 		)
 	}
 
-	return s, errors.Wrap(err, "failed to get session")
+	return dbs.toSession(), errors.Wrap(err, "failed to get session")
 }
 
 // CreateSession creates a new session, ignoring the ID field.
-func (db *database) CreateSession(ctx context.Context, s app.Session) error {
-	result, err := db.ExecContext(ctx, `
+func (db *database) CreateSession(
+	ctx context.Context,
+	s app.Session,
+) (int, error) {
+
+	var id int
+	err := db.GetContext(ctx, &id, `
 		INSERT INTO session (
 			token,
 			person_id,
 			created_at,
 			expires_at
 		) VALUES ($1, $2, $3, $4)
+		RETURNING session_id
 	`, s.Token, s.Person.ID, s.CreatedAt, s.ExpiresAt)
 
-	if err != nil {
-		return errors.Wrap(err, "failed to insert session")
-	}
-
-	n, err := result.RowsAffected()
-	if err != nil {
-		return errors.Wrap(err, "failed to check result of session insert")
-	} else if n != 1 {
-		return errors.Errorf(
-			"insert session ought to affect 1 row, found: %d", n)
-	}
-
-	return nil
+	return id, errors.Wrap(err, "failed to insert session")
 }
 
 // RevokeSession revokes an existing session.
 func (db *database) RevokeSession(ctx context.Context, sessionID int) error {
-	_, err := db.ExecContext(ctx, `
+	result, err := db.ExecContext(ctx, `
 		UPDATE session SET
-			revoked = TRUE
+			is_revoked = TRUE
 		WHERE session_id = $1
 	`, sessionID)
 
-	return errors.Wrap(err, "failed to revoke session")
+	if err != nil {
+		return errors.Wrap(err, "failed to revoke session")
+	}
+
+	n, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to check result of revoke")
+	} else if n != 1 {
+		return errors.Wrapf(
+			app.ErrNotFound,
+			"no such session by id of %d", sessionID,
+		)
+	}
+
+	return nil
 }
 
 // RevokeSessionsForPersonExcept revokes all sessions for a person except the
@@ -164,7 +204,7 @@ func (db *database) RevokeSessionsForPersonExcept(
 
 	_, err := db.ExecContext(ctx, `
 		UPDATE session SET
-			revoked = TRUE
+			is_revoked = TRUE
 		WHERE
 			person_id = $1
 			AND session_id != $2

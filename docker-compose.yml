@@ -1,4 +1,4 @@
-version: "3"
+version: "3.9"
 
 services:
   db:
@@ -24,6 +24,32 @@ services:
       - ./db/migrations:/flyway/sql
     depends_on:
       - db
+
+  testdb:
+    container_name: testdb
+    hostname: testdb
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=app_template
+      - POSTGRES_USER=testuser
+      - POSTGRES_PASSWORD=testpass
+    profiles:
+      - testdb
+    ports:
+      - 5432:5432
+
+  flyway-testdb:
+    container_name: flyway-testdb
+    image: flyway/flyway
+    command: >
+      -url=jdbc:postgresql://testdb:5432/app_template -schemas=public
+      -user=testuser -password=testpass -connectRetries=60 migrate
+    volumes:
+      - ./db/migrations:/flyway/sql
+    depends_on:
+      - testdb
+    profiles:
+      - testdb
 
   pgadmin:
     container_name: pgadmin
