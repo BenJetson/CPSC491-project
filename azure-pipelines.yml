@@ -101,12 +101,14 @@ stages:
               failTaskOnFailedTests: true
               buildPlatform: x64
               publishRunAttachments: true
+            condition: always()
             displayName: Publish Test Results
           - task: PublishCodeCoverageResults@1
             inputs:
               codeCoverageTool: Cobertura
               summaryFileLocation: $(System.DefaultWorkingDirectory)/go/results/cover.xml
               failIfCoverageEmpty: true
+            condition: always()
             displayName: Publish Code Coverage
 
   - stage: Build
