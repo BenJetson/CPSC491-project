@@ -2,9 +2,13 @@ package db
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"sort"
 	"testing"
 
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/BenJetson/CPSC491-project/go/app"
@@ -148,4 +152,251 @@ func TestGetSessionsForPerson(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, ss, 0)
 	})
+}
+
+func TestGetSessionByToken(t *testing.T) {
+	db := newTestDB(t)
+	defer db.cleanup(t)
+
+	ctx := context.Background()
+
+	p1 := app.Person{
+		ID:           1,
+		FirstName:    "Ben",
+		LastName:     "Godfrey",
+		Email:        "bfgodfr@clemson.edu",
+		Password:     `qwerty`,
+		Role:         app.RoleAdmin,
+		Affiliations: make([]int, 0),
+	}
+	_, err := db.CreatePerson(ctx, p1)
+	require.NoError(t, err)
+
+	p2 := app.Person{
+		ID:           2,
+		FirstName:    "Roger",
+		LastName:     "Van Scoy",
+		Email:        "vanscoy@clemson.edu",
+		Password:     `zxcvbn`,
+		Role:         app.RoleSponsor,
+		Affiliations: make([]int, 0),
+	}
+	_, err = db.CreatePerson(ctx, p2)
+	require.NoError(t, err)
+
+	var s *app.Session
+	var ss1, ss2 []app.Session
+	for i := 0; i < 5; i++ {
+		s, err = app.NewSession(p1)
+		require.NoError(t, err)
+		require.NotNil(t, s)
+
+		_, err = db.CreateSession(ctx, *s)
+		require.NoError(t, err)
+
+		s.ID = i + 1
+
+		ss1 = append(ss1, *s)
+	}
+
+	for i := 0; i < 3; i++ {
+		s, err = app.NewSession(p2)
+		require.NoError(t, err)
+		require.NotNil(t, s)
+
+		_, err = db.CreateSession(ctx, *s)
+		require.NoError(t, err)
+
+		s.ID = i + 6
+
+		ss2 = append(ss2, *s)
+	}
+
+	t.Run("NoSuchSession", func(t *testing.T) {
+		_, err = db.GetSessionByToken(ctx, uuid.Nil)
+		require.Error(t, err)
+		assert.True(t, errors.Is(err, app.ErrNotFound))
+	})
+
+	var actual app.Session
+
+	// nolint: scopelint // allow for test purposes.
+	for groupidx, ss := range [][]app.Session{ss1, ss2} {
+		for idx, expect := range ss {
+			t.Run(fmt.Sprintf("ss%d-%d", groupidx+1, idx), func(t *testing.T) {
+				actual, err = db.GetSessionByToken(ctx, expect.Token)
+				require.NoError(t, err)
+				assertEqualJSON(t, expect, actual)
+			})
+		}
+	}
+}
+
+func TestCreateSession(t *testing.T) {
+	db := newTestDB(t)
+	defer db.cleanup(t)
+
+	ctx := context.Background()
+
+	p1 := app.Person{
+		ID:           1,
+		FirstName:    "Ben",
+		LastName:     "Godfrey",
+		Email:        "bfgodfr@clemson.edu",
+		Password:     `qwerty`,
+		Role:         app.RoleAdmin,
+		Affiliations: make([]int, 0),
+	}
+	_, err := db.CreatePerson(ctx, p1)
+	require.NoError(t, err)
+
+	p2 := app.Person{
+		ID:           2,
+		FirstName:    "Roger",
+		LastName:     "Van Scoy",
+		Email:        "vanscoy@clemson.edu",
+		Password:     `zxcvbn`,
+		Role:         app.RoleSponsor,
+		Affiliations: make([]int, 0),
+	}
+	_, err = db.CreatePerson(ctx, p2)
+	require.NoError(t, err)
+
+	var s *app.Session
+	var ss []app.Session
+
+	assertSessionPresence := func(t *testing.T) {
+		db.assertCount(t, "session", len(ss))
+
+		for _, s := range ss {
+			db.assertCountOf(t, "session", 1, `
+				token = $1
+				AND person_id = $2
+				AND created_at = $3::timestamptz
+				AND expires_at = $4::timestamptz
+				AND session_id = $5
+			`, s.Token, s.Person.ID, s.CreatedAt, s.ExpiresAt, s.ID)
+		}
+	}
+
+	t.Run("NoSuchPerson", func(t *testing.T) {
+		s, err = app.NewSession(app.Person{})
+		require.NoError(t, err)
+		require.NotNil(t, s)
+
+		_, err = db.CreateSession(ctx, *s)
+		require.Error(t, err)
+
+		assertSessionPresence(t)
+	})
+
+	for i := 0; i < 20; i++ {
+		i := i // pin this value for scopelint
+
+		t.Run(fmt.Sprintf("total%d", i+1), func(t *testing.T) {
+			p := p1
+			if i%2 == 0 {
+				p = p2
+			}
+
+			s, err = app.NewSession(p)
+			require.NoError(t, err)
+			require.NotNil(t, s)
+
+			s.ID, err = db.CreateSession(ctx, *s)
+			require.NoError(t, err)
+			assert.NotZero(t, s.ID)
+
+			ss = append(ss, *s)
+
+			assertSessionPresence(t)
+		})
+	}
+}
+
+func TestRevokeSession(t *testing.T) {
+	db := newTestDB(t)
+	defer db.cleanup(t)
+
+	ctx := context.Background()
+
+	p1 := app.Person{
+		ID:           1,
+		FirstName:    "Ben",
+		LastName:     "Godfrey",
+		Email:        "bfgodfr@clemson.edu",
+		Password:     `qwerty`,
+		Role:         app.RoleAdmin,
+		Affiliations: make([]int, 0),
+	}
+	_, err := db.CreatePerson(ctx, p1)
+	require.NoError(t, err)
+
+	p2 := app.Person{
+		ID:           2,
+		FirstName:    "Roger",
+		LastName:     "Van Scoy",
+		Email:        "vanscoy@clemson.edu",
+		Password:     `zxcvbn`,
+		Role:         app.RoleSponsor,
+		Affiliations: make([]int, 0),
+	}
+	_, err = db.CreatePerson(ctx, p2)
+	require.NoError(t, err)
+
+	var s *app.Session
+	var ss []app.Session
+
+	assertSessionPresence := func(t *testing.T) {
+		db.assertCount(t, "session", len(ss))
+
+		for _, s := range ss {
+			db.assertCountOf(t, "session", 1, `
+				token = $1
+				AND person_id = $2
+				AND created_at = $3::timestamptz
+				AND expires_at = $4::timestamptz
+				AND session_id = $5
+			`, s.Token, s.Person.ID, s.CreatedAt, s.ExpiresAt, s.ID)
+		}
+	}
+
+	t.Run("NoSuchSession", func(t *testing.T) {
+		err = db.RevokeSession(ctx, 881)
+		require.Error(t, err)
+		assert.True(t, errors.Is(err, app.ErrNotFound))
+
+		assertSessionPresence(t)
+	})
+
+	// Create sessions
+	for i := 0; i < 18; i++ {
+		p := p1
+		if i%2 == 0 {
+			p = p2
+		}
+
+		s, err = app.NewSession(p)
+		require.NoError(t, err)
+		require.NotNil(t, s)
+
+		s.ID, err = db.CreateSession(ctx, *s)
+		require.NoError(t, err)
+		assert.NotZero(t, s.ID)
+
+		ss = append(ss, *s)
+
+		assertSessionPresence(t)
+	}
+
+	for i := 0; i < 18; i += 3 {
+		i := i // pin this value for scopelint
+
+		t.Run(fmt.Sprintf("revoke#%d", i+1), func(t *testing.T) {
+			err = db.RevokeSession(ctx, ss[i].ID)
+			ss[i].IsRevoked = true
+
+			assertSessionPresence(t)
+		})
+	}
 }

@@ -109,9 +109,9 @@ func (db *database) GetSessionByToken(
 	token uuid.UUID,
 ) (app.Session, error) {
 
-	var s app.Session
+	var dbs dbSession
 
-	err := db.GetContext(ctx, &s, `
+	err := db.GetContext(ctx, &dbs, `
 		SELECT
 			s.session_id,
 			s.token,
@@ -132,7 +132,10 @@ func (db *database) GetSessionByToken(
 		LEFT JOIN affiliation a
 			ON p.person_id = a.person_id
 		WHERE s.token = $1
-		GROUP BY s.person_id
+		GROUP BY
+			s.session_id,
+			p.person_id,
+			a.person_id
 	`, token)
 
 	if errors.Is(err, sql.ErrNoRows) {
@@ -142,7 +145,7 @@ func (db *database) GetSessionByToken(
 		)
 	}
 
-	return s, errors.Wrap(err, "failed to get session")
+	return dbs.toSession(), errors.Wrap(err, "failed to get session")
 }
 
 // CreateSession creates a new session, ignoring the ID field.
@@ -167,13 +170,27 @@ func (db *database) CreateSession(
 
 // RevokeSession revokes an existing session.
 func (db *database) RevokeSession(ctx context.Context, sessionID int) error {
-	_, err := db.ExecContext(ctx, `
+	result, err := db.ExecContext(ctx, `
 		UPDATE session SET
 			is_revoked = TRUE
 		WHERE session_id = $1
 	`, sessionID)
 
-	return errors.Wrap(err, "failed to revoke session")
+	if err != nil {
+		return errors.Wrap(err, "failed to revoke session")
+	}
+
+	n, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to check result of revoke")
+	} else if n != 1 {
+		return errors.Wrapf(
+			app.ErrNotFound,
+			"no such session by id of %d", sessionID,
+		)
+	}
+
+	return nil
 }
 
 // RevokeSessionsForPersonExcept revokes all sessions for a person except the
