@@ -25,7 +25,7 @@ type CommerceSortDirection string
 // are sorted.
 const (
 	CommerceSortDirectionAscending  CommerceSortDirection = "up"
-	CommerceSortDirectionDescending CommerceSortDirection = "up"
+	CommerceSortDirectionDescending CommerceSortDirection = "down"
 )
 
 // CommerceSort controls sorting of search results.
