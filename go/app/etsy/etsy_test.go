@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -35,6 +36,12 @@ func (m *mockHTTPClient) Do(_ *http.Request) (res *http.Response, err error) {
 	return
 }
 
+func (m *mockHTTPClient) reset() {
+	m.response = ""
+	m.code = 0
+	m.err = nil
+}
+
 func testsUseRealAPI(_ *testing.T) bool {
 	return len(os.Getenv("TESTS_USE_REAL_ETSY_API")) > 0
 }
@@ -56,11 +63,151 @@ func newTestClient(t *testing.T) (*Client, *mockHTTPClient) {
 	return c, httpClient
 }
 
+func TestInjectQueryParams(t *testing.T) {
+	c, _ := newTestClient(t)
+
+	testCases := []struct {
+		alias  string
+		q      app.CommerceQuery
+		expect []string
+	}{
+		{
+			alias:  "Zero",
+			expect: []string{"keywords="},
+		},
+		{
+			alias: "JustKeywords",
+			q: app.CommerceQuery{
+				Keywords: "Aperture Labs",
+			},
+			expect: []string{"keywords=Aperture+Labs"},
+		},
+		{
+			alias: "WithSort",
+			q: app.CommerceQuery{
+				Keywords: "Google Chrome",
+				Sort: app.CommerceSort{
+					Valid:     true,
+					By:        app.CommerceSortByCreated,
+					Direction: app.CommerceSortDirectionAscending,
+				},
+			},
+			expect: []string{
+				"keywords=Google+Chrome",
+				"sort_on=created",
+				"sort_order=up",
+			},
+		},
+		{
+			alias: "WithSortAndLimit",
+			q: app.CommerceQuery{
+				Keywords: "Google Chrome",
+				Sort: app.CommerceSort{
+					Valid:     true,
+					By:        app.CommerceSortByCreated,
+					Direction: app.CommerceSortDirectionAscending,
+				},
+				Limit: null.IntFrom(7),
+			},
+			expect: []string{
+				"keywords=Google+Chrome",
+				"sort_on=created",
+				"sort_order=up",
+				"limit=7",
+			},
+		},
+		{
+			alias: "WithPageNoAndLimit",
+			q: app.CommerceQuery{
+				Keywords: "Google Chrome",
+				Limit:    null.IntFrom(7),
+				PageNo:   null.IntFrom(6),
+			},
+			expect: []string{
+				"keywords=Google+Chrome",
+				"limit=7",
+				"page=6",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.alias, func(t *testing.T) {
+			params := make(url.Values)
+
+			c.injectEtsyQueryParams(tc.q, &params)
+
+			actual := params.Encode()
+
+			require.NotZero(t, actual)
+
+			parts := strings.Split(actual, "&")
+			assert.Len(t, parts, len(tc.expect))
+
+			for _, expect := range tc.expect {
+				assert.Contains(t, parts, expect)
+			}
+		})
+	}
+}
+
 func TestSearch(t *testing.T) {
 	c, httpc := newTestClient(t)
 	ctx := context.Background()
 
+	t.Run("BadJSON", func(t *testing.T) {
+		if testsUseRealAPI(t) {
+			t.SkipNow()
+		}
+
+		httpc.reset()
+		httpc.code = http.StatusOK
+		httpc.response = `{{{{{!!!!}!}!}!}!XX!}`
+
+		_, err := c.Search(ctx, app.CommerceQuery{
+			Keywords: "Valve Portal Aperture Science Laboratories",
+			Limit:    null.IntFrom(3),
+		})
+		require.Error(t, err)
+	})
+
+	t.Run("ItsNotOK", func(t *testing.T) {
+		if testsUseRealAPI(t) {
+			t.SkipNow()
+		}
+
+		httpc.reset()
+		httpc.code = http.StatusInternalServerError
+		httpc.response = `{"some": "other valid json"}`
+
+		_, err := c.Search(ctx, app.CommerceQuery{
+			Keywords: "Valve Portal Aperture Science Laboratories",
+			Limit:    null.IntFrom(3),
+		})
+		require.Error(t, err)
+	})
+
+	t.Run("ThePriceIsntRight", func(t *testing.T) {
+		if testsUseRealAPI(t) {
+			t.SkipNow()
+		}
+
+		resBytes, err := ioutil.ReadFile("samples/the_price_isnt_right.json")
+		require.NoError(t, err, "failed to read sample data")
+
+		httpc.reset()
+		httpc.code = http.StatusOK
+		httpc.response = string(resBytes)
+
+		_, err = c.Search(ctx, app.CommerceQuery{
+			Keywords: "Valve Portal Aperture Science Laboratories",
+			Limit:    null.IntFrom(3),
+		})
+		require.Error(t, err)
+	})
+
 	t.Run("NoKeywords", func(t *testing.T) {
+		httpc.reset()
 		httpc.code = http.StatusBadRequest
 		httpc.response = "Keywords are not specific."
 
@@ -72,6 +219,7 @@ func TestSearch(t *testing.T) {
 		resBytes, err := ioutil.ReadFile("samples/search_results.json")
 		require.NoError(t, err, "failed to read sample data")
 
+		httpc.reset()
 		httpc.code = http.StatusOK
 		httpc.response = string(resBytes)
 
@@ -254,6 +402,23 @@ func TestSearch(t *testing.T) {
 
 		assert.Equal(t, expect, actual)
 	})
+
+	t.Run("ClientErr", func(t *testing.T) {
+		if testsUseRealAPI(t) {
+			t.SkipNow()
+		}
+
+		httpc.reset()
+		httpc.err = errors.New("aack")
+		httpc.code = http.StatusOK
+		httpc.response = `{"some": "real valid json"}`
+
+		_, err := c.Search(ctx, app.CommerceQuery{
+			Keywords: "Valve Portal Aperture Science Laboratories",
+			Limit:    null.IntFrom(3),
+		})
+		require.Error(t, err)
+	})
 }
 
 func TestGetProductByID(t *testing.T) {
@@ -271,6 +436,7 @@ func TestGetProductByID(t *testing.T) {
 	}
 
 	t.Run("NoSuchProduct", func(t *testing.T) {
+		httpc.reset()
 		httpc.code = http.StatusNotFound
 		httpc.response = "No product by the ID given."
 
@@ -280,10 +446,53 @@ func TestGetProductByID(t *testing.T) {
 		assert.True(t, errors.Is(err, app.ErrNotFound))
 	})
 
+	t.Run("BadJSON", func(t *testing.T) {
+		if testsUseRealAPI(t) {
+			t.SkipNow()
+		}
+
+		httpc.reset()
+		httpc.code = http.StatusOK
+		httpc.response = `{{{{{!!!!}!}!}!}!XX!}`
+
+		_, err := c.GetProductByID(ctx, validIDs[3])
+		require.Error(t, err)
+	})
+
+	t.Run("ItsNotOK", func(t *testing.T) {
+		if testsUseRealAPI(t) {
+			t.SkipNow()
+		}
+
+		httpc.reset()
+		httpc.code = http.StatusInternalServerError
+		httpc.response = `{"some": "valid json"}`
+
+		_, err := c.GetProductByID(ctx, validIDs[3])
+		require.Error(t, err)
+	})
+
+	t.Run("ThePriceIsntRight", func(t *testing.T) {
+		if testsUseRealAPI(t) {
+			t.SkipNow()
+		}
+
+		resBytes, err := ioutil.ReadFile("samples/the_price_isnt_right.json")
+		require.NoError(t, err, "failed to read sample data")
+
+		httpc.reset()
+		httpc.code = http.StatusOK
+		httpc.response = string(resBytes)
+
+		_, err = c.GetProductByID(ctx, validIDs[3])
+		require.Error(t, err)
+	})
+
 	t.Run("JustOne", func(t *testing.T) {
 		resBytes, err := ioutil.ReadFile("samples/one_product.json")
 		require.NoError(t, err, "failed to read sample data")
 
+		httpc.reset()
 		httpc.code = http.StatusOK
 		httpc.response = string(resBytes)
 
@@ -334,13 +543,32 @@ func TestGetProductByID(t *testing.T) {
 	})
 
 	t.Run("FoundMultipleSomehow", func(t *testing.T) {
+		if testsUseRealAPI(t) {
+			t.SkipNow()
+		}
+
 		resBytes, err := ioutil.ReadFile("samples/search_results.json")
 		require.NoError(t, err, "failed to read sample data")
 
+		httpc.reset()
 		httpc.code = http.StatusOK
 		httpc.response = string(resBytes)
 
 		_, err = c.GetProductByID(ctx, validIDs[3])
+		require.Error(t, err)
+	})
+
+	t.Run("ClientErr", func(t *testing.T) {
+		if testsUseRealAPI(t) {
+			t.SkipNow()
+		}
+
+		httpc.reset()
+		httpc.err = errors.New("aack")
+		httpc.code = http.StatusOK
+		httpc.response = `{"some": "ultimately valid json"}`
+
+		_, err := c.GetProductByID(ctx, validIDs[3])
 		require.Error(t, err)
 	})
 }
