@@ -14,6 +14,7 @@ type etsyProductImage struct {
 	URL570Xn       string `json:"url_570xN"`
 	URLFullxfull   string `json:"url_fullxfull"`
 }
+
 type etsyProduct struct {
 	ID          int    `json:"listing_id"`
 	Title       string `json:"title"`
