@@ -51,7 +51,7 @@ type CommerceProduct struct {
 	ID          int
 	Title       string
 	Description string
-	ImageURL    string
+	ImageURL    null.String
 	Price       Money
 }
 
