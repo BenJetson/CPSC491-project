@@ -25,7 +25,7 @@ type CommerceSortDirection string
 // are sorted.
 const (
 	CommerceSortDirectionAscending  CommerceSortDirection = "up"
-	CommerceSortDirectionDescending CommerceSortDirection = "up"
+	CommerceSortDirectionDescending CommerceSortDirection = "down"
 )
 
 // CommerceSort controls sorting of search results.
@@ -51,7 +51,7 @@ type CommerceProduct struct {
 	ID          int
 	Title       string
 	Description string
-	ImageURL    string
+	ImageURL    null.String
 	Price       Money
 }
 
