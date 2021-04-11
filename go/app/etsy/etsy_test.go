@@ -15,39 +15,15 @@ import (
 	"gopkg.in/guregu/null.v4"
 
 	"github.com/BenJetson/CPSC491-project/go/app"
+	"github.com/BenJetson/CPSC491-project/go/app/mock"
 )
-
-type mockHTTPClient struct {
-	response string
-	code     int
-	err      error
-}
-
-func (m *mockHTTPClient) Do(_ *http.Request) (res *http.Response, err error) {
-	if m.err != nil {
-		err = m.err
-		return
-	}
-
-	res = &http.Response{
-		Body:       ioutil.NopCloser(strings.NewReader(m.response)),
-		StatusCode: m.code,
-	}
-	return
-}
-
-func (m *mockHTTPClient) reset() {
-	m.response = ""
-	m.code = 0
-	m.err = nil
-}
 
 func testsUseRealAPI(_ *testing.T) bool {
 	return len(os.Getenv("TESTS_USE_REAL_ETSY_API")) > 0
 }
 
-func newTestClient(t *testing.T) (*Client, *mockHTTPClient) {
-	httpClient := &mockHTTPClient{}
+func newTestClient(t *testing.T) (*Client, *mock.HTTPClient) {
+	httpClient := &mock.HTTPClient{}
 
 	c := NewClient("VOID_this_is_for_testing")
 	c.httpClient = httpClient
@@ -160,9 +136,9 @@ func TestSearch(t *testing.T) {
 			t.SkipNow()
 		}
 
-		httpc.reset()
-		httpc.code = http.StatusOK
-		httpc.response = `{{{{{!!!!}!}!}!}!XX!}`
+		httpc.Reset()
+		httpc.Code = http.StatusOK
+		httpc.Response = `{{{{{!!!!}!}!}!}!XX!}`
 
 		_, err := c.Search(ctx, app.CommerceQuery{
 			Keywords: "Valve Portal Aperture Science Laboratories",
@@ -176,9 +152,9 @@ func TestSearch(t *testing.T) {
 			t.SkipNow()
 		}
 
-		httpc.reset()
-		httpc.code = http.StatusInternalServerError
-		httpc.response = `{"some": "other valid json"}`
+		httpc.Reset()
+		httpc.Code = http.StatusInternalServerError
+		httpc.Response = `{"some": "other valid json"}`
 
 		_, err := c.Search(ctx, app.CommerceQuery{
 			Keywords: "Valve Portal Aperture Science Laboratories",
@@ -195,9 +171,9 @@ func TestSearch(t *testing.T) {
 		resBytes, err := ioutil.ReadFile("samples/the_price_isnt_right.json")
 		require.NoError(t, err, "failed to read sample data")
 
-		httpc.reset()
-		httpc.code = http.StatusOK
-		httpc.response = string(resBytes)
+		httpc.Reset()
+		httpc.Code = http.StatusOK
+		httpc.Response = string(resBytes)
 
 		_, err = c.Search(ctx, app.CommerceQuery{
 			Keywords: "Valve Portal Aperture Science Laboratories",
@@ -207,9 +183,9 @@ func TestSearch(t *testing.T) {
 	})
 
 	t.Run("NoKeywords", func(t *testing.T) {
-		httpc.reset()
-		httpc.code = http.StatusBadRequest
-		httpc.response = "Keywords are not specific."
+		httpc.Reset()
+		httpc.Code = http.StatusBadRequest
+		httpc.Response = "Keywords are not specific."
 
 		_, err := c.Search(ctx, app.CommerceQuery{})
 		require.Error(t, err)
@@ -219,9 +195,9 @@ func TestSearch(t *testing.T) {
 		resBytes, err := ioutil.ReadFile("samples/search_results.json")
 		require.NoError(t, err, "failed to read sample data")
 
-		httpc.reset()
-		httpc.code = http.StatusOK
-		httpc.response = string(resBytes)
+		httpc.Reset()
+		httpc.Code = http.StatusOK
+		httpc.Response = string(resBytes)
 
 		actual, err := c.Search(ctx, app.CommerceQuery{
 			Keywords: "Valve Portal Aperture Science Laboratories",
@@ -408,10 +384,10 @@ func TestSearch(t *testing.T) {
 			t.SkipNow()
 		}
 
-		httpc.reset()
-		httpc.err = errors.New("aack")
-		httpc.code = http.StatusOK
-		httpc.response = `{"some": "real valid json"}`
+		httpc.Reset()
+		httpc.Err = errors.New("aack")
+		httpc.Code = http.StatusOK
+		httpc.Response = `{"some": "real valid json"}`
 
 		_, err := c.Search(ctx, app.CommerceQuery{
 			Keywords: "Valve Portal Aperture Science Laboratories",
@@ -436,9 +412,9 @@ func TestGetProductByID(t *testing.T) {
 	}
 
 	t.Run("NoSuchProduct", func(t *testing.T) {
-		httpc.reset()
-		httpc.code = http.StatusNotFound
-		httpc.response = "No product by the ID given."
+		httpc.Reset()
+		httpc.Code = http.StatusNotFound
+		httpc.Response = "No product by the ID given."
 
 		_, err := c.GetProductByID(ctx, 2929292222222222)
 
@@ -451,9 +427,9 @@ func TestGetProductByID(t *testing.T) {
 			t.SkipNow()
 		}
 
-		httpc.reset()
-		httpc.code = http.StatusOK
-		httpc.response = `{{{{{!!!!}!}!}!}!XX!}`
+		httpc.Reset()
+		httpc.Code = http.StatusOK
+		httpc.Response = `{{{{{!!!!}!}!}!}!XX!}`
 
 		_, err := c.GetProductByID(ctx, validIDs[3])
 		require.Error(t, err)
@@ -464,9 +440,9 @@ func TestGetProductByID(t *testing.T) {
 			t.SkipNow()
 		}
 
-		httpc.reset()
-		httpc.code = http.StatusInternalServerError
-		httpc.response = `{"some": "valid json"}`
+		httpc.Reset()
+		httpc.Code = http.StatusInternalServerError
+		httpc.Response = `{"some": "valid json"}`
 
 		_, err := c.GetProductByID(ctx, validIDs[3])
 		require.Error(t, err)
@@ -480,9 +456,9 @@ func TestGetProductByID(t *testing.T) {
 		resBytes, err := ioutil.ReadFile("samples/the_price_isnt_right.json")
 		require.NoError(t, err, "failed to read sample data")
 
-		httpc.reset()
-		httpc.code = http.StatusOK
-		httpc.response = string(resBytes)
+		httpc.Reset()
+		httpc.Code = http.StatusOK
+		httpc.Response = string(resBytes)
 
 		_, err = c.GetProductByID(ctx, validIDs[3])
 		require.Error(t, err)
@@ -492,9 +468,9 @@ func TestGetProductByID(t *testing.T) {
 		resBytes, err := ioutil.ReadFile("samples/one_product.json")
 		require.NoError(t, err, "failed to read sample data")
 
-		httpc.reset()
-		httpc.code = http.StatusOK
-		httpc.response = string(resBytes)
+		httpc.Reset()
+		httpc.Code = http.StatusOK
+		httpc.Response = string(resBytes)
 
 		actual, err := c.GetProductByID(ctx, validIDs[3])
 		require.NoError(t, err)
@@ -550,9 +526,9 @@ func TestGetProductByID(t *testing.T) {
 		resBytes, err := ioutil.ReadFile("samples/search_results.json")
 		require.NoError(t, err, "failed to read sample data")
 
-		httpc.reset()
-		httpc.code = http.StatusOK
-		httpc.response = string(resBytes)
+		httpc.Reset()
+		httpc.Code = http.StatusOK
+		httpc.Response = string(resBytes)
 
 		_, err = c.GetProductByID(ctx, validIDs[3])
 		require.Error(t, err)
@@ -563,10 +539,10 @@ func TestGetProductByID(t *testing.T) {
 			t.SkipNow()
 		}
 
-		httpc.reset()
-		httpc.err = errors.New("aack")
-		httpc.code = http.StatusOK
-		httpc.response = `{"some": "ultimately valid json"}`
+		httpc.Reset()
+		httpc.Err = errors.New("aack")
+		httpc.Code = http.StatusOK
+		httpc.Response = `{"some": "ultimately valid json"}`
 
 		_, err := c.GetProductByID(ctx, validIDs[3])
 		require.Error(t, err)
