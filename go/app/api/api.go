@@ -49,6 +49,7 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 	}
 
 	// Register global middleware.
+	router.Use(svr.panicRecoveryMiddleware)
 	router.Use(svr.authContextMiddleware)
 
 	// Define routes.
