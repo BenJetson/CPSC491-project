@@ -72,6 +72,11 @@ let Navigation = [
     roles: [Roles.SPONSOR],
     items: [
       {
+        link: "/sponsor/orgmgt",
+        name: "Manage Organization",
+        icon: <BusinessIcon />,
+      },
+      {
         link: "/sponsor/applications",
         name: "Manage Applications",
         icon: <AssignmentTurnedInIcon />,

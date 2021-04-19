@@ -16,6 +16,10 @@ const AppSubrouterSponsor = () => {
       {({ isOneOfRoles }) =>
         (isOneOfRoles([Roles.SPONSOR]) && (
           <Switch>
+            <Route path={`${match.path}/orgmgt`}>
+              <NotImplemented feature={"Sponsor - Manage Organization"} />
+              {/* update organization name and update points conversion rate */}
+            </Route>
             <Route path={`${match.path}/applications`}>
               <NotImplemented feature={"Sponsor - Manage Applications"} />
             </Route>
