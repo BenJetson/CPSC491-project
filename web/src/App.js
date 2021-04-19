@@ -20,12 +20,6 @@ import LoginRequired from "./components/LoginRequired";
 
 import defaultTheme from "./Theme";
 
-//app should always go to login page unless logged in
-//if logged in, app should default to home page
-//need conditional render for navbar, should be available on pages except login
-
-//New pages can be added by adding a new <Route> with the desired path name
-//Home is a placeholder for later, when navbar is needed
 let App = () => {
   return (
     <ThemeProvider theme={defaultTheme}>
