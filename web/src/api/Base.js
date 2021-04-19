@@ -85,7 +85,13 @@ const Request = async (method, endpoint, data = undefined, options = {}) => {
 
   // If there is an error condition, write a log as well.
   if (error !== null) {
-    console.error("Request error.", { status: res.status, error: error });
+    console.error("Request error.", {
+      code: res.status,
+      endpoint: endpoint,
+      error: error,
+      sentData: data,
+      url: url,
+    });
   }
 
   return {
