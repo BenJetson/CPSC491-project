@@ -27,6 +27,7 @@ const validationSchema = yup.object({
     .string("Enter your password.")
     // .min(8, "Password should be of minimum 8 characters length")
     .required("Password is required."),
+  remember: yup.boolean("Select to remember your email address."),
 });
 
 const useStyles = makeStyles((theme) => ({
@@ -45,13 +46,19 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const emailMemoryKey = "remembered-email";
+
 let Login = () => {
+  const rememberedEmail = localStorage.getItem(emailMemoryKey);
+  const didRemember = rememberedEmail !== null;
+
   const [error, setError] = useState(null);
   const classes = useStyles();
   const formik = useFormik({
     initialValues: {
-      email: "",
+      email: rememberedEmail ?? "",
       password: "",
+      remember: didRemember,
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
@@ -59,6 +66,12 @@ let Login = () => {
       setError(res.error);
 
       if (!res.error) {
+        if (values.remember) {
+          localStorage.setItem(emailMemoryKey, values.email);
+        } else {
+          localStorage.removeItem(emailMemoryKey);
+        }
+
         // Notice that this will trigger a full reload, not just using the
         // React Router here. This wlll force the context to reload.
         window.location.href = "/";
@@ -115,7 +128,15 @@ let Login = () => {
             helperText={formik.touched.password && formik.errors.password}
           />
           <FormControlLabel
-            control={<Checkbox value="remember" color="secondary" />}
+            control={
+              <Checkbox
+                id="remember"
+                name="remember"
+                checked={formik.values.remember}
+                color="secondary"
+                onChange={formik.handleChange}
+              />
+            }
             label="Remember me"
           />
           <Button
