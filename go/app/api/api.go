@@ -60,6 +60,10 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 	router.Path("/logout").Methods("POST").HandlerFunc(svr.handleLogout)
 	router.Path("/whoami").Methods("GET").HandlerFunc(svr.handleWhoAmI)
 
+	// Account subroutes.
+	accountRouter := router.PathPrefix("/account").Subrouter()
+	accountRouter.Path("/register").HandlerFunc(svr.handleRegistration)
+
 	return svr, nil
 }
 
