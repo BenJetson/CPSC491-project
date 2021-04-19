@@ -7,7 +7,7 @@ const secColor = "#1780a1";
 //  for info on how color schemes are generated
 const defaultTheme = createMuiTheme({
   palette: {
-    type: "dark",
+    type: "light",
     primary: {
       main: mainColor,
     },
