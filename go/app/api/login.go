@@ -104,7 +104,7 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		Domain:   svr.hostname(),
 		SameSite: http.SameSiteStrictMode,
 		Secure:   svr.useHTTPS(),
-		Path:     "/api",
+		Path:     "/",
 
 		// HttpOnly hides this cookie from JavaScript in browsers for security.
 		HttpOnly: true,
@@ -113,6 +113,8 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		// ditch the cookie automatically as well.
 		MaxAge: int(app.SessionLength / time.Second),
 	})
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (svr *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
@@ -138,7 +140,7 @@ func (svr *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 		Domain:   svr.hostname(),
 		SameSite: http.SameSiteStrictMode,
 		Secure:   svr.useHTTPS(),
-		Path:     "/api",
+		Path:     "/",
 
 		// HttpOnly hides this cookie from JavaScript in browsers for security.
 		HttpOnly: true,
@@ -146,4 +148,15 @@ func (svr *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 		// A MaxAge less than zero will cause clients to destroy this cookie.
 		MaxAge: -1,
 	})
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (svr *Server) handleWhoAmI(w http.ResponseWriter, r *http.Request) {
+	s := getSessionFromContext(r.Context())
+	if s == nil {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	svr.sendJSONResponse(w, s.Person)
 }

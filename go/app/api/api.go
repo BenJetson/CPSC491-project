@@ -55,6 +55,7 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 	// Define routes.
 	router.Path("/login").Methods("POST").HandlerFunc(svr.handleLogin)
 	router.Path("/logout").Methods("POST").HandlerFunc(svr.handleLogout)
+	router.Path("/whoami").Methods("GET").HandlerFunc(svr.handleWhoAmI)
 
 	return svr, nil
 }
