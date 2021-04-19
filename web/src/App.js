@@ -57,6 +57,7 @@ let App = () => {
                           <Homepage />
                         </Route>
                       )}
+
                       {isAuthenticated() && (
                         <Route path={"/my"}>
                           <AppSubrouterMy />
@@ -77,15 +78,17 @@ let App = () => {
                           <AppSubrouterDriver />
                         </Route>
                       )}
-                      {isAuthenticated() && (
+
+                      {(isAuthenticated() && (
+                        // If the user is logged in, but no route matches,
+                        // show a not found page.
                         <Route path={"*"}>
-                          {/* If no route matches, show a not found page. */}
                           <NotFound />
                         </Route>
-                      )}
-                      {!isAuthenticated() && (
-                        // If nobody is logged in, simply show an error message
-                        // on all pages directing to the login page.
+                      )) || (
+                        // If nobody is logged in, but no route matches, simply
+                        // show an error message on all pages directing to the
+                        // login page.
                         <Route path={"*"}>
                           <LoginRequired />
                         </Route>
