@@ -105,7 +105,7 @@ let Login = () => {
             label="Email Address"
             name="email"
             autoComplete="email"
-            autoFocus
+            autoFocus={!didRemember}
             value={formik.values.email}
             onChange={formik.handleChange}
             error={formik.touched.email && Boolean(formik.errors.email)}
@@ -122,6 +122,7 @@ let Login = () => {
             label="Password"
             type="password"
             autoComplete="current-password"
+            autoFocus={didRemember}
             value={formik.values.password}
             onChange={formik.handleChange}
             error={formik.touched.password && Boolean(formik.errors.password)}
