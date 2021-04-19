@@ -4,7 +4,6 @@ import { Container, CssBaseline, ThemeProvider } from "@material-ui/core";
 
 import { AuthProvider, WithUser } from "./api/Auth";
 
-import Application from "./components/Application";
 import Homepage from "./components/Homepage";
 import Login from "./components/Login";
 import NavBar from "./components/NavBar";
