@@ -39,11 +39,12 @@ let App = () => {
                 <Route>
                   <NavBar />
                   <Container>
+                    <Route path={"/register"}>
+                      <Registration />
+                    </Route>
+
                     {(isAuthenticated() && (
                       <Switch>
-                        <Route path={"/register"}>
-                          <Registration />
-                        </Route>
                         <Route path={"/apply"}>
                           <Application
                             status={"pending"}
