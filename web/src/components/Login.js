@@ -88,6 +88,9 @@ let Login = () => {
           height="192"
           width="192"
         />
+        <Typography variant="h5" component="h1">
+          Driver Incentive Program
+        </Typography>
         <form
           className={classes.form}
           noValidate
