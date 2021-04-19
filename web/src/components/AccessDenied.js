@@ -13,22 +13,24 @@ const AccessDenied = ({ reason = null }) => (
         <strong>Reason:</strong> {reason}
       </Typography>
     )) || (
-      <Typography>
+      <>
+        <br />
         <Typography>This could be for a number of reasons:</Typography>
-        <ul>
+        <Typography component="ul">
           <li>Your privilege level is insufficient (wrong role).</li>
           <li>Your account is not the owner of the requested resource.</li>
           <li>
             Your account is not affiliated with the same organization as the
             requested resource.
           </li>
-        </ul>
-        <Typography>
-          This error is durable and will persist unless your account parameters
-          are modified by an administrator.
         </Typography>
-      </Typography>
+        <br />
+      </>
     )}
+    <Typography>
+      This error is durable and will persist unless your account parameters are
+      modified by an administrator.
+    </Typography>
   </Alert>
 );
 
