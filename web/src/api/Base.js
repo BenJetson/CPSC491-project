@@ -56,7 +56,13 @@ const Request = async (method, endpoint, data = undefined, options = {}) => {
   let error = null;
 
   try {
-    if (res.status !== HTTPStatus.NO_CONTENT) {
+    if (
+      ![
+        HTTPStatus.NO_CONTENT,
+        HTTPStatus.BAD_GATEWAY,
+        HTTPStatus.GATEWAY_TIMEOUT,
+      ].includes(res.status)
+    ) {
       // Attempt to read the response body as JSON.
       outData = await res.json();
     }
