@@ -13,7 +13,7 @@ const AppSubrouterDriver = () => {
   return (
     <WithUser>
       {({ isOneOfRoles }) =>
-        (isOneOfRoles([Roles.ADMIN, Roles.DRIVER]) && (
+        (isOneOfRoles([Roles.DRIVER]) && (
           <Switch>
             <Route path={`${match.path}/applications`}>
               <NotImplemented feature={"Driver - Applications"} />

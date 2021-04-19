@@ -69,7 +69,7 @@ let Navigation = [
   },
   {
     title: "Sponsor Tools",
-    roles: [Roles.ADMIN, Roles.SPONSOR],
+    roles: [Roles.SPONSOR],
     items: [
       {
         link: "/sponsor/applications",
@@ -90,7 +90,7 @@ let Navigation = [
   },
   {
     title: "Driver Tools",
-    roles: [Roles.ADMIN, Roles.DRIVER],
+    roles: [Roles.DRIVER],
     items: [
       {
         link: "/driver/applications",

@@ -14,7 +14,7 @@ const AppSubrouterSponsor = () => {
   return (
     <WithUser>
       {({ isOneOfRoles }) =>
-        (isOneOfRoles([Roles.ADMIN, Roles.SPONSOR]) && (
+        (isOneOfRoles([Roles.SPONSOR]) && (
           <Switch>
             <Route path={`${match.path}/applications`}>
               <NotImplemented feature={"Sponsor - Manage Applications"} />
