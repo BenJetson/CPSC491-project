@@ -50,6 +50,18 @@ INSERT INTO person (
 ( -- ID: 12
     'Cameron', 'Driver', 'sharpe9+driver@g.clemson.edu', 4,
     '$2a$10$XnZvNenRRA00ufEtl2fs8Ol5Jh0cntDJkxsu9o.oDqXT78pd6UFrG'
+),
+( -- ID: 13
+    'Van Scoy', 'Admin', 'vanscoy+admin@g.clemson.edu', 1,
+    '$2a$10$XnZvNenRRA00ufEtl2fs8Ol5Jh0cntDJkxsu9o.oDqXT78pd6UFrG'
+),
+( -- ID: 14
+    'Van Scoy', 'Sponsor', 'vanscoy+sponsor@g.clemson.edu', 2,
+    '$2a$10$XnZvNenRRA00ufEtl2fs8Ol5Jh0cntDJkxsu9o.oDqXT78pd6UFrG'
+),
+( -- ID: 15
+    'Van Scoy', 'Driver', 'vanscoy+driver@g.clemson.edu', 4,
+    '$2a$10$XnZvNenRRA00ufEtl2fs8Ol5Jh0cntDJkxsu9o.oDqXT78pd6UFrG'
 );
 
 INSERT INTO organization (
@@ -85,4 +97,10 @@ INSERT INTO affiliation (
 ),
 (
     12, 1, 0
+),
+(
+    14, 1, NULL
+),
+(
+    15, 1, 0
 );
