@@ -7,7 +7,6 @@ import { AuthProvider, WithUser } from "./api/Auth";
 import Homepage from "./components/Homepage";
 import Login from "./components/Login";
 import NavBar from "./components/NavBar";
-import Registration from "./components/Registration";
 import ScrollSpy from "./components/ScrollSpy";
 import NotFound from "./components/NotFound";
 import LoginRequired from "./components/LoginRequired";

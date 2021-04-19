@@ -4,8 +4,8 @@ import NotFound from "./components/NotFound";
 import NotImplemented from "./components/NotImplemented";
 
 import { WithUser } from "./api/Auth";
-import Roles from "./api/Roles";
 import AccessDenied from "./components/AccessDenied";
+import Registration from "./components/Registration";
 
 const AppSubrouterAdmin = () => {
   const match = useRouteMatch();
@@ -16,7 +16,7 @@ const AppSubrouterAdmin = () => {
         (!isAuthenticated() && (
           <Switch>
             <Route path={`${match.path}/register`}>
-              <NotImplemented feature={"Account - Register"} />
+              <Registration />
             </Route>
             <Route path={`${match.path}/forgot`}>
               <NotImplemented feature={"Account - Forgot Password"} />
