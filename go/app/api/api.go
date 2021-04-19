@@ -52,6 +52,9 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 	router.Use(svr.panicRecoveryMiddleware)
 	router.Use(svr.authContextMiddleware)
 
+	// Set not found handler.
+	router.NotFoundHandler = http.HandlerFunc(svr.handleNotFound)
+
 	// Define routes.
 	router.Path("/login").Methods("POST").HandlerFunc(svr.handleLogin)
 	router.Path("/logout").Methods("POST").HandlerFunc(svr.handleLogout)
