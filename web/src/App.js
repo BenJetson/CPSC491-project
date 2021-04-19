@@ -14,6 +14,11 @@ import NotFound from "./components/NotFound";
 import LoginRequired from "./components/LoginRequired";
 
 import defaultTheme from "./Theme";
+import AppSubrouterAdmin from "./AppSubrouterAdmin";
+import AppSubrouterDriver from "./AppSubrouterDriver";
+import AppSubrouterSponsor from "./AppSubrouterSponsor";
+import AppSubrouterStatic from "./AppSubrouterStatic";
+import AppSubrouterMy from "./AppSubrouterMy";
 
 let App = () => {
   return (
@@ -39,34 +44,53 @@ let App = () => {
                 <Route>
                   <NavBar />
                   <Container>
-                    <Route exact path={"/register"}>
-                      <Registration />
-                    </Route>
+                    <Switch>
+                      <Route exact path={"/register"}>
+                        <Registration />
+                      </Route>
+                      <Route path={"/static"}>
+                        <AppSubrouterStatic />
+                      </Route>
 
-                    {(isAuthenticated() && (
-                      <Switch>
-                        <Route path={"/apply"}>
-                          <Application
-                            status={"pending"}
-                            companyName={"Clemson Shipping"}
-                            reason={"just too cool"}
-                          />
-                        </Route>
+                      {isAuthenticated() && (
                         <Route exact path={"/"}>
                           <Homepage />
                         </Route>
+                      )}
+                      {isAuthenticated() && (
+                        <Route path={"/my"}>
+                          <AppSubrouterMy />
+                        </Route>
+                      )}
+                      {isAuthenticated() && (
+                        <Route path={"/admin"}>
+                          <AppSubrouterAdmin />
+                        </Route>
+                      )}
+                      {isAuthenticated() && (
+                        <Route path={"/sponsor"}>
+                          <AppSubrouterSponsor />
+                        </Route>
+                      )}
+                      {isAuthenticated() && (
+                        <Route path={"/driver"}>
+                          <AppSubrouterDriver />
+                        </Route>
+                      )}
+                      {isAuthenticated() && (
                         <Route path={"*"}>
                           {/* If no route matches, show a not found page. */}
                           <NotFound />
                         </Route>
-                      </Switch>
-                    )) || (
-                      // If nobody is logged in, simply show an error message
-                      // on all pages directing to the login page.
-                      <Route path={"*"}>
-                        <LoginRequired />
-                      </Route>
-                    )}
+                      )}
+                      {!isAuthenticated() && (
+                        // If nobody is logged in, simply show an error message
+                        // on all pages directing to the login page.
+                        <Route path={"*"}>
+                          <LoginRequired />
+                        </Route>
+                      )}
+                    </Switch>
                   </Container>
                 </Route>
               </Switch>
