@@ -29,12 +29,12 @@ let Navigation = [
         icon: <HomeIcon />,
       },
       {
-        link: "/help",
+        link: "/static/help",
         name: "Help Center",
         icon: <HelpIcon />,
       },
       {
-        link: "/about",
+        link: "/static/about",
         name: "About This App",
         icon: <InfoIcon />,
       },
@@ -45,7 +45,7 @@ let Navigation = [
     roles: [Roles.ADMIN, Roles.SPONSOR, Roles.DRIVER],
     items: [
       {
-        link: "/profile",
+        link: "/my/profile",
         name: "My Profile",
         icon: <AccountBoxIcon />,
       },
@@ -93,7 +93,7 @@ let Navigation = [
     roles: [Roles.ADMIN, Roles.DRIVER],
     items: [
       {
-        link: "/driver/apply",
+        link: "/driver/applications",
         name: "Applications",
         icon: <AssignmentIcon />,
       },
@@ -108,7 +108,7 @@ let Navigation = [
         icon: <ShoppingBasketIcon />,
       },
       {
-        link: "/driver/orders",
+        link: "/driver/receipts",
         name: "Receipts",
         icon: <ReceiptIcon />,
       },
