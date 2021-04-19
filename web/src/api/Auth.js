@@ -50,6 +50,10 @@ const AuthProvider = ({ children }) => {
     return user !== null;
   };
 
+  const isOneOfRoles = (roles) => {
+    return roles.includes(user?.["role_id"] ?? false);
+  };
+
   const getName = () => {
     const firstName = user?.["first_name"] ?? "Unknown";
     const lastName = user?.["last_name"] ?? "Unknown";
@@ -72,6 +76,7 @@ const AuthProvider = ({ children }) => {
         user,
         logout,
         isAuthenticated,
+        isOneOfRoles,
         refreshLoginStatus,
         getName,
         getInitials,

@@ -40,15 +40,14 @@ const Homepage = () => {
 
   return (
     <WithUser>
-      {({ user, isAuthenticated, getName }) => (
+      {({ isAuthenticated, getName, isOneOfRoles }) => (
         <>
           <Typography variant="h2">
             Welcome{isAuthenticated() && `, ${getName()[0]}`}!
           </Typography>
           {Navigation.map(
             (group) =>
-              (!group.roles ||
-                group.roles.includes(user?.role_id ?? false)) && (
+              (!group.roles || isOneOfRoles(group.roles)) && (
                 <Box className={classes.groupBox}>
                   <Divider />
                   {group.title && (

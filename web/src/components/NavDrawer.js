@@ -29,7 +29,7 @@ let NavDrawer = ({ open, toggle }) => {
 
   return (
     <WithUser>
-      {({ user, logout, getName, getInitials }) => (
+      {({ user, logout, getName, getInitials, isOneOfRoles }) => (
         <Drawer open={open} onClose={toggle}>
           <Box className={classes.header}>
             <Typography variant="h6">Driver Incentive Program</Typography>
@@ -43,8 +43,7 @@ let NavDrawer = ({ open, toggle }) => {
           </Box>
           {Navigation.map(
             (group) =>
-              (!group.roles ||
-                group.roles.includes(user?.role_id ?? false)) && (
+              (!group.roles || isOneOfRoles(group.roles)) && (
                 <>
                   <Divider />
                   <List>
