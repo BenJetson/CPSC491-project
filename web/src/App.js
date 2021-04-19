@@ -18,6 +18,7 @@ import AppSubrouterDriver from "./AppSubrouterDriver";
 import AppSubrouterSponsor from "./AppSubrouterSponsor";
 import AppSubrouterStatic from "./AppSubrouterStatic";
 import AppSubrouterMy from "./AppSubrouterMy";
+import AppSubrouterAccount from "./AppSubrouterAccount";
 
 let App = () => {
   return (
@@ -44,8 +45,8 @@ let App = () => {
                   <NavBar />
                   <Container>
                     <Switch>
-                      <Route exact path={"/register"}>
-                        <Registration />
+                      <Route path={"/account"}>
+                        <AppSubrouterAccount />
                       </Route>
                       <Route path={"/static"}>
                         <AppSubrouterStatic />

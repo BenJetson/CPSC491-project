@@ -155,14 +155,14 @@ let Login = () => {
           </Button>
           <Grid container>
             <Grid item xs>
-              <Link component={RouterLink} to="/forgotpassword" variant="body2">
+              <Link component={RouterLink} to="/account/forgot" variant="body2">
                 Forgot password?
               </Link>
             </Grid>
             <Grid item>
               <Typography variant="body2">
                 Don't have an account?&nbsp;
-                <Link component={RouterLink} to="/register">
+                <Link component={RouterLink} to="/account/register">
                   Register
                 </Link>
               </Typography>
