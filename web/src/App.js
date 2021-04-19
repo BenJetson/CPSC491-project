@@ -1,11 +1,6 @@
 import React from "react";
 import { HashRouter as Router, Route, Switch } from "react-router-dom";
-import {
-  Container,
-  CssBaseline,
-  ThemeProvider,
-  Typography,
-} from "@material-ui/core";
+import { Container, CssBaseline, ThemeProvider } from "@material-ui/core";
 
 import { AuthProvider, WithUser } from "./api/Auth";
 

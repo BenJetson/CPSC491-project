@@ -2,7 +2,6 @@ import React from "react";
 
 import {
   Home as HomeIcon,
-  PlayArrow as PlayArrowIcon,
   People as PeopleIcon,
   Business as BusinessIcon,
   Assignment as AssignmentIcon,
