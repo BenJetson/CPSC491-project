@@ -44,7 +44,7 @@ let NavDrawer = ({ open, toggle }) => {
           {Navigation.map(
             (group) =>
               (!group.roles || isOneOfRoles(group.roles)) && (
-                <>
+                <React.Fragment key={group.title}>
                   <Divider />
                   <List>
                     {group.title && (
@@ -60,13 +60,14 @@ let NavDrawer = ({ open, toggle }) => {
                         button
                         to={item.link}
                         onClick={toggle}
+                        key={item.link}
                       >
                         <ListItemIcon>{item.icon}</ListItemIcon>
                         <ListItemText primary={item.name} />
                       </ListItem>
                     ))}
                   </List>
-                </>
+                </React.Fragment>
               )
           )}
         </Drawer>

@@ -48,7 +48,7 @@ const Homepage = () => {
           {Navigation.map(
             (group) =>
               (!group.roles || isOneOfRoles(group.roles)) && (
-                <Box className={classes.groupBox}>
+                <Box className={classes.groupBox} key={group.title}>
                   <Divider />
                   {group.title && (
                     <Typography variant="h5" className={classes.groupTitle}>
@@ -60,7 +60,14 @@ const Homepage = () => {
                       (item) =>
                         // Prevent links back to the homepage (/).
                         item.link !== "/" && (
-                          <Grid item xs={12} sm={6} md={4} xl={3}>
+                          <Grid
+                            item
+                            xs={12}
+                            sm={6}
+                            md={4}
+                            xl={3}
+                            key={item.link}
+                          >
                             <Card>
                               <CardActionArea
                                 component={RouterLink}
