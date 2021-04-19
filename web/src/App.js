@@ -39,7 +39,7 @@ let App = () => {
                 <Route>
                   <NavBar />
                   <Container>
-                    <Route path={"/register"}>
+                    <Route exact path={"/register"}>
                       <Registration />
                     </Route>
 
@@ -63,7 +63,9 @@ let App = () => {
                     )) || (
                       // If nobody is logged in, simply show an error message
                       // on all pages directing to the login page.
-                      <LoginRequired />
+                      <Route path={"*"}>
+                        <LoginRequired />
+                      </Route>
                     )}
                   </Container>
                 </Route>
