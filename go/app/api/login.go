@@ -117,21 +117,7 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (svr *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
-	s := getSessionFromContext(r.Context())
-	if s != nil {
-		if err := svr.db.RevokeSession(r.Context(), s.ID); err != nil {
-			svr.sendErrorResponse(
-				w,
-				errors.Wrap(err, "failed to revoke session"),
-				http.StatusInternalServerError,
-				"",
-			)
-			return
-		}
-	}
-
-	// Destroy the session cookie on the client.
+func (svr *Server) destroySessionCookie(w http.ResponseWriter) {
 	http.SetCookie(w, &http.Cookie{
 		Name: sessionCookieKey,
 
@@ -148,6 +134,24 @@ func (svr *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 		// A MaxAge less than zero will cause clients to destroy this cookie.
 		MaxAge: -1,
 	})
+}
+
+func (svr *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
+	s := getSessionFromContext(r.Context())
+	if s != nil {
+		if err := svr.db.RevokeSession(r.Context(), s.ID); err != nil {
+			svr.sendErrorResponse(
+				w,
+				errors.Wrap(err, "failed to revoke session"),
+				http.StatusInternalServerError,
+				"",
+			)
+			return
+		}
+	}
+
+	// Destroy the session cookie on the client.
+	svr.destroySessionCookie(w)
 
 	w.WriteHeader(http.StatusNoContent)
 }
