@@ -52,7 +52,7 @@ const ApplicationForm = () => {
 
       if (!res.error) {
         // Application submitted successfully.
-        history.push("/driver/applications"); // FIXME
+        history.push("/driver/applications");
       }
     },
   });
