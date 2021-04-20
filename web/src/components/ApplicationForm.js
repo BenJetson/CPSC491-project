@@ -5,17 +5,12 @@ import { GetOrganizations } from "../api/Organizations";
 import { SubmitApplication } from "../api/Applications";
 import * as yup from "yup";
 import {
-  Box,
   Button,
   Container,
-  FormControl,
-  InputLabel,
   MenuItem,
-  Select,
   TextField,
   Typography,
   makeStyles,
-  FormHelperText,
 } from "@material-ui/core";
 import { Alert, AlertTitle } from "@material-ui/lab";
 
@@ -62,16 +57,21 @@ const ApplicationForm = () => {
     },
   });
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const foundOrgs = await GetOrganizations();
-        setOrganizations(foundOrgs);
-      } catch {
-        setError("Failed to fetch list of organizations.");
-      }
-    })();
-  });
+  useEffect(
+    () => {
+      (async () => {
+        try {
+          const foundOrgs = await GetOrganizations();
+          setOrganizations(foundOrgs);
+        } catch {
+          setError("Failed to fetch list of organizations.");
+        }
+      })();
+    },
+    [
+      // Run this hook only once.
+    ]
+  );
 
   return (
     <Container maxWidth="xs">
@@ -81,34 +81,30 @@ const ApplicationForm = () => {
       <form onSubmit={formik.handleSubmit} noValidate>
         {error && <Alert severity="error">{error}</Alert>}
 
-        <FormControl
-          fullWidth
-          variant="outlined"
+        <TextField
           color="secondary"
+          variant="outlined"
           margin="normal"
           required
+          fullWidth
+          select
+          name="organization"
+          id="organization"
+          label="Organization"
+          value={formik.values.organization}
+          onChange={formik.handleChange("organization")}
           error={
             formik.touched.organization && Boolean(formik.errors.organization)
           }
+          helperText={formik.touched.organization && formik.errors.organization}
         >
-          <InputLabel id="organization-label">Organization</InputLabel>
-          <Select
-            labelId="organization-label"
-            id="organization"
-            name="organization"
-            value={formik.values.organization}
-            onChange={formik.handleChange}
-          >
-            {organizations.map((org) => (
-              <MenuItem value={org.id} key={org.id}>
-                {org.title}
-              </MenuItem>
-            ))}
-          </Select>
-          <FormHelperText>
-            {formik.touched.organization && formik.errors.organization}
-          </FormHelperText>
-        </FormControl>
+          <MenuItem value={""}>None</MenuItem>
+          {organizations.map((org) => (
+            <MenuItem value={org.id} key={org.id}>
+              {org.name}
+            </MenuItem>
+          ))}
+        </TextField>
 
         <TextField
           color="secondary"
