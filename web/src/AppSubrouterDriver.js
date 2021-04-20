@@ -6,6 +6,8 @@ import NotImplemented from "./components/NotImplemented";
 import { WithUser } from "./api/Auth";
 import Roles from "./api/Roles";
 import AccessDenied from "./components/AccessDenied";
+import ApplicationList from "./components/ApplicationList";
+import ApplicationForm from "./components/ApplicationForm";
 
 const AppSubrouterDriver = () => {
   const match = useRouteMatch();
@@ -15,8 +17,14 @@ const AppSubrouterDriver = () => {
       {({ isOneOfRoles }) =>
         (isOneOfRoles([Roles.DRIVER]) && (
           <Switch>
-            <Route path={`${match.path}/applications`}>
-              <NotImplemented feature={"Driver - Applications"} />
+            <Route exact path={`${match.path}/applications`}>
+              <ApplicationList isSponsor={false} />
+            </Route>
+            <Route path={`${match.path}/applications/new`}>
+              <ApplicationForm />
+            </Route>
+            <Route path={`${match.path}/applications/:id`}>
+              <NotImplemented feature={"Driver - View Application"} />
             </Route>
             <Route path={`${match.path}/balance`}>
               <NotImplemented feature={"Driver - View Balance"} />
