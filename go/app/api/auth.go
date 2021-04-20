@@ -31,13 +31,13 @@ func (svr *Server) authContextMiddleware(next http.Handler) http.Handler {
 
 			s, err := svr.db.GetSessionByToken(r.Context(), token)
 			if errors.Is(err, app.ErrNotFound) {
-				svr.sendErrorResponse(
-					w,
-					errors.Wrapf(err, "no session with token %s", token),
-					http.StatusUnauthorized,
-					"",
-				)
-				return
+				svr.logger.
+					WithField("token", token).
+					Info("received unknown session token; destroying cookie")
+				svr.destroySessionCookie(w)
+
+				// Attach an invalid session so it is not attached to context.
+				s = app.Session{IsRevoked: true}
 			} else if err != nil {
 				svr.sendErrorResponse(
 					w,
