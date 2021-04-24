@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Avatar, Paper, Typography, makeStyles } from "@material-ui/core";
+import { Avatar, Box, Typography, makeStyles } from "@material-ui/core";
 import { FindInPage as FindInPageIcon } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) => ({
@@ -20,12 +20,12 @@ const NoRows = () => {
   const classes = useStyles();
 
   return (
-    <Paper className={classes.surface}>
+    <Box className={classes.surface}>
       <Avatar>
         <FindInPageIcon />
       </Avatar>
       <Typography className={classes.text}>No data to display.</Typography>
-    </Paper>
+    </Box>
   );
 };
 

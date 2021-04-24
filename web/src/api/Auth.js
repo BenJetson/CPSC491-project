@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { Request } from "./Base";
+import Roles from "./Roles";
 
 const AuthContext = React.createContext({ user: null });
 
@@ -13,13 +14,10 @@ const GetCurrentUser = async () => {
   return res.data;
 };
 
-const DoLogin = async (email, password) => {
-  return await Request("POST", "/login", { email, password });
-};
+const DoLogin = async (email, password) =>
+  await Request("POST", "/login", { email, password });
 
-const DoLogout = async () => {
-  return await Request("POST", "/logout");
-};
+const DoLogout = async () => await Request("POST", "/logout");
 
 const AuthProvider = ({ children }) => {
   const history = useHistory();
@@ -46,13 +44,17 @@ const AuthProvider = ({ children }) => {
     setLastCheck(Date.now());
   };
 
-  const isAuthenticated = () => {
-    return user !== null;
-  };
+  const isAuthenticated = () => user !== null;
 
-  const isOneOfRoles = (roles) => {
-    return roles.includes(user?.["role_id"] ?? false);
-  };
+  const getRole = () => user?.["role_id"] ?? false;
+
+  const isOneOfRoles = (roles) => roles.includes(getRole());
+
+  const isRole = (role) => getRole() === role;
+
+  const isAdmin = () => isRole(Roles.IDOf.ADMIN);
+  const isSponsor = () => isRole(Roles.IDOf.SPONSOR);
+  const isDriver = () => isRole(Roles.IDOf.DRIVER);
 
   const getName = () => {
     const firstName = user?.["first_name"] ?? "Unknown";
@@ -75,11 +77,18 @@ const AuthProvider = ({ children }) => {
       value={{
         user,
         logout,
-        isAuthenticated,
-        isOneOfRoles,
-        refreshLoginStatus,
+
+        getRole,
         getName,
         getInitials,
+
+        isAuthenticated,
+        isOneOfRoles,
+        isAdmin,
+        isSponsor,
+        isDriver,
+
+        refreshLoginStatus,
       }}
     >
       {children}

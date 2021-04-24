@@ -15,7 +15,7 @@ const AppSubrouterDriver = () => {
   return (
     <WithUser>
       {({ isOneOfRoles }) =>
-        (isOneOfRoles([Roles.DRIVER]) && (
+        (isOneOfRoles([Roles.IDOf.DRIVER]) && (
           <Switch>
             <Route exact path={`${match.path}/applications`}>
               <ApplicationList isSponsor={false} />
