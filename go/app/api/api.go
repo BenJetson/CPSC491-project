@@ -52,8 +52,11 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 	router.Use(svr.panicRecoveryMiddleware)
 	router.Use(svr.authContextMiddleware)
 
-	// Set not found handler.
-	router.NotFoundHandler = http.HandlerFunc(svr.handleNotFound)
+	// Set custom error handlers.
+	router.NotFoundHandler = http.
+		HandlerFunc(svr.handleNotFound)
+	router.MethodNotAllowedHandler = http.
+		HandlerFunc(svr.handleMethodNotAllowed)
 
 	// Define routes.
 	router.Path("/login").Methods("POST").HandlerFunc(svr.handleLogin)
@@ -62,7 +65,47 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 
 	// Account subroutes.
 	accountRouter := router.PathPrefix("/account").Subrouter()
-	accountRouter.Path("/register").HandlerFunc(svr.handleRegistration)
+	accountRouter.Path("/forgot").Methods("POST").
+		HandlerFunc(svr.handleTODO) // TODO
+	accountRouter.Path("/register").Methods("POST").
+		HandlerFunc(svr.handleRegistration)
+
+	// Admin subroutes.
+	adminRouter := router.PathPrefix("/admin").Subrouter()
+	adminRouter.Use(svr.requireAuthMiddleware(authConfig{
+		requireRole:  true,
+		allowedRoles: []app.Role{app.RoleAdmin},
+	}))
+
+	adminUserRouter := adminRouter.PathPrefix("/users").Subrouter()
+	adminUserRouter.Path("").Methods("GET").
+		HandlerFunc(svr.handleAdminGetAllUsers)
+	adminUserRouter.Path("/{userID}").Methods("GET").
+		HandlerFunc(svr.handleAdminGetUserByID)
+	adminUserRouter.Path("/{userID}/name").Methods("POST").
+		HandlerFunc(svr.handleAdminUpdateUserName)
+	adminUserRouter.Path("/{userID}/email").Methods("POST").
+		HandlerFunc(svr.handleAdminUpdateUserEmail)
+	adminUserRouter.Path("/{userID}/affiliations").Methods("POST").
+		HandlerFunc(svr.handleTODO) // TODO
+	adminUserRouter.Path("/{userID}/password").Methods("POST").
+		HandlerFunc(svr.handleAdminUpdateUserPassword)
+	adminUserRouter.Path("/{userID}/activate").Methods("POST").
+		HandlerFunc(svr.handleAdminActivateUser)
+	adminUserRouter.Path("/{userID}/deactivate").Methods("POST").
+		HandlerFunc(svr.handleAdminDeactivateUser)
+
+	adminOrgRouter := adminRouter.PathPrefix("/organizations").Subrouter()
+	adminOrgRouter.Path("").Methods("GET").
+		HandlerFunc(svr.handleTODO) // TODO
+	adminOrgRouter.Path("/{orgID}").Methods("GET").
+		HandlerFunc(svr.handleTODO) // TODO
+	adminOrgRouter.Path("/{orgID}/update").Methods("POST").
+		HandlerFunc(svr.handleTODO) // TODO
+	adminOrgRouter.Path("/{orgID}/delete").Methods("POST").
+		HandlerFunc(svr.handleTODO) // TODO
+	adminOrgRouter.Path("/create").Methods("POST").
+		HandlerFunc(svr.handleTODO) // TODO
 
 	return svr, nil
 }

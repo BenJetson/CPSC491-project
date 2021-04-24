@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"gopkg.in/guregu/null.v4"
 	// "gopkg.in/guregu/null.v4"
 )
 
@@ -16,6 +17,7 @@ type DataStore interface {
 // PersonStore defines methods for working with app.Person objects in the
 // database.
 type PersonStore interface {
+	GetAllPeople(ctx context.Context) ([]Person, error)
 	GetPersonByID(
 		ctx context.Context,
 		personID int,
@@ -29,10 +31,19 @@ type PersonStore interface {
 		personID int,
 		firstName, lastName string,
 	) error
+	UpdatePersonEmail(ctx context.Context, personID int, email string) error
 	UpdatePersonRole(ctx context.Context, personID int, roleType Role) error
 	UpdatePersonPassword(ctx context.Context, personID int, p Password) error
 	ActivatePerson(ctx context.Context, personID int) error
 	DeactivatePerson(ctx context.Context, personID int) error
+}
+
+// AffiliationStore defines methods for interacting with affiliations between
+// Persons and Organizations, with Points.
+type AffiliationStore interface {
+	AddPersonAffiliation(personID, orgID int, points null.Int) error
+	RemovePersonAffiliation(personID, orgID int) error
+	SetPointsForAffiliation(personID, orgID int, points null.Int) error
 }
 
 // SessionStore defines methods for working with app.Session objects in the

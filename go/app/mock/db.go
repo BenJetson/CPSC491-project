@@ -25,6 +25,11 @@ type DB struct{}
 //
 //
 
+// GetAllPeople mocks retrieving all people from the database.
+func (db *DB) GetAllPeople(ctx context.Context) ([]app.Person, error) {
+	return nil, nil
+}
+
 // GetPersonByID mocks fetching a person by their ID.
 func (db *DB) GetPersonByID(
 	ctx context.Context,
@@ -53,6 +58,16 @@ func (db *DB) UpdatePersonName(
 	ctx context.Context,
 	personID int,
 	firstName, lastName string,
+) error {
+
+	return nil
+}
+
+// UpdatePersonEmail mocks updating a person's email.
+func (db *DB) UpdatePersonEmail(
+	ctx context.Context,
+	personID int,
+	email string,
 ) error {
 
 	return nil

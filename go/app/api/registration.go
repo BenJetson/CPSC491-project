@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -37,11 +36,7 @@ func (reg *registrationRequest) validateFields() (message string, err error) {
 		return
 	}
 
-	const minPassLength = 8
-	if len(reg.Password) < minPassLength {
-		err = errors.New("password does not meet length requirement")
-		message = fmt.Sprintf("Password must be at least %d characters long.",
-			minPassLength)
+	if message, err = validatePassword(reg.Password); err != nil {
 		return
 	}
 

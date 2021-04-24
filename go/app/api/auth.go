@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 
 	"github.com/BenJetson/CPSC491-project/go/app"
@@ -136,6 +137,12 @@ func (svr *Server) requireAuth(
 		// User passed the auth check. Call the handler.
 		handler(w, r)
 	})
+}
+
+func (svr *Server) requireAuthMiddleware(cfg authConfig) mux.MiddlewareFunc {
+	return func(h http.Handler) http.Handler {
+		return svr.requireAuth(cfg, h.ServeHTTP)
+	}
 }
 
 // nolint: unused // TODO remove this when it gets used

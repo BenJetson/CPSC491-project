@@ -3,7 +3,7 @@ package app
 // A Person represents a user of our app.
 type Person struct {
 	// ID is the uniquely identifying number for this person's account.
-	ID int `db:"person_id" json:"-"`
+	ID int `db:"person_id" json:"id"`
 	// FirstName is the person's first name.
 	FirstName string `db:"first_name" json:"first_name"`
 	// LastName is the person's last name.
@@ -16,7 +16,7 @@ type Person struct {
 	Password Password `db:"pass_hash" json:"-"`
 	// IsDeactivated is true when a person's account is deactivated and
 	// therefore cannot be authenticated against.
-	IsDeactivated bool `db:"is_deactivated" json:"-"`
+	IsDeactivated bool `db:"is_deactivated" json:"is_deactivated"`
 	// Affiliations is a list of organization IDs that this user is
 	// associated with.
 	Affiliations []int `json:"affiliations"`
