@@ -99,6 +99,11 @@ const Request = async (method, endpoint, data = undefined, options = {}) => {
     });
   }
 
+  // XXX Force the user to login again if unauthorized status is received.
+  if (res.status === HTTPStatus.UNAUTHORIZED) {
+    window.location.href = "/";
+  }
+
   return {
     status: res.status,
     data: outData,
