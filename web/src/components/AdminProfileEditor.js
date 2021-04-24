@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
+  ActivateUser,
+  DeactivateUser,
   GetUserByID,
   UpdateUserEmail,
   UpdateUserName,
@@ -27,10 +29,12 @@ const FormCard = withStyles((theme) => ({
 }))(Card);
 
 const emptyUser = {
+  id: 0,
   first_name: "",
   last_name: "",
   email: "",
   role_id: Roles.IDOf.DRIVER,
+  is_deactivated: false,
 };
 
 const nameValidationSchema = yup.object({
@@ -90,6 +94,13 @@ const AdminProfileEditor = () => {
         values.lastName
       );
 
+      setUser({
+        // Force dirty state validation.
+        ...user,
+        first_name: !res.error ? values.firstName : user.first_name,
+        last_name: !res.error ? values.lastName : user.last_name,
+      });
+
       setNameStatus(
         res.error
           ? { success: false, message: res.error }
@@ -107,6 +118,12 @@ const AdminProfileEditor = () => {
     validationSchema: emailValidationSchema,
     onSubmit: async (values) => {
       const res = await UpdateUserEmail(userID, values.email);
+
+      setUser({
+        // Force dirty state validation.
+        ...user,
+        email: !res.error ? values.email : user.email,
+      });
 
       setEmailStatus(
         res.error
@@ -151,12 +168,44 @@ const AdminProfileEditor = () => {
     },
   });
 
+  const [activationStatus, setActivationStatus] = useState(null);
+  const doDeactivation = async () => {
+    const res = await DeactivateUser(userID);
+
+    setUser({
+      // Force dirty state validation.
+      ...user,
+      is_deactivated: !res.error ? true : user.is_deactivated,
+    });
+
+    setActivationStatus(
+      res.error
+        ? { success: false, message: res.error }
+        : { success: true, message: "Account deactivated successfully." }
+    );
+  };
+  const doActivation = async () => {
+    const res = await ActivateUser(userID);
+
+    setUser({
+      // Force dirty state validation.
+      ...user,
+      is_deactivated: !res.error ? false : user.is_deactivated,
+    });
+
+    setActivationStatus(
+      res.error
+        ? { success: false, message: res.error }
+        : { success: true, message: "Account activated successfully." }
+    );
+  };
+
   return (
     <>
-      <Typography variant="h4">Edit User</Typography>
+      <Typography variant="h4">Edit User #{user.id}</Typography>
       <FormCard>
         <CardContent>
-          <Typography>Name</Typography>
+          <Typography variant="h5">Name</Typography>
           {nameStatus && (
             <Alert severity={nameStatus.success ? "success" : "error"}>
               {nameStatus.message}
@@ -195,7 +244,12 @@ const AdminProfileEditor = () => {
               }
               helperText={nameForm.touched.lastName && nameForm.errors.lastName}
             />
-            <Button type="submit" variant="contained" color="primary">
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={!nameForm.dirty}
+            >
               Save
             </Button>
           </form>
@@ -203,7 +257,7 @@ const AdminProfileEditor = () => {
       </FormCard>
       <FormCard>
         <CardContent>
-          <Typography>Email</Typography>
+          <Typography variant="h5">Email</Typography>
           {emailStatus && (
             <Alert severity={emailStatus.success ? "success" : "error"}>
               {emailStatus.message}
@@ -224,7 +278,12 @@ const AdminProfileEditor = () => {
               error={emailForm.touched.email && Boolean(emailForm.errors.email)}
               helperText={emailForm.touched.email && emailForm.errors.email}
             />
-            <Button type="submit" variant="contained" color="primary">
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={!emailForm.dirty}
+            >
               Save
             </Button>
           </form>
@@ -232,7 +291,7 @@ const AdminProfileEditor = () => {
       </FormCard>
       <FormCard>
         <CardContent>
-          <Typography>Password</Typography>
+          <Typography variant="h5">Password</Typography>
           {passwordStatus && (
             <Alert severity={passwordStatus.success ? "success" : "error"}>
               {passwordStatus.message}
@@ -277,10 +336,41 @@ const AdminProfileEditor = () => {
                 passwordForm.touched.confirm && passwordForm.errors.confirm
               }
             />
-            <Button type="submit" variant="contained" color="primary">
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={!passwordForm.dirty}
+            >
               Save
             </Button>
           </form>
+        </CardContent>
+      </FormCard>
+      <FormCard>
+        <CardContent>
+          <Typography variant="h5">Account Status</Typography>
+          {activationStatus && (
+            <Alert severity={activationStatus.success ? "success" : "error"}>
+              {activationStatus.message}
+            </Alert>
+          )}
+
+          <Typography
+            style={{ marginTop: 15 }} // FIXME
+          >
+            This account is currently{" "}
+            <strong>{user.is_deactivated ? "deactivated" : "activated"}</strong>
+            .
+          </Typography>
+          <Button
+            onClick={user.is_deactivated ? doActivation : doDeactivation}
+            variant="contained"
+            color={user.is_deactivated ? "secondary" : "primary"}
+            style={{ marginTop: 15 }} // FIXME
+          >
+            {user.is_deactivated ? "activate" : "deactivate"} account
+          </Button>
         </CardContent>
       </FormCard>
     </>

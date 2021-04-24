@@ -43,21 +43,11 @@ const UpdateUserAffiliations = async (userID, organization_ids) =>
     organization_ids: organization_ids,
   });
 
-const ActivateUser = async (userID) => {
-  const res = await Request("POST", `/admin/users/${userID}/activate`);
+const ActivateUser = async (userID) =>
+  await Request("POST", `/admin/users/${userID}/activate`);
 
-  if (res.error) {
-    throw res.error;
-  }
-};
-
-const DeactivateUser = async (userID) => {
-  const res = await Request("POST", `/admin/users/${userID}/deactivate`);
-
-  if (res.error) {
-    throw res.error;
-  }
-};
+const DeactivateUser = async (userID) =>
+  await Request("POST", `/admin/users/${userID}/deactivate`);
 
 export {
   GetAllUsers,
