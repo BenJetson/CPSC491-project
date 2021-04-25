@@ -3,7 +3,7 @@ import { GetCurrentUser } from "./Auth";
 
 const GetMyUser = GetCurrentUser;
 
-const UpdateMyName = async (firstName, lastName) => {
+const UpdateUserName = async (firstName, lastName) => {
   const res = await Request("POST", `/my/profile/name`, {
     first_name: firstName,
     last_name: lastName,
@@ -14,7 +14,7 @@ const UpdateMyName = async (firstName, lastName) => {
   }
 };
 
-const UpdateMyEmail = async (email) => {
+const UpdateUserEmail = async (email) => {
   const res = await Request("POST", `/my/profile/email`, {
     email: email,
   });
@@ -24,7 +24,7 @@ const UpdateMyEmail = async (email) => {
   }
 };
 
-const UpdateMyPassword = async (password) => {
+const UpdateUserPassword = async (password) => {
   const res = await Request("POST", `/my/profile/password`, {
     new_password: password,
   });
@@ -34,4 +34,13 @@ const UpdateMyPassword = async (password) => {
   }
 };
 
-export { GetMyUser, UpdateMyName, UpdateMyEmail, UpdateMyPassword };
+const DeactivateUser = async () =>
+  await Request("POST", `/my/profile/deactivate`);
+
+export {
+  GetMyUser,
+  UpdateUserName,
+  UpdateUserEmail,
+  UpdateUserPassword,
+  DeactivateUser,
+};

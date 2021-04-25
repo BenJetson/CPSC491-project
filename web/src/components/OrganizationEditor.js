@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
-  ActivateUser,
   DeactivateUser,
   GetUserByID,
   UpdateUserEmail,
   UpdateUserName,
   UpdateUserPassword,
-} from "../api/Admin";
+} from "../api/Organization";
 import Roles from "../api/Roles";
 
 import * as yup from "yup";
@@ -30,20 +29,16 @@ const FormCard = withStyles((theme) => ({
 
 const emptyUser = {
   id: 0,
-  first_name: "",
-  last_name: "",
+  name: "",
   email: "",
-  role_id: Roles.IDOf.ADMIN,
+  role_id: Roles.IDOf.SPONSOR,
   is_deactivated: false,
 };
 
 const nameValidationSchema = yup.object({
-  firstName: yup
-    .string("Enter the new first name.")
-    .required("First name is required."),
   lastName: yup
-    .string("Enter the new last name.")
-    .required("Last name is required."),
+    .string("Enter the new organization name.")
+    .required("Organization name is required."),
 });
 const emailValidationSchema = yup.object({
   email: yup
@@ -61,7 +56,7 @@ const passwordValidationSchema = yup.object({
     .required("Password confirmation is not optional ."),
 });
 
-const AdminProfileEditor = () => {
+const OrgProfileEditor = () => {
   const params = useParams();
   const userID = parseInt(params["userID"]) ?? false; // FIXME unchecked cast
   const isUpdate = userID !== false && userID > 0;
@@ -82,23 +77,17 @@ const AdminProfileEditor = () => {
   const [nameStatus, setNameStatus] = useState(null);
   const nameForm = useFormik({
     initialValues: {
-      firstName: user.first_name,
-      lastName: user.last_name,
+      name: user.name,
     },
     enableReinitialize: true,
     validationSchema: nameValidationSchema,
     onSubmit: async (values) => {
-      const res = await UpdateUserName(
-        userID,
-        values.firstName,
-        values.lastName
-      );
+      const res = await UpdateUserName(userID, values.name);
 
       setUser({
         // Force dirty state validation.
         ...user,
-        first_name: !res.error ? values.firstName : user.first_name,
-        last_name: !res.error ? values.lastName : user.last_name,
+        name: !res.error ? values.name : user.name,
       });
 
       setNameStatus(
@@ -170,7 +159,7 @@ const AdminProfileEditor = () => {
 
   const [activationStatus, setActivationStatus] = useState(null);
   const doDeactivation = async () => {
-    const res = await DeactivateUser(userID);
+    const res = await DeactivateUser();
 
     setUser({
       // Force dirty state validation.
@@ -182,21 +171,6 @@ const AdminProfileEditor = () => {
       res.error
         ? { success: false, message: res.error }
         : { success: true, message: "Account deactivated successfully." }
-    );
-  };
-  const doActivation = async () => {
-    const res = await ActivateUser(userID);
-
-    setUser({
-      // Force dirty state validation.
-      ...user,
-      is_deactivated: !res.error ? false : user.is_deactivated,
-    });
-
-    setActivationStatus(
-      res.error
-        ? { success: false, message: res.error }
-        : { success: true, message: "Account activated successfully." }
     );
   };
 
@@ -218,31 +192,12 @@ const AdminProfileEditor = () => {
               fullWidth
               margin="normal"
               id="firstName"
-              name="firstName"
-              label="First Name"
-              value={nameForm.values.firstName}
+              name="name"
+              label="Organization Name"
+              value={nameForm.values.name}
               onChange={nameForm.handleChange}
-              error={
-                nameForm.touched.firstName && Boolean(nameForm.errors.firstName)
-              }
-              helperText={
-                nameForm.touched.firstName && nameForm.errors.firstName
-              }
-            />
-            <TextField
-              variant="outlined"
-              required
-              fullWidth
-              margin="normal"
-              id="lastName"
-              name="lastName"
-              label="Last Name"
-              value={nameForm.values.lastName}
-              onChange={nameForm.handleChange}
-              error={
-                nameForm.touched.lastName && Boolean(nameForm.errors.lastName)
-              }
-              helperText={nameForm.touched.lastName && nameForm.errors.lastName}
+              error={nameForm.touched.name && Boolean(nameForm.errors.name)}
+              helperText={nameForm.touched.name && nameForm.errors.name}
             />
             <Button
               type="submit"
@@ -377,4 +332,4 @@ const AdminProfileEditor = () => {
   );
 };
 
-export default AdminProfileEditor;
+export default OrgProfileEditor;

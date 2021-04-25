@@ -3,11 +3,11 @@ import { useParams } from "react-router-dom";
 import {
   ActivateUser,
   DeactivateUser,
-  GetUserByID,
+  GetMyUser,
   UpdateUserEmail,
   UpdateUserName,
   UpdateUserPassword,
-} from "../api/Admin";
+} from "../api/My";
 import Roles from "../api/Roles";
 
 import * as yup from "yup";
@@ -33,7 +33,7 @@ const emptyUser = {
   first_name: "",
   last_name: "",
   email: "",
-  role_id: Roles.IDOf.ADMIN,
+  role_id: Roles.IDOf.DRIVER,
   is_deactivated: false,
 };
 
@@ -61,7 +61,7 @@ const passwordValidationSchema = yup.object({
     .required("Password confirmation is not optional ."),
 });
 
-const AdminProfileEditor = () => {
+const MyProfileEditor = () => {
   const params = useParams();
   const userID = parseInt(params["userID"]) ?? false; // FIXME unchecked cast
   const isUpdate = userID !== false && userID > 0;
@@ -74,7 +74,7 @@ const AdminProfileEditor = () => {
     }
 
     (async () => {
-      const data = await GetUserByID(userID);
+      const data = await GetMyUser();
       setUser(data);
     })();
   }, [userID, isUpdate]);
@@ -170,7 +170,7 @@ const AdminProfileEditor = () => {
 
   const [activationStatus, setActivationStatus] = useState(null);
   const doDeactivation = async () => {
-    const res = await DeactivateUser(userID);
+    const res = await DeactivateUser();
 
     setUser({
       // Force dirty state validation.
@@ -182,21 +182,6 @@ const AdminProfileEditor = () => {
       res.error
         ? { success: false, message: res.error }
         : { success: true, message: "Account deactivated successfully." }
-    );
-  };
-  const doActivation = async () => {
-    const res = await ActivateUser(userID);
-
-    setUser({
-      // Force dirty state validation.
-      ...user,
-      is_deactivated: !res.error ? false : user.is_deactivated,
-    });
-
-    setActivationStatus(
-      res.error
-        ? { success: false, message: res.error }
-        : { success: true, message: "Account activated successfully." }
     );
   };
 
@@ -377,4 +362,4 @@ const AdminProfileEditor = () => {
   );
 };
 
-export default AdminProfileEditor;
+export default MyProfileEditor;
