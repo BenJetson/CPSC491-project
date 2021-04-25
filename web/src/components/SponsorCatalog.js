@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import {
   AddVendorProductToCatalog,
+  GetCatalog,
+  RemoveCatalogProduct,
   SearchVendorProducts,
 } from "../api/Sponsor";
 import * as yup from "yup";
@@ -10,39 +13,37 @@ import { FormatMoney } from "../api/Money";
 import { Button, TextField, Typography } from "@material-ui/core";
 import DataGrid from "./DataGrid";
 
-const VendorSearch = () => {
-  const [keywords, setKeywords] = useState("");
+const SponsorCatalog = () => {
   const [products, setProducts] = useState([]);
   const [status, setStatus] = useState(null);
 
-  const formik = useFormik({
-    initialValues: { keywords: "" },
-    onSubmit: (values) => setKeywords(values.keywords),
-  });
-
   useEffect(() => {
-    if (!keywords) {
-      setProducts([]);
-      return;
-    }
-
     (async () => {
-      const res = await SearchVendorProducts(keywords);
+      const res = await GetCatalog();
       setProducts(!res.error ? res.data : []);
       setStatus(!res.error ? null : { success: false, message: res.error });
     })();
-  }, [keywords]);
+  }, []);
 
-  const makeAddHandler = (productID) => async () => {
-    const res = await AddVendorProductToCatalog(productID);
+  const makeRemoveHandler = (rowIndex, productID) => async () => {
+    const res = await RemoveCatalogProduct(productID);
     setStatus(
       !res.error
         ? {
             success: true,
-            message: `Added product #${productID} to the catalog.`,
+            message: `Removed product #${productID} from the catalog.`,
           }
         : { success: false, message: res.error }
     );
+
+    console.log(rowIndex, products);
+    if (!res.error) {
+      setProducts(
+        products
+          .slice(0, rowIndex)
+          .concat(products.slice(rowIndex + 1, products.length))
+      );
+    }
   };
 
   const columns = [
@@ -63,9 +64,10 @@ const VendorSearch = () => {
       hide: true,
     },
     {
-      field: "price",
-      headerName: "Price",
-      valueFormatter: (params) => FormatMoney(params.value),
+      field: "points",
+      headerName: "Cost (points)",
+      type: "number",
+      valueGetter: (params) => params.value.amount,
     },
     {
       field: "image_url",
@@ -74,21 +76,22 @@ const VendorSearch = () => {
       width: 170,
     },
     {
-      field: "add",
-      headerName: "Add",
+      field: "remove",
+      headerName: "Remove",
       renderCell: (params) => {
+        const rowIndex = params.rowIndex;
         const productID = params.getValue("id");
         return (
           <Button
             variant="contained"
-            color="primary"
-            onClick={makeAddHandler(productID)}
+            color="secondary"
+            onClick={makeRemoveHandler(rowIndex, productID)}
           >
-            Add
+            Remove
           </Button>
         );
       },
-      width: 120,
+      width: 125,
       sortable: false,
       filterable: false,
     },
@@ -96,28 +99,23 @@ const VendorSearch = () => {
 
   return (
     <>
-      <Typography variant="h4">Search Vendor Products</Typography>
-      <form noValidate onSubmit={formik.handleSubmit}>
-        <TextField
-          variant="outlined"
-          fullWidth
-          id="keywords"
-          name="keywords"
-          label="Keywords"
-          value={formik.values.keywords}
-          onChange={formik.handleChange}
-          error={formik.touched.keywords && Boolean(formik.errors.keywords)}
-          helperText={formik.touched.keywords && formik.errors.keywords}
-        />
-        <Button variant="contained" color="primary" type="submit">
-          Search
-        </Button>
-      </form>
+      <Typography variant="h4">Manage Catalog</Typography>
+
+      <Button
+        variant="contained"
+        color="primary"
+        component={RouterLink}
+        to="/sponsor/catalog/vendor"
+      >
+        Add Products
+      </Button>
+
       {status && (
         <Alert severity={status.success ? "success" : "error"}>
           {status.message}
         </Alert>
       )}
+
       <DataGrid
         columns={columns}
         rows={products}
@@ -129,4 +127,4 @@ const VendorSearch = () => {
   );
 };
 
-export default VendorSearch;
+export default SponsorCatalog;

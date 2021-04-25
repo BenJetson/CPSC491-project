@@ -8,6 +8,7 @@ import { WithUser } from "./api/Auth";
 import Roles from "./api/Roles";
 import AccessDenied from "./components/AccessDenied";
 import VendorSearch from "./components/VendorSearch";
+import SponsorCatalog from "./components/SponsorCatalog";
 
 const AppSubrouterSponsor = () => {
   const match = useRouteMatch();
@@ -28,7 +29,7 @@ const AppSubrouterSponsor = () => {
               <NotImplemented feature={"Sponsor - Manage Drivers"} />
             </Route>
             <Route exact path={`${match.path}/catalog`}>
-              <NotImplemented feature={"Sponsor - Manage Catalog"} />
+              <SponsorCatalog />
             </Route>
             <Route exact path={`${match.path}/catalog/vendor`}>
               <VendorSearch />
