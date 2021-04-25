@@ -10,11 +10,15 @@ import (
 	"github.com/pkg/errors"
 )
 
-type applicationRequest struct {
-	FirstName    string `json:"first_name"`
-	LastName     string `json:"last_name"`
-	Email        string `json:"email"`
-	Organization string `json:"organization"`
+type applicationApprovalRequest struct {
+	IsApproved    bool   `json:"is_approved"`
+	Reason        string `json:"reason"`
+	ApplicationID int    `json:"application_id"`
+}
+
+type applicationSubmissionRequest struct {
+	OrganizationID int    `json:"organization_id"`
+	Comment        string `json:"comment"`
 }
 
 func (svr *Server) handleSubmitApplication(
@@ -32,15 +36,23 @@ func (svr *Server) handleSubmitApplication(
 	d := json.NewDecoder(r.Body)
 	d.DisallowUnknownFields()
 
-	var appReq applicationRequest
+	var appReq applicationSubmissionRequest
 	if err := d.Decode(&appReq); err != nil {
 		svr.sendErrorResponse(w,
 			errors.Wrap(err, "failed to decode application request"),
 			http.StatusBadRequest, "Invalid applicaion format.")
 		return
 	}
-
-	svr.sendJSONResponse(w, appReq)
+	_, err := svr.db.CreateApplication(r.Context(), app.Application{
+		OrganizationID: appReq.OrganizationID,
+		Comment:        appReq.Comment,
+	})
+	if err != nil {
+		svr.sendErrorResponse(w, errors.Wrap(err, "failed to create application"),
+			http.StatusInternalServerError, "")
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (svr *Server) handleGetApplicationByID(
@@ -112,7 +124,30 @@ func (svr *Server) handleApproveApplication(
 	r *http.Request,
 ) {
 
-	w.WriteHeader(http.StatusNotImplemented) // TODO
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+
+	var data applicationApprovalRequest
+	if err := d.Decode(&data); err != nil {
+		svr.sendErrorResponse(w, errors.Wrap(err, "received bad json data"),
+			http.StatusBadRequest, "Bad JSON data.")
+		return
+	}
+
+	// application, err := svr.db.GetApplicationByID(r.Context(), s.Person.ID)
+	// if err != nil {
+	// 	svr.sendErrorResponse(w, errors.Wrap(err, "cannot process approval"),
+	// 		http.StatusInternalServerError, "")
+	// 	return
+	// }
+
+	// s := getSessionFromContext(r.Context())
+
+	// if svr.requireOrganization(orgConfig{orgID: application.OrganizationID})
+
+	svr.db.UpdateApplicationApproval(r.Context(),
+		data.ApplicationID, data.IsApproved, data.Reason)
+
 }
 
 func (svr *Server) handleGetOrganizations(
@@ -120,7 +155,13 @@ func (svr *Server) handleGetOrganizations(
 	r *http.Request,
 ) {
 
-	w.WriteHeader(http.StatusNotImplemented) // TODO
+	people, err := svr.db.GetAllOrganizations(r.Context())
+	if err != nil {
+		svr.sendErrorResponse(w, err, http.StatusInternalServerError, "")
+		return
+	}
+
+	svr.sendJSONResponse(w, people)
 }
 
 func (svr *Server) handleGetMyApplications(
