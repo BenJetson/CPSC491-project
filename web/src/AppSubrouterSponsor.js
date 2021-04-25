@@ -7,6 +7,7 @@ import NotFound from "./components/NotFound";
 import { WithUser } from "./api/Auth";
 import Roles from "./api/Roles";
 import AccessDenied from "./components/AccessDenied";
+import VendorSearch from "./components/VendorSearch";
 
 const AppSubrouterSponsor = () => {
   const match = useRouteMatch();
@@ -26,8 +27,11 @@ const AppSubrouterSponsor = () => {
             <Route path={`${match.path}/drivers`}>
               <NotImplemented feature={"Sponsor - Manage Drivers"} />
             </Route>
-            <Route path={`${match.path}/catalog`}>
+            <Route exact path={`${match.path}/catalog`}>
               <NotImplemented feature={"Sponsor - Manage Catalog"} />
+            </Route>
+            <Route exact path={`${match.path}/catalog/vendor`}>
+              <VendorSearch />
             </Route>
             <Route path={"*"}>
               {/* If no route matches, show a not found page. */}
