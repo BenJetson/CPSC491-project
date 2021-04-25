@@ -49,6 +49,27 @@ const ActivateUser = async (userID) =>
 const DeactivateUser = async (userID) =>
   await Request("POST", `/admin/users/${userID}/deactivate`);
 
+const GetOrganizations = async () =>
+  await Request("GET", "/admin/organizations");
+
+const GetOrganizationByID = async (orgID) =>
+  await Request("GET", `/admin/organizations/${orgID}`);
+
+const CreateOrganization = async (name, point_value) =>
+  await Request("POST", `/admin/organizations/create`, {
+    name: name,
+    point_value: point_value,
+  });
+
+const UpdateOrganization = async (orgID, name, point_value) =>
+  await Request("POST", `/admin/organizations/${orgID}/update`, {
+    name: name,
+    point_value: point_value,
+  });
+
+const DeleteOrganization = async (orgID) =>
+  await Request("POST", `/admin/organizations/${orgID}/delete`);
+
 export {
   GetAllUsers,
   GetUserByID,
@@ -58,4 +79,9 @@ export {
   UpdateUserAffiliations,
   ActivateUser,
   DeactivateUser,
+  GetOrganizations,
+  GetOrganizationByID,
+  CreateOrganization,
+  UpdateOrganization,
+  DeleteOrganization,
 };
