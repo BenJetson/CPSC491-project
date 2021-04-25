@@ -135,7 +135,8 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 		allowedRoles: []app.Role{app.RoleDriver},
 	}))
 
-	driverRouter.Path("/balances").Methods("GET").HandlerFunc(svr.handleTODO)
+	driverRouter.Path("/balances").Methods("GET").
+		HandlerFunc(svr.handleDriverGetBalances)
 
 	return svr, nil
 }
