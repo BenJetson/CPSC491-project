@@ -111,8 +111,8 @@ func (svr *Server) requireAuth(
 
 		if cfg.requireRole {
 			hasRole := false
-			for _, r := range cfg.allowedRoles {
-				if r == s.Person.Role {
+			for _, role := range cfg.allowedRoles {
+				if role == s.Person.Role {
 					hasRole = true
 					break
 				}
@@ -122,8 +122,8 @@ func (svr *Server) requireAuth(
 				svr.sendErrorResponse(
 					w,
 					errors.Errorf(
-						"endpoint does not allow role %v",
-						s.Person.Role,
+						"endpoint at path %v allows roles %v but person has %v",
+						r.URL.Path, cfg.allowedRoles, s.Person.Role,
 					),
 					http.StatusForbidden,
 					"",

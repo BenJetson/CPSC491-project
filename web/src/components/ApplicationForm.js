@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import { useHistory } from "react-router-dom";
 import { GetOrganizations } from "../api/Organizations";
-import { SubmitApplication } from "../api/Applications";
 import * as yup from "yup";
 import {
   Button,
@@ -13,6 +12,7 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import { Alert, AlertTitle } from "@material-ui/lab";
+import { SubmitApplication } from "../api/Driver";
 
 const useStyles = makeStyles((theme) => ({
   privacyWarning: {

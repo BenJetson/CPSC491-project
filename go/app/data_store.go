@@ -11,6 +11,7 @@ import (
 // DataStore is the common interface for durable data storage.
 type DataStore interface {
 	PersonStore
+	AffiliationStore
 	SessionStore
 	OrganizationStore
 	CatalogStore
@@ -43,9 +44,21 @@ type PersonStore interface {
 // AffiliationStore defines methods for interacting with affiliations between
 // Persons and Organizations, with Points.
 type AffiliationStore interface {
-	AddPersonAffiliation(personID, orgID int, points null.Int) error
-	RemovePersonAffiliation(personID, orgID int) error
-	SetPointsForAffiliation(personID, orgID int, points null.Int) error
+	AddPersonAffiliation(
+		ctx context.Context,
+		personID, orgID int,
+		role Role,
+	) error
+	RemovePersonAffiliation(
+		ctx context.Context,
+		personID, orgID int,
+	) error
+	SetPointsForAffiliation(
+		ctx context.Context,
+		personID, orgID int,
+		points null.Int,
+	) error
+	GetBalancesForPerson(ctx context.Context, personID int) ([]Balance, error)
 }
 
 // SessionStore defines methods for working with app.Session objects in the

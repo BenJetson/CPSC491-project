@@ -70,7 +70,7 @@ const VendorSearch = () => {
       field: "image_url",
       headerName: "Image",
       renderCell: (params) => (
-        <img src={params.value} alt={`Photo of ${params.getValue("title")}`} />
+        <img src={params.value} alt={`${params.getValue("title")}`} />
       ),
       width: 170,
     },
