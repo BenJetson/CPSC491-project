@@ -70,6 +70,27 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 	accountRouter.Path("/register").Methods("POST").
 		HandlerFunc(svr.handleRegistration)
 
+	// My subroutes.
+	myRouter := router.PathPrefix("/my").Subrouter()
+	myRouter.Use(svr.requireAuthMiddleware(authConfig{
+		requireRole: true,
+		allowedRoles: []app.Role{
+			app.RoleAdmin,
+			app.RoleSponsor,
+			app.RoleDriver,
+		},
+	}))
+
+	myProfileRouter := myRouter.PathPrefix("/profile").Subrouter()
+	myProfileRouter.Path("/name").Methods("POST").
+		HandlerFunc(svr.handleMyProfileUpdateName)
+	myProfileRouter.Path("/email").Methods("POST").
+		HandlerFunc(svr.handleMyProfileUpdateEmail)
+	myProfileRouter.Path("/password").Methods("POST").
+		HandlerFunc(svr.handleMyProfileUpdatePassword)
+	myProfileRouter.Path("/deactivate").Methods("POST").
+		HandlerFunc(svr.handleMyProfileDeactivate)
+
 	// Admin subroutes.
 	adminRouter := router.PathPrefix("/admin").Subrouter()
 	adminRouter.Use(svr.requireAuthMiddleware(authConfig{
@@ -107,6 +128,7 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 	adminOrgRouter.Path("/create").Methods("POST").
 		HandlerFunc(svr.handleTODO) // TODO
 
+	// Sponsor subroutes.
 	sponsorRouter := router.PathPrefix("/sponsor").Subrouter()
 	sponsorRouter.Use(svr.requireAuthMiddleware(authConfig{
 		requireRole:  true,
