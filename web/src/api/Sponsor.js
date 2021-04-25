@@ -23,6 +23,15 @@ const GetCatalogProduct = async (productID) =>
 const RemoveCatalogProduct = async (productID) =>
   await Request("POST", `/sponsor/catalog/products/${productID}/remove`);
 
+const GetSponsorOrganization = async () =>
+  await Request("GET", "/sponsor/organization");
+
+const UpdateSponsorOrganization = async (name, pointValue) =>
+  await Request("POST", "/sponsor/organization/update", {
+    name: name,
+    point_value: pointValue,
+  });
+
 export {
   SearchVendorProducts,
   GetVendorProduct,
