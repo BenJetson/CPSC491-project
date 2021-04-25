@@ -3,7 +3,6 @@ import {
   AddVendorProductToCatalog,
   SearchVendorProducts,
 } from "../api/Sponsor";
-import * as yup from "yup";
 import { useFormik } from "formik";
 import { Alert } from "@material-ui/lab";
 import { FormatMoney } from "../api/Money";
@@ -70,7 +69,9 @@ const VendorSearch = () => {
     {
       field: "image_url",
       headerName: "Image",
-      renderCell: (params) => <img src={params.value} />,
+      renderCell: (params) => (
+        <img src={params.value} alt={`Photo of ${params.getValue("title")}`} />
+      ),
       width: 170,
     },
     {

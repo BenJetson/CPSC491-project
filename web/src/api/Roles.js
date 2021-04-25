@@ -12,7 +12,9 @@ const RoleDescriptions = {
   [RoleIDs.DRIVER]: "Driver",
 };
 
-export default {
+const Roles = {
   IDOf: RoleIDs,
   Describe: RoleDescriptions,
 };
+
+export default Roles;

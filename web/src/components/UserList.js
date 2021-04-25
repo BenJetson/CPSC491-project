@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 
 import { useHistory, Link as RouterLink } from "react-router-dom";
-import { makeStyles, Typography } from "@material-ui/core";
+import { Typography, Button } from "@material-ui/core";
 import { Add as AddIcon } from "@material-ui/icons";
 import { GetAllUsers } from "../api/Admin";
 import DataGrid from "./DataGrid";
 import Roles from "../api/Roles";
 
-const UserList = ({}) => {
+const UserList = () => {
   const history = useHistory();
 
   const columns = [
@@ -60,6 +60,15 @@ const UserList = ({}) => {
   return (
     <>
       <Typography variant="h4">Users</Typography>
+      <Button
+        variant="contained"
+        color="primary"
+        component={RouterLink}
+        to="/admin/users/create"
+        style={{ marginTop: 10 }}
+      >
+        <AddIcon /> Create User
+      </Button>
       <DataGrid
         columns={columns}
         rows={rows}
