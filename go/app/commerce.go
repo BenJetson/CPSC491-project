@@ -48,11 +48,22 @@ type CommerceQuery struct {
 
 // A CommerceProduct describes a product of a third-party vendor.
 type CommerceProduct struct {
-	ID          int
-	Title       string
-	Description string
-	ImageURL    null.String
-	Price       Money
+	ID          int         `json:"id"`
+	Title       string      `json:"title"`
+	Description string      `json:"description"`
+	ImageURL    null.String `json:"image_url"`
+	Price       Money       `json:"price"`
+}
+
+func (cp *CommerceProduct) ToProduct(orgID int) Product {
+	return Product{
+		VendorID:       cp.ID,
+		OrganizationID: orgID,
+		Title:          cp.Title,
+		Description:    cp.Description,
+		ImageURL:       cp.ImageURL,
+		Price:          cp.Price,
+	}
 }
 
 // CommerceVendor describes a common interface for dealing with third-party

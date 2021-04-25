@@ -12,6 +12,8 @@ import (
 type DataStore interface {
 	PersonStore
 	SessionStore
+	OrganizationStore
+	CatalogStore
 }
 
 // PersonStore defines methods for working with app.Person objects in the
@@ -63,4 +65,28 @@ type SessionStore interface {
 		ctx context.Context,
 		personID, sessionID int,
 	) error
+}
+
+type OrganizationStore interface {
+	GetAllOrganizations(ctx context.Context) ([]Organization, error)
+	GetOrganizationByID(ctx context.Context, orgID int) (Organization, error)
+}
+
+type CatalogStore interface {
+	GetProductsForOrganization(
+		ctx context.Context,
+		orgID int,
+	) ([]CatalogProduct, error)
+	SearchProductCatalog(
+		ctx context.Context,
+		orgID int,
+		keywords string,
+	) ([]CatalogProduct, error)
+	GetProductByID(
+		ctx context.Context,
+		productID, orgID int,
+	) (CatalogProduct, error)
+
+	AddProduct(ctx context.Context, p Product) (int, error)
+	MakeProductUnavailable(ctx context.Context, productID, orgID int) error
 }

@@ -154,3 +154,75 @@ func (db *DB) RevokeSessionsForPersonExcept(
 
 	return nil
 }
+
+//
+//
+// OrganizationStore methods
+//
+//
+
+// GetAllOrganizations mocks fetching all organizations.
+func (db *DB) GetAllOrganizations(
+	ctx context.Context,
+) ([]app.Organization, error) {
+
+	return nil, nil
+}
+
+// GetOrganizationByID mocks fetching an organization by its ID number.
+func (db *DB) GetOrganizationByID(
+	ctx context.Context,
+	orgID int,
+) (app.Organization, error) {
+
+	return app.Organization{}, nil
+}
+
+//
+//
+// CatalogStore methods
+//
+//
+
+// GetProductsForOrganization mocks fetching all products for an organization.
+func (db *DB) GetProductsForOrganization(
+	ctx context.Context,
+	orgID int,
+) ([]app.CatalogProduct, error) {
+
+	return nil, nil
+}
+
+// SearchProductCatalog mocks searching the product catalog.
+func (db *DB) SearchProductCatalog(
+	ctx context.Context,
+	orgID int,
+	keywords string,
+) ([]app.CatalogProduct, error) {
+
+	return nil, nil
+}
+
+// GetProductByID mocks fetching a product by its matching product ID and
+// organization ID numbers.
+func (db *DB) GetProductByID(
+	ctx context.Context,
+	productID, orgID int,
+) (app.CatalogProduct, error) {
+
+	return app.CatalogProduct{}, nil
+}
+
+// AddProduct mocks adding a product to the catalog.
+func (db *DB) AddProduct(ctx context.Context, p app.Product) (int, error) {
+	return -1, nil
+}
+
+// MakeProductUnavailable mocks making a product unavailable in the catalog.
+func (db *DB) MakeProductUnavailable(
+	ctx context.Context,
+	productID, orgID int,
+) error {
+
+	return nil
+}

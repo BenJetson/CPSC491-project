@@ -107,6 +107,28 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 	adminOrgRouter.Path("/create").Methods("POST").
 		HandlerFunc(svr.handleTODO) // TODO
 
+	sponsorRouter := router.PathPrefix("/sponsor").Subrouter()
+	sponsorRouter.Use(svr.requireAuthMiddleware(authConfig{
+		requireRole:  true,
+		allowedRoles: []app.Role{app.RoleSponsor},
+	}))
+
+	sponsorVendorRouter := sponsorRouter.PathPrefix("/vendor").Subrouter()
+	sponsorVendorRouter.Path("/search").Methods("GET").
+		HandlerFunc(svr.handleSponsorVendorSearch)
+	sponsorVendorRouter.Path("/products/{productID}").Methods("GET").
+		HandlerFunc(svr.handleSponsorVendorProductByID)
+	sponsorVendorRouter.Path("/products/{productID}/add").Methods("POST").
+		HandlerFunc(svr.handleSponsorAddVendorProduct)
+
+	sponsorCatalogRouter := sponsorRouter.PathPrefix("/catalog").Subrouter()
+	sponsorCatalogRouter.Path("").Methods("GET").
+		HandlerFunc(svr.handleGetSponsorCatalog)
+	sponsorCatalogRouter.Path("/products/{productID}").Methods("GET").
+		HandlerFunc(svr.handleGetSponsorCatalogProduct)
+	sponsorCatalogRouter.Path("/products/{productID}/remove").Methods("POST").
+		HandlerFunc(svr.handleSponsorRemoveProduct)
+
 	return svr, nil
 }
 
