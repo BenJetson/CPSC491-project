@@ -74,7 +74,6 @@ func getSessionFromContext(ctx context.Context) *app.Session {
 
 // An authConfig specifies what authentication parameters are required for an
 // endpoint.
-// nolint: unused // FIXME: remove this once it gets used
 type authConfig struct {
 	// requireRole determines whether or not required roles are enforced.
 	requireRole bool
@@ -85,7 +84,6 @@ type authConfig struct {
 
 // requireAuth is a middleware that may be applied to a route or subrouter that
 // will enforce authentication requirements.
-// nolint: unused // FIXME: remove this once it gets used
 func (svr *Server) requireAuth(
 	cfg authConfig,
 	handler http.HandlerFunc,

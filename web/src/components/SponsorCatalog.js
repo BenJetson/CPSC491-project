@@ -1,16 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import {
-  AddVendorProductToCatalog,
-  GetCatalog,
-  RemoveCatalogProduct,
-  SearchVendorProducts,
-} from "../api/Sponsor";
-import * as yup from "yup";
-import { useFormik } from "formik";
+import { GetCatalog, RemoveCatalogProduct } from "../api/Sponsor";
+
 import { Alert } from "@material-ui/lab";
-import { FormatMoney } from "../api/Money";
-import { Button, TextField, Typography } from "@material-ui/core";
+import { Button, Typography } from "@material-ui/core";
 import DataGrid from "./DataGrid";
 
 const SponsorCatalog = () => {
@@ -72,7 +65,9 @@ const SponsorCatalog = () => {
     {
       field: "image_url",
       headerName: "Image",
-      renderCell: (params) => <img src={params.value} />,
+      renderCell: (params) => (
+        <img src={params.value} alt={`Photo of ${params.getValue("title")}`} />
+      ),
       width: 170,
     },
     {

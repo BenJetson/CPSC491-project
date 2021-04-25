@@ -2,7 +2,7 @@ package app
 
 import "gopkg.in/guregu/null.v4"
 
-// A Product represents
+// A Product represents an entry in the product table.
 type Product struct {
 	ID             int         `db:"product_id"`
 	VendorID       int         `db:"vendor_id"`
@@ -25,6 +25,8 @@ func (p *Product) ToCatalogProduct(org Organization) CatalogProduct {
 	}
 }
 
+// A CatalogProduct is a product affiliated with an organization, with its cost
+// measured in Points.
 type CatalogProduct struct {
 	ID          int         `json:"id"`
 	Title       string      `json:"title"`

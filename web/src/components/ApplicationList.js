@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useHistory, Link as RouterLink } from "react-router-dom";
 import { Button, makeStyles, Typography } from "@material-ui/core";
 import { Add as AddIcon } from "@material-ui/icons";
@@ -44,6 +44,10 @@ const ApplicationList = ({ applications, isSponsor = false }) => {
   ];
 
   const [rows, setRows] = useState([]);
+
+  useEffect(() => {
+    setRows([]); // FIXME need api call!
+  }, []);
 
   const handleRowClick = (gridRowParams, event) => {
     // get the ID out of gridrowparams

@@ -55,6 +55,8 @@ type CommerceProduct struct {
 	Price       Money       `json:"price"`
 }
 
+// ToProduct converts this commerce product to a Product, given the associated
+// Organization's ID number.
 func (cp *CommerceProduct) ToProduct(orgID int) Product {
 	return Product{
 		VendorID:       cp.ID,

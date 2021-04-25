@@ -1,5 +1,5 @@
 import React from "react";
-import { DataGrid as MUIDataGrid, GridColDef } from "@material-ui/data-grid";
+import { DataGrid as MUIDataGrid } from "@material-ui/data-grid";
 import { makeStyles, Paper, withStyles } from "@material-ui/core";
 import NoRows from "./NoRows";
 

@@ -194,7 +194,6 @@ type apiError struct {
 
 // sendErrorResponse sends a completed apiError back to the user as JSON and
 // logs the error.
-// nolint: unparam // FIXME remove this later once user message gets used.
 func (svr *Server) sendErrorResponse(w http.ResponseWriter, err error,
 	statusCode int, userMessage string, args ...interface{}) {
 

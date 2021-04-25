@@ -67,11 +67,14 @@ type SessionStore interface {
 	) error
 }
 
+// OrganizationStore defines methods for working with app.Organization objects.
 type OrganizationStore interface {
 	GetAllOrganizations(ctx context.Context) ([]Organization, error)
 	GetOrganizationByID(ctx context.Context, orgID int) (Organization, error)
 }
 
+// CatalogStore defines methods for working with app.Product and
+// app.CatalogProduct objects.
 type CatalogStore interface {
 	GetProductsForOrganization(
 		ctx context.Context,
