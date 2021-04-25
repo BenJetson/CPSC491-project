@@ -1,5 +1,5 @@
 import React from "react";
-import { DataGrid as MUIDataGrid } from "@material-ui/data-grid";
+import { DataGrid as MUIDataGrid, GridColDef } from "@material-ui/data-grid";
 import { makeStyles, Paper, withStyles } from "@material-ui/core";
 import NoRows from "./NoRows";
 
@@ -25,6 +25,7 @@ const DataGrid = ({
   sortField = "",
   sortDesc = false,
   pageSize = 10,
+  rowHeight = 52,
   ...props
 }) => {
   const classes = useStyles();
@@ -44,7 +45,8 @@ const DataGrid = ({
         onRowClick={onRowClick}
         pageSize={pageSize}
         components={{ NoRowsOverlay: NoRows }}
-        rowsPerPageOptions={[10, 15, 25, 50]}
+        rowsPerPageOptions={[5, 10, 15, 25, 50]}
+        rowHeight={rowHeight}
         autoHeight
         {...props}
       />
