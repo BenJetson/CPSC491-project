@@ -21,7 +21,7 @@ const GetCatalogProduct = async (productID) =>
   await Request("GET", `/sponsor/catalog/products/${productID}`);
 
 const RemoveCatalogProduct = async (productID) =>
-  await Request("GET", `/sponsor/catalog/products/${productID}/remove`);
+  await Request("POST", `/sponsor/catalog/products/${productID}/remove`);
 
 export {
   SearchVendorProducts,
