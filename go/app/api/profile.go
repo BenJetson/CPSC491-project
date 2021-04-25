@@ -13,6 +13,7 @@ func (svr *Server) getMyProfileUserID(
 	w http.ResponseWriter,
 	r *http.Request,
 ) (session app.Session, userID int, ok bool) {
+
 	s := getSessionFromContext(r.Context())
 	if s == nil {
 		svr.sendErrorResponse(w, errors.New("missing session for profile"),
