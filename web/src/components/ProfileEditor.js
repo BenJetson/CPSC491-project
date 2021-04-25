@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
-  ActivateUser,
   DeactivateUser,
   GetMyUser,
   UpdateUserEmail,
@@ -63,21 +62,15 @@ const passwordValidationSchema = yup.object({
 
 const MyProfileEditor = () => {
   const params = useParams();
-  const userID = parseInt(params["userID"]) ?? false; // FIXME unchecked cast
-  const isUpdate = userID !== false && userID > 0;
 
   const [user, setUser] = useState(emptyUser);
 
   useEffect(() => {
-    if (!isUpdate) {
-      setUser(emptyUser);
-    }
-
     (async () => {
       const data = await GetMyUser();
       setUser(data);
     })();
-  }, [userID, isUpdate]);
+  }, []);
 
   const [nameStatus, setNameStatus] = useState(null);
   const nameForm = useFormik({
@@ -88,11 +81,7 @@ const MyProfileEditor = () => {
     enableReinitialize: true,
     validationSchema: nameValidationSchema,
     onSubmit: async (values) => {
-      const res = await UpdateUserName(
-        userID,
-        values.firstName,
-        values.lastName
-      );
+      const res = await UpdateUserName(values.firstName, values.lastName);
 
       setUser({
         // Force dirty state validation.
@@ -117,7 +106,7 @@ const MyProfileEditor = () => {
     enableReinitialize: true,
     validationSchema: emailValidationSchema,
     onSubmit: async (values) => {
-      const res = await UpdateUserEmail(userID, values.email);
+      const res = await UpdateUserEmail(values.email);
 
       setUser({
         // Force dirty state validation.
@@ -158,7 +147,7 @@ const MyProfileEditor = () => {
       return errors;
     },
     onSubmit: async (values) => {
-      const res = await UpdateUserPassword(userID, values.password);
+      const res = await UpdateUserPassword(values.password);
 
       setPasswordStatus(
         res.error
@@ -187,7 +176,7 @@ const MyProfileEditor = () => {
 
   return (
     <>
-      <Typography variant="h4">Edit User #{user.id}</Typography>
+      <Typography variant="h4">Edit My Profile</Typography>
       <FormCard>
         <CardContent>
           <Typography variant="h5">Name</Typography>
@@ -349,7 +338,7 @@ const MyProfileEditor = () => {
             .
           </Typography>
           <Button
-            onClick={user.is_deactivated ? doActivation : doDeactivation}
+            onClick={user.is_deactivated ? false : doDeactivation}
             variant="contained"
             color={user.is_deactivated ? "secondary" : "primary"}
             style={{ marginTop: 15 }} // FIXME

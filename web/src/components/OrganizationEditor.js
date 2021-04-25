@@ -176,7 +176,7 @@ const OrgProfileEditor = () => {
 
   return (
     <>
-      <Typography variant="h4">Edit User #{user.id}</Typography>
+      <Typography variant="h4">Edit My Organization</Typography>
       <FormCard>
         <CardContent>
           <Typography variant="h5">Name</Typography>
