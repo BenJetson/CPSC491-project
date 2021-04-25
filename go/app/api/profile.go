@@ -251,5 +251,6 @@ func (svr *Server) handleMyProfileDeactivate(
 	}
 
 	// Force the frontend to log the user out.
-	w.WriteHeader(http.StatusUnauthorized)
+	svr.sendErrorResponse(w, nil, http.StatusUnauthorized,
+		"Deactivating your account will sign you out. Please wait.")
 }
