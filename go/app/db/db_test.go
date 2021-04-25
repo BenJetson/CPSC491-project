@@ -1,6 +1,7 @@
 package db
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"testing"
@@ -70,6 +71,14 @@ func (db *testDB) reset(t *testing.T) {
 
 	db.database, err = newDatabase(logger, cfg)
 	require.NoError(t, err, "failed to open test database")
+
+	// Database has some default data in it, but for test purposes we shall
+	// clear out this default data to start with an empty database.
+	_, err = db.Exec(`
+		TRUNCATE TABLE person RESTART IDENTITY CASCADE;
+		TRUNCATE TABLE organization RESTART IDENTITY CASCADE;
+	`)
+	require.NoError(t, err, "failed to clean test database")
 }
 
 func (db *testDB) cleanup(t *testing.T) {
@@ -115,4 +124,17 @@ func (db *testDB) assertCountOf(
 
 func (db *testDB) assertCount(t *testing.T, tableName string, expect int) {
 	db.assertCountOf(t, tableName, expect, "TRUE")
+}
+
+func assertEqualJSON(t *testing.T, expect, actual interface{}) {
+	actualJSONb, err := json.MarshalIndent(actual, "", "    ")
+	require.NoError(t, err)
+
+	expectJSONb, err := json.MarshalIndent(expect, "", "    ")
+	require.NoError(t, err)
+
+	actualJSON := string(actualJSONb)
+	expectJSON := string(expectJSONb)
+
+	assert.Equal(t, expectJSON, actualJSON)
 }

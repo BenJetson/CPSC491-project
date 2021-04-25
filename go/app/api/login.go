@@ -44,6 +44,7 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	if err := credentials.validateFields(); err != nil {
 		svr.sendErrorResponse(w, err, http.StatusBadRequest, "")
+		return
 	}
 
 	p, err := svr.db.GetPersonByEmail(r.Context(), credentials.Email)
@@ -103,7 +104,7 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		Domain:   svr.hostname(),
 		SameSite: http.SameSiteStrictMode,
 		Secure:   svr.useHTTPS(),
-		Path:     "/api",
+		Path:     "/",
 
 		// HttpOnly hides this cookie from JavaScript in browsers for security.
 		HttpOnly: true,
@@ -111,6 +112,27 @@ func (svr *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		// Sessions expire on our app server-side, but let's ask the client to
 		// ditch the cookie automatically as well.
 		MaxAge: int(app.SessionLength / time.Second),
+	})
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (svr *Server) destroySessionCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name: sessionCookieKey,
+
+		// Ensure that this cookie is only used on the same domain with the
+		// same protocol.
+		Domain:   svr.hostname(),
+		SameSite: http.SameSiteStrictMode,
+		Secure:   svr.useHTTPS(),
+		Path:     "/",
+
+		// HttpOnly hides this cookie from JavaScript in browsers for security.
+		HttpOnly: true,
+
+		// A MaxAge less than zero will cause clients to destroy this cookie.
+		MaxAge: -1,
 	})
 }
 
@@ -129,20 +151,16 @@ func (svr *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Destroy the session cookie on the client.
-	http.SetCookie(w, &http.Cookie{
-		Name: sessionCookieKey,
+	svr.destroySessionCookie(w)
 
-		// Ensure that this cookie is only used on the same domain with the
-		// same protocol.
-		Domain:   svr.hostname(),
-		SameSite: http.SameSiteStrictMode,
-		Secure:   svr.useHTTPS(),
-		Path:     "/api",
+	w.WriteHeader(http.StatusNoContent)
+}
 
-		// HttpOnly hides this cookie from JavaScript in browsers for security.
-		HttpOnly: true,
-
-		// A MaxAge less than zero will cause clients to destroy this cookie.
-		MaxAge: -1,
-	})
+func (svr *Server) handleWhoAmI(w http.ResponseWriter, r *http.Request) {
+	s := getSessionFromContext(r.Context())
+	if s == nil {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	svr.sendJSONResponse(w, s.Person)
 }

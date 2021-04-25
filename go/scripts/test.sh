@@ -7,6 +7,7 @@ banner() {
 }
 
 SHOULD_FAIL=0
+CLEANUP_ENV=0
 
 onfail() {
     last_status=$?
@@ -29,6 +30,13 @@ cleanup() {
 
     banner CLEANUP
     make stop-clean-testdb
+
+    if [ $CLEANUP_ENV -ne 0 ]; then
+        echo "Removing temporary .env file."
+        echo
+
+        rm -f .env
+    fi
 
     banner RESULTS
     if [ $SHOULD_FAIL -ne 0 ]; then
@@ -56,6 +64,16 @@ trap cleanup EXIT HUP QUIT TERM
 trap ctrlc INT
 
 banner PREPARATION
+
+if [ ! -f .env ]; then
+    CLEANUP_ENV=1
+    echo "WARN: No .env file detected; creating temporarily from sample."
+    echo
+
+    cp .env.example .env
+fi
+
+
 make testdb-background || onfail
 mkdir go/results
 

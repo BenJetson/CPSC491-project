@@ -11,14 +11,14 @@ import (
 )
 
 type dbPerson struct {
-	ID            int          `db:"person_id"`
-	FirstName     string       `db:"first_name"`
-	LastName      string       `db:"last_name"`
-	Email         string       `db:"email"`
-	Role          app.Role     `db:"role_id"`
-	Password      app.Password `db:"pass_hash"`
-	IsDeactivated bool         `db:"is_deactivated"`
-	Affiliations  pq.Int64Array
+	ID            int           `db:"person_id"`
+	FirstName     string        `db:"first_name"`
+	LastName      string        `db:"last_name"`
+	Email         string        `db:"email"`
+	Role          app.Role      `db:"role_id"`
+	Password      app.Password  `db:"pass_hash"`
+	IsDeactivated bool          `db:"is_deactivated"`
+	Affiliations  pq.Int64Array `db:"affiliations"`
 }
 
 func (p *dbPerson) toPerson() app.Person {
@@ -38,6 +38,38 @@ func (p *dbPerson) toPerson() app.Person {
 	}
 
 	return out
+}
+
+func (db *database) GetAllPeople(ctx context.Context) ([]app.Person, error) {
+	var dbPeople []dbPerson
+
+	err := db.SelectContext(ctx, &dbPeople, `
+		SELECT
+			p.person_id,
+			p.first_name,
+			p.last_name,
+			p.email,
+			p.role_id,
+			p.pass_hash,
+			p.is_deactivated,
+			array_remove(array_agg(a.organization_id), NULL) as affiliations
+		FROM person p
+		LEFT JOIN affiliation a
+			ON p.person_id = a.person_id
+		GROUP BY p.person_id
+		ORDER BY p.last_name
+	`)
+
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, errors.Wrap(err, "failed to fetch people")
+	}
+
+	people := make([]app.Person, len(dbPeople))
+	for idx, dbp := range dbPeople {
+		people[idx] = dbp.toPerson()
+	}
+
+	return people, nil
 }
 
 // GetPersonByID fetches a person given their ID number.
@@ -152,6 +184,36 @@ func (db *database) UpdatePersonName(
 	n, err := result.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "failed to check result of person name update")
+	} else if n != 1 {
+		return errors.Wrapf(
+			app.ErrNotFound,
+			"no such person by id of %d", personID,
+		)
+	}
+
+	return nil
+}
+
+// UpdatePersonEmail updates a person's email address.
+func (db *database) UpdatePersonEmail(
+	ctx context.Context,
+	personID int,
+	email string,
+) error {
+
+	result, err := db.ExecContext(ctx, `
+		UPDATE person SET
+			email = $1
+		WHERE person_id = $2
+	`, email, personID)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to update person email")
+	}
+
+	n, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to check result of person email update")
 	} else if n != 1 {
 		return errors.Wrapf(
 			app.ErrNotFound,

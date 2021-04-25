@@ -74,7 +74,7 @@ func testSessionTokenInject(_ *testing.T, r *http.Request, token uuid.UUID) {
 
 func TestHandleLogin(t *testing.T) {
 	db := &loginMockDB{}
-	api, _, _ := newTestAPI(t, db)
+	api, _, _ := newTestAPI(t, db, nil)
 
 	pass, err := app.NewPassword("zxcvbnJKL")
 	require.NoError(t, err)
@@ -198,7 +198,7 @@ func TestHandleLogin(t *testing.T) {
 				}
 			`,
 			dbPersonByEmail: p,
-			expectCode:      http.StatusOK,
+			expectCode:      http.StatusNoContent,
 			expectCookie:    true,
 		},
 	}
@@ -253,7 +253,7 @@ func TestHandleLogin(t *testing.T) {
 
 func TestHandleLogout(t *testing.T) {
 	db := &loginMockDB{}
-	api, _, _ := newTestAPI(t, db)
+	api, _, _ := newTestAPI(t, db, nil)
 
 	pass, err := app.NewPassword("zxcvbnJKL")
 	require.NoError(t, err)
@@ -267,6 +267,8 @@ func TestHandleLogout(t *testing.T) {
 
 	s, err := app.NewSession(p)
 	require.NoError(t, err)
+	require.NotNil(t, s)
+	require.NotEqual(t, uuid.Nil, s.Token)
 
 	testCases := []struct {
 		alias               string
@@ -295,13 +297,13 @@ func TestHandleLogout(t *testing.T) {
 		{
 			alias:               "NoSessionButRevokeErr",
 			dbRevokeSessionErr:  errors.New("this should not matter"),
-			expectCode:          http.StatusOK,
+			expectCode:          http.StatusNoContent,
 			expectCookie:        true,
 			expectDestroyCookie: true,
 		},
 		{
 			alias:               "NoSession",
-			expectCode:          http.StatusOK,
+			expectCode:          http.StatusNoContent,
 			expectCookie:        true,
 			expectDestroyCookie: true,
 		},
@@ -309,7 +311,7 @@ func TestHandleLogout(t *testing.T) {
 			alias:               "Success",
 			sessionToken:        s.Token,
 			dbSessionByToken:    *s,
-			expectCode:          http.StatusOK,
+			expectCode:          http.StatusNoContent,
 			expectCookie:        true,
 			expectDestroyCookie: true,
 		},

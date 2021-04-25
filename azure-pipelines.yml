@@ -101,12 +101,14 @@ stages:
               failTaskOnFailedTests: true
               buildPlatform: x64
               publishRunAttachments: true
+            condition: always()
             displayName: Publish Test Results
           - task: PublishCodeCoverageResults@1
             inputs:
               codeCoverageTool: Cobertura
               summaryFileLocation: $(System.DefaultWorkingDirectory)/go/results/cover.xml
               failIfCoverageEmpty: true
+            condition: always()
             displayName: Publish Code Coverage
 
   - stage: Build
@@ -151,7 +153,13 @@ stages:
             displayName: React Build
           - publish: $(System.DefaultWorkingDirectory)/web/build
             artifact: ReactApp
-            displayName: Publish Build Artifact
+            displayName: Publish React Build Artifact
+          - script: yarn build-storybook
+            workingDirectory: web
+            displayName: Storybook Build
+          - publish: $(System.DefaultWorkingDirectory)/web/storybook-static
+            artifact: Storybook
+            displayName: Publish Storybook Build Artifact
 
       - job: BuildDB
         displayName: Build Database

@@ -90,6 +90,21 @@ services:
       # modules on the host, since they likely are different operating systems.
       - persistent-node-modules:/mnt/app/node_modules/
 
+  storybook:
+    container_name: storybook
+    image: node:lts-buster
+    working_dir: /mnt/app
+    command: /bin/bash -c "yarn && yarn storybook"
+    ports:
+      - 6006:6006
+    volumes:
+      - ./web/:/mnt/app/
+      # We need to keep the node modules in the container separate from the
+      # modules on the host, since they likely are different operating systems.
+      - persistent-node-modules:/mnt/app/node_modules/
+    profiles:
+      - storybook
+
   api:
     container_name: api
     hostname: api
@@ -99,6 +114,8 @@ services:
     working_dir: /mnt/project
     volumes:
       - ./go:/mnt/project
+    env_file:
+      - .env
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
@@ -110,6 +127,9 @@ services:
       - DB_DANGER_DISABLE_TLS=accept danger and use unencrypted connection
       - TIER=local
       - PORT=8080
+      # This will pass through the environment variable from the host computer
+      # to the container at the time of running "make" or "docker-compose up".
+      - ETSY_API_KEY
 
   nginx:
     container_name: nginx
