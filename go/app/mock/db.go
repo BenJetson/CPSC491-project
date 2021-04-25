@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"gopkg.in/guregu/null.v4"
 
 	"github.com/BenJetson/CPSC491-project/go/app"
 )
@@ -153,6 +154,50 @@ func (db *DB) RevokeSessionsForPersonExcept(
 ) error {
 
 	return nil
+}
+
+//
+//
+// AffiliationStore methods
+//
+//
+
+// AddPersonAffiliation mocks adding an affiliation for a person.
+func (db *DB) AddPersonAffiliation(
+	ctx context.Context,
+	personID, orgID int,
+	role app.Role,
+) error {
+
+	return nil
+}
+
+// RemovePersonAffiliation mocks removing a person's affiliation.
+func (db *DB) RemovePersonAffiliation(
+	ctx context.Context,
+	personID, orgID int,
+) error {
+
+	return nil
+}
+
+// SetPointsForAffiliation mocks setting points for an affiliation.
+func (db *DB) SetPointsForAffiliation(
+	ctx context.Context,
+	personID, orgID int,
+	points null.Int,
+) error {
+
+	return nil
+}
+
+// GetBalancesForPerson mocks fetching a person's balances.
+func (db *DB) GetBalancesForPerson(
+	ctx context.Context,
+	personID int,
+) ([]app.Balance, error) {
+
+	return nil, nil
 }
 
 //
