@@ -147,7 +147,7 @@ const MyProfileEditor = () => {
       return errors;
     },
     onSubmit: async (values) => {
-      const res = await UpdateUserPassword(values.password);
+      const res = await UpdateUserPassword(values.password, values.newpwd);
 
       setPasswordStatus(
         res.error
@@ -306,6 +306,22 @@ const MyProfileEditor = () => {
                 passwordForm.touched.confirm &&
                 Boolean(passwordForm.errors.confirm)
               }
+              helperText={
+                passwordForm.touched.confirm && passwordForm.errors.confirm
+              }
+            />
+            <TextField
+              variant="outlined"
+              required
+              fullWidth
+              type="password"
+              margin="normal"
+              id="newpwd"
+              name="newpwd"
+              label="New Password"
+              value={passwordForm.values.newpwd}
+              onChange={passwordForm.handleChange}
+              error={Boolean(passwordForm.errors.confirm)}
               helperText={
                 passwordForm.touched.confirm && passwordForm.errors.confirm
               }
