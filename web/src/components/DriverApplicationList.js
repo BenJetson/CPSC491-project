@@ -12,9 +12,14 @@ const DriverApplicationList = () => {
     { field: "organization_id", headerName: "Organization ID", hide: true },
     { field: "organization_name", headerName: "Organization", flex: 1 },
     { field: "comment", headerName: "Comment", flex: 1.5 },
-    { field: "submitted_at", type: "dateTime", flex: 0.5 },
     {
-      field: "status",
+      field: "created_at",
+      type: "dateTime",
+      headerName: "Submitted At",
+      flex: 0.5,
+    },
+    {
+      field: "approved",
       headerName: "Status",
       valueGetter: (params) => {
         // Attention! JS switch statements use strict equality (===).
@@ -44,6 +49,7 @@ const DriverApplicationList = () => {
         return;
       }
 
+      console.log(res.data);
       setRows(res.data);
     })();
   }, []);

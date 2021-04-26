@@ -10,12 +10,14 @@ import (
 // organization.
 type Application struct {
 	// ID uniquely identifies this application.
-	ID int `db:"application_id" json:"application_id"`
+	ID int `db:"application_id" json:"id"`
 	// ApplicantID is the person ID of the driver applying to be sponsored.
 	ApplicantID int `db:"applicant_id" json:"applicant_id"`
+
 	// OrganizationID is the ID of the organization the driver would like to be
 	// sponsored by.
-	OrganizationID int `db:"organization_id" json:"organization_id"`
+	OrganizationID    int    `db:"organization_id" json:"organization_id"`
+	OrganizationTitle string `db:"name" json:"organization_name"`
 	// Comment is a driver-supplied comment to go with their application.
 	Comment string `db:"comment" json:"comment"`
 	// Approved specifies whether or not the organization has approved this

@@ -189,7 +189,7 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 		HandlerFunc(svr.handleSubmitApplication)
 	driverRouter.Path("/applications/{appID}").Methods("GET").
 		HandlerFunc(svr.handleGetApplicationByID)
-	driverRouter.Path("/applications/mine").Methods("GET").
+	driverRouter.Path("/applications").Methods("GET").
 		HandlerFunc(svr.handleGetMyApplications)
 
 	driverRouter.Path("/balances").Methods("GET").

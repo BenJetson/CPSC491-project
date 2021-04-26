@@ -51,9 +51,12 @@ func (db *database) GetApplicationsForPerson(
 			a.approved,
 			a.reason,
 			a.created_at,
-			a.approved_at
+			a.approved_at,
+			o.name
 		FROM application a
-		WHERE applicant_id = $1
+		JOIN organization o
+			ON a.organization_id = o.organization_id
+		WHERE a.applicant_id = $1
 	`, personID)
 
 	return apps, errors.Wrap(err, "failed to select application for person")

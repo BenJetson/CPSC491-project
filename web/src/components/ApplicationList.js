@@ -3,6 +3,7 @@ import { useHistory, Link as RouterLink } from "react-router-dom";
 import { Button, makeStyles, Typography } from "@material-ui/core";
 import { Add as AddIcon } from "@material-ui/icons";
 import DataGrid from "./DataGrid";
+import { GetApplications } from "../api/Driver";
 
 const useStyles = makeStyles((theme) => ({
   title: {
@@ -39,14 +40,42 @@ const ApplicationList = ({ applications, isSponsor = false }) => {
       hide: isSponsor,
       flex: 1,
     },
-    { field: "submitted_at", headerName: "Submitted At", flex: 1 },
-    { field: "status", headerName: "Status" },
+    {
+      field: "created_at",
+      type: "dateTime",
+      headerName: "Submitted At",
+      flex: 0.5,
+    },
+    {
+      field: "approved",
+      headerName: "Status",
+      valueGetter: (params) => {
+        // Attention! JS switch statements use strict equality (===).
+        switch (params.value) {
+          case true:
+            return "Accepted";
+          case false:
+            return "Rejected";
+          default:
+            // case for null status.
+            return "Pending";
+        }
+      },
+    },
   ];
 
   const [rows, setRows] = useState([]);
 
   useEffect(() => {
-    setRows([]); // FIXME need api call!
+    (async () => {
+      const res = await GetApplications();
+      if (res.error) {
+        return;
+      }
+
+      console.log();
+      setRows(res.data);
+    })();
   }, []);
 
   const handleRowClick = (gridRowParams, event) => {
