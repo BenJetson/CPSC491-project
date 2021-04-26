@@ -6,7 +6,7 @@ const GetApplications = async () =>
   await Request("GET", "/driver/applications");
 
 const SubmitApplication = async (organizationID, comment) =>
-  await Request("POST", "/driver/applications/create", {
+  await Request("POST", "/driver/applications/submit", {
     organization_id: organizationID,
     comment: comment,
   });

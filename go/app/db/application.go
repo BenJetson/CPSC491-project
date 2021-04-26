@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -69,13 +70,13 @@ func (db *database) GetApplicationsForOrganization(
 
 	err := db.SelectContext(ctx, &apps, `
 		SELECT
-			a.application_id
-			a.applicant_id
-			a.organization_id
-			a.comment
-			a.approved
-			a.reason
-			a.created_at
+			a.application_id,
+			a.applicant_id,
+			a.organization_id,
+			a.comment,
+			a.approved,
+			a.reason,
+			a.created_at,
 			a.approved_at
 		FROM application a
 		WHERE organization_id = $1
@@ -91,15 +92,18 @@ func (db *database) CreateApplication(
 	a app.Application,
 ) (int, error) {
 
+	now := time.Now().UTC().Round(time.Second)
+
 	var id int
 	err := db.GetContext(ctx, &id, `
 		INSERT INTO application (
 			applicant_id,
 			organization_id,
 			comment,
-		) VALUES ($1, $2, $3)
+			created_at
+		) VALUES ($1, $2, $3, $4)
 		RETURNING application_id
-	`, a.ApplicantID, a.OrganizationID, a.Comment)
+	`, a.ApplicantID, a.OrganizationID, a.Comment, now)
 
 	return id, errors.Wrap(err, "failed to insert application")
 }
@@ -113,12 +117,15 @@ func (db *database) UpdateApplicationApproval(
 	reason string,
 ) error {
 
+	now := time.Now().UTC().Round(time.Second)
+
 	result, err := db.ExecContext(ctx, `
 		UPDATE application SET
 			approved = $1,
-			reason = $2
-		WHERE application_id = $3
-	`, status, reason, appID)
+			reason = $2,
+			approved_at = $3
+		WHERE application_id = $4
+	`, status, reason, appID, now)
 
 	if err != nil {
 		return errors.Wrap(err, "failed to update application approval")

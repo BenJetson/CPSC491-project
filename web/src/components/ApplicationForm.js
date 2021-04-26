@@ -46,7 +46,7 @@ const ApplicationForm = () => {
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
-      const res = await SubmitApplication(values);
+      const res = await SubmitApplication(values.organization, values.comment);
       setError(res.error);
 
       if (!res.error) {
