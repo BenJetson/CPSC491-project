@@ -49,8 +49,11 @@ const OrgProfileEditor = () => {
     }
 
     (async () => {
-      const data = await GetSponsorOrganization();
-      setOrg(data);
+      const res = await GetSponsorOrganization();
+      if (res.error) {
+        return;
+      }
+      setOrg(res.data);
     })();
   }, [orgID, isUpdate]);
 
@@ -63,22 +66,19 @@ const OrgProfileEditor = () => {
     enableReinitialize: true,
     validationSchema: validationSchema,
     onSubmit: async (values) => {
-      const res = await UpdateSponsorOrganization(
-        orgID,
-        values.name,
-        values.rate
-      );
+      const res = await UpdateSponsorOrganization(values.name, values.rate);
 
       setOrg({
         // Force dirty state validation.
         ...org,
         name: !res.error ? values.name : org.name,
+        point_value: !res.error ? values.rate : org.point_value,
       });
 
       setStatus(
         res.error
           ? { success: false, message: res.error }
-          : { success: true, message: "Name changed successfully." }
+          : { success: true, message: "Updated organization successfully." }
       );
     },
   });
@@ -131,7 +131,7 @@ const OrgProfileEditor = () => {
               id="rate"
               name="rate"
               label="Points Per US Dollar"
-              type="rate"
+              type="number"
               value={formik.values.rate}
               onChange={formik.handleChange}
               error={formik.touched.rate && Boolean(formik.errors.rate)}
