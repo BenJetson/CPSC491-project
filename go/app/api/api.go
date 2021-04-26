@@ -162,6 +162,16 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 	sponsorOrgRouter.Path("/update").Methods("POST").
 		HandlerFunc(svr.handleSponsorUpdateOwnOrganization)
 
+	sponsorDriverRouter := sponsorRouter.PathPrefix("/drivers").Subrouter()
+	sponsorDriverRouter.Path("").Methods("GET").
+		HandlerFunc(svr.handleTODO) // TODO
+	sponsorDriverRouter.Path("/{driverID}").Methods("GET").
+		HandlerFunc(svr.handleTODO) // TODO
+	sponsorDriverRouter.Path("/{driverID}/points").Methods("POST").
+		HandlerFunc(svr.handleTODO) // TODO
+	sponsorDriverRouter.Path("/{driverID}/remove").Methods("POST").
+		HandlerFunc(svr.handleTODO) // TODO
+
 	driverRouter := router.PathPrefix("/driver").Subrouter()
 	driverRouter.Use(svr.requireAuthMiddleware(authConfig{
 		requireRole:  true,
@@ -172,6 +182,8 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 		HandlerFunc(svr.handleDriverGetBalances)
 	driverRouter.Path("/organizations/all").Methods("GET").
 		HandlerFunc(svr.handleGetAllOrganizations)
+	driverRouter.Path("/catalog/{orgID}/search").Methods("GET").
+		HandlerFunc(svr.handleTODO) // TODO
 
 	return svr, nil
 }
