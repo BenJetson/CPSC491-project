@@ -119,6 +119,10 @@ func (svr *Server) handleGetApplicationsForOrganization(
 		return
 	}
 
+	if apps == nil {
+		apps = make([]app.Application, 0)
+	}
+
 	svr.sendJSONResponse(w, apps)
 }
 
@@ -180,5 +184,10 @@ func (svr *Server) handleGetMyApplications(
 		svr.sendErrorResponse(w, err, http.StatusInternalServerError, "")
 		return
 	}
+
+	if apps == nil {
+		apps = make([]app.Application, 0)
+	}
+
 	svr.sendJSONResponse(w, apps)
 }
