@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/BenJetson/CPSC491-project/go/app"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+
+	"github.com/BenJetson/CPSC491-project/go/app"
 )
 
 type applicationApprovalRequest struct {
@@ -25,11 +26,12 @@ func (svr *Server) handleSubmitApplication(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+
 	s := getSessionFromContext(r.Context())
-	if s != nil {
+	if s == nil {
 		svr.sendErrorResponse(w,
-			errors.New("cannot submit new application"),
-			http.StatusUnauthorized, "Cannot submit new application.")
+			errors.New("missing session for application"),
+			http.StatusInternalServerError, "")
 		return
 	}
 
@@ -43,15 +45,20 @@ func (svr *Server) handleSubmitApplication(
 			http.StatusBadRequest, "Invalid applicaion format.")
 		return
 	}
+
 	_, err := svr.db.CreateApplication(r.Context(), app.Application{
+		ApplicantID:    s.Person.ID,
 		OrganizationID: appReq.OrganizationID,
 		Comment:        appReq.Comment,
 	})
+
 	if err != nil {
-		svr.sendErrorResponse(w, errors.Wrap(err, "failed to create application"),
+		svr.sendErrorResponse(w,
+			errors.Wrap(err, "failed to create application"),
 			http.StatusInternalServerError, "")
 		return
 	}
+
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -68,7 +75,8 @@ func (svr *Server) handleGetApplicationByID(
 			http.StatusBadRequest, "Application ID must be an integer.")
 		return
 	}
-	a, err := svr.db.GetApplicationsForPerson(r.Context(), appID)
+
+	a, err := svr.db.GetApplicationByID(r.Context(), appID)
 	if errors.Is(err, app.ErrNotFound) {
 		svr.sendErrorResponse(w,
 			errors.Wrapf(err, "no application with ID of %d", appID),
@@ -92,21 +100,16 @@ func (svr *Server) handleGetApplicationsForOrganization(
 	r *http.Request,
 ) {
 
-	pathParams := mux.Vars(r)
-
-	appID, err := strconv.Atoi(pathParams["appID"])
+	orgID, err := getOrganizationIDOfSponsor(r)
 	if err != nil {
-		svr.sendErrorResponse(w, errors.Wrap(err, "appID must be an integer"),
-			http.StatusBadRequest, "Application ID must be an integer.")
+		svr.sendErrorResponse(w,
+			errors.Wrap(err, "cannot determine sponsor organization identity"),
+			http.StatusInternalServerError, "")
 		return
 	}
-	o, err := svr.db.GetApplicationsForOrganization(r.Context(), appID)
-	if errors.Is(err, app.ErrNotFound) {
-		svr.sendErrorResponse(w,
-			errors.Wrapf(err, "no application with ID of %d", appID),
-			http.StatusNotFound, "No such application.")
-		return
-	} else if err != nil {
+
+	apps, err := svr.db.GetApplicationsForOrganization(r.Context(), orgID)
+	if err != nil {
 		svr.sendErrorResponse(
 			w,
 			errors.Wrap(err, "failed to retrieve application"),
@@ -116,7 +119,7 @@ func (svr *Server) handleGetApplicationsForOrganization(
 		return
 	}
 
-	svr.sendJSONResponse(w, o)
+	svr.sendJSONResponse(w, apps)
 }
 
 func (svr *Server) handleApproveApplication(
@@ -124,55 +127,58 @@ func (svr *Server) handleApproveApplication(
 	r *http.Request,
 ) {
 
+	pathParams := mux.Vars(r)
+
+	appID, err := strconv.Atoi(pathParams["appID"])
+	if err != nil {
+		svr.sendErrorResponse(w, errors.Wrap(err, "appID must be an integer"),
+			http.StatusBadRequest, "Application ID must be an integer.")
+		return
+	}
+
 	d := json.NewDecoder(r.Body)
 	d.DisallowUnknownFields()
 
 	var data applicationApprovalRequest
-	if err := d.Decode(&data); err != nil {
+	if err = d.Decode(&data); err != nil {
 		svr.sendErrorResponse(w, errors.Wrap(err, "received bad json data"),
 			http.StatusBadRequest, "Bad JSON data.")
 		return
 	}
 
-	// application, err := svr.db.GetApplicationByID(r.Context(), s.Person.ID)
-	// if err != nil {
-	// 	svr.sendErrorResponse(w, errors.Wrap(err, "cannot process approval"),
-	// 		http.StatusInternalServerError, "")
-	// 	return
-	// }
-
-	// s := getSessionFromContext(r.Context())
-
-	// if svr.requireOrganization(orgConfig{orgID: application.OrganizationID})
-
-	svr.db.UpdateApplicationApproval(r.Context(),
-		data.ApplicationID, data.IsApproved, data.Reason)
-
-}
-
-func (svr *Server) handleGetOrganizations(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
-
-	people, err := svr.db.GetAllOrganizations(r.Context())
+	app, err := svr.db.GetApplicationByID(r.Context(), appID)
 	if err != nil {
-		svr.sendErrorResponse(w, err, http.StatusInternalServerError, "")
+		svr.sendErrorResponse(w, errors.Wrap(err, "could not get application"),
+			http.StatusInternalServerError, "")
 		return
 	}
 
-	svr.sendJSONResponse(w, people)
+	if svr.requireOrganization(orgConfig{orgID: app.OrganizationID}, w, r) {
+		return
+	}
+
+	err = svr.db.UpdateApplicationApproval(r.Context(),
+		data.ApplicationID, data.IsApproved, data.Reason)
+	if err != nil {
+		svr.sendErrorResponse(w,
+			errors.Wrap(err, "failed to approve app"),
+			http.StatusInternalServerError, "")
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (svr *Server) handleGetMyApplications(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+
 	s := getSessionFromContext(r.Context())
-	applications, err := svr.db.GetApplicationsForPerson(r.Context(), s.Person.ID)
+	apps, err := svr.db.GetApplicationsForPerson(r.Context(), s.Person.ID)
 	if err != nil {
 		svr.sendErrorResponse(w, err, http.StatusInternalServerError, "")
 		return
 	}
-	svr.sendJSONResponse(w, applications)
+	svr.sendJSONResponse(w, apps)
 }

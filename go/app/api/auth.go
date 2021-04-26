@@ -254,7 +254,6 @@ func (svr *Server) requireIdentity(
 	return true
 }
 
-// nolint: unused // TODO remove this when it gets used
 type orgConfig struct {
 	// orgID is the target organization ID that the current user must be
 	// affiliated with for this check to pass.
@@ -276,8 +275,6 @@ type orgConfig struct {
 //
 // Upon failure of this check, this method will write an appropriate
 // authorization or internal server error to the ResponseWriter for you.
-//
-// nolint: unused // TODO remove this when it gets used
 func (svr *Server) requireOrganization(
 	cfg orgConfig,
 	w http.ResponseWriter,
@@ -306,7 +303,7 @@ func (svr *Server) requireOrganization(
 		if orgID == cfg.orgID {
 			// PASS: Current user's Person is affiliated with the target
 			// organization.
-			return true
+			return false
 		}
 	}
 
@@ -317,5 +314,5 @@ func (svr *Server) requireOrganization(
 		http.StatusForbidden,
 		"",
 	)
-	return false
+	return true
 }

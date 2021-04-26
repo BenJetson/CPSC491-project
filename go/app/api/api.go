@@ -176,12 +176,12 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 		HandlerFunc(svr.handleTODO) // TODO
 
 	sponsorAppRouter := sponsorRouter.PathPrefix("/applications").Subrouter()
-	sponsorAppRouter.Path("/organization/{orgID}").Methods("GET").
+	sponsorAppRouter.Path("").Methods("GET").
 		HandlerFunc(svr.handleGetApplicationsForOrganization)
-	sponsorAppRouter.Path("/approve/{appID}").Methods("POST").
-		HandlerFunc(svr.handleApproveApplication)
 	sponsorAppRouter.Path("/{appID}").Methods("GET").
 		HandlerFunc(svr.handleGetApplicationByID)
+	sponsorAppRouter.Path("{appID}/approve").Methods("POST").
+		HandlerFunc(svr.handleApproveApplication)
 
 	driverRouter := router.PathPrefix("/driver").Subrouter()
 
