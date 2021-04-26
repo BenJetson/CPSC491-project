@@ -151,6 +151,12 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 	sponsorCatalogRouter.Path("/products/{productID}/remove").Methods("POST").
 		HandlerFunc(svr.handleSponsorRemoveProduct)
 
+	sponsorOrgRouter := sponsorRouter.PathPrefix("/organization").Subrouter()
+	sponsorOrgRouter.Path("").Methods("GET").
+		HandlerFunc(svr.handleSponsorGetOwnOrganization)
+	sponsorOrgRouter.Path("/update").Methods("POST").
+		HandlerFunc(svr.handleSponsorUpdateOwnOrganization)
+
 	driverRouter := router.PathPrefix("/driver").Subrouter()
 	driverRouter.Use(svr.requireAuthMiddleware(authConfig{
 		requireRole:  true,

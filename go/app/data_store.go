@@ -84,6 +84,10 @@ type SessionStore interface {
 type OrganizationStore interface {
 	GetAllOrganizations(ctx context.Context) ([]Organization, error)
 	GetOrganizationByID(ctx context.Context, orgID int) (Organization, error)
+
+	CreateOrganization(ctx context.Context, org Organization) (int, error)
+	UpdateOrganization(ctx context.Context, org Organization) error
+	DeleteOrganization(ctx context.Context, orgID int) error
 }
 
 // CatalogStore defines methods for working with app.Product and
