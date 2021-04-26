@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import {
-  ActivateUser,
   DeactivateUser,
-  GetUserByID,
+  GetMyUser,
   UpdateUserEmail,
   UpdateUserName,
   UpdateUserPassword,
-} from "../api/Admin";
+} from "../api/My";
 import Roles from "../api/Roles";
 
 import * as yup from "yup";
@@ -33,7 +31,7 @@ const emptyUser = {
   first_name: "",
   last_name: "",
   email: "",
-  role_id: Roles.IDOf.ADMIN,
+  role_id: Roles.IDOf.DRIVER,
   is_deactivated: false,
 };
 
@@ -61,23 +59,15 @@ const passwordValidationSchema = yup.object({
     .required("Password confirmation is not optional ."),
 });
 
-const AdminProfileEditor = () => {
-  const params = useParams();
-  const userID = parseInt(params["userID"]) ?? false; // FIXME unchecked cast
-  const isUpdate = userID !== false && userID > 0;
-
+const MyProfileEditor = () => {
   const [user, setUser] = useState(emptyUser);
 
   useEffect(() => {
-    if (!isUpdate) {
-      setUser(emptyUser);
-    }
-
     (async () => {
-      const data = await GetUserByID(userID);
+      const data = await GetMyUser();
       setUser(data);
     })();
-  }, [userID, isUpdate]);
+  }, []);
 
   const [nameStatus, setNameStatus] = useState(null);
   const nameForm = useFormik({
@@ -88,11 +78,7 @@ const AdminProfileEditor = () => {
     enableReinitialize: true,
     validationSchema: nameValidationSchema,
     onSubmit: async (values) => {
-      const res = await UpdateUserName(
-        userID,
-        values.firstName,
-        values.lastName
-      );
+      const res = await UpdateUserName(values.firstName, values.lastName);
 
       setUser({
         // Force dirty state validation.
@@ -117,7 +103,7 @@ const AdminProfileEditor = () => {
     enableReinitialize: true,
     validationSchema: emailValidationSchema,
     onSubmit: async (values) => {
-      const res = await UpdateUserEmail(userID, values.email);
+      const res = await UpdateUserEmail(values.email);
 
       setUser({
         // Force dirty state validation.
@@ -158,7 +144,7 @@ const AdminProfileEditor = () => {
       return errors;
     },
     onSubmit: async (values) => {
-      const res = await UpdateUserPassword(userID, values.password);
+      const res = await UpdateUserPassword(values.password, values.newpwd);
 
       setPasswordStatus(
         res.error
@@ -170,7 +156,7 @@ const AdminProfileEditor = () => {
 
   const [activationStatus, setActivationStatus] = useState(null);
   const doDeactivation = async () => {
-    const res = await DeactivateUser(userID);
+    const res = await DeactivateUser();
 
     setUser({
       // Force dirty state validation.
@@ -184,25 +170,10 @@ const AdminProfileEditor = () => {
         : { success: true, message: "Account deactivated successfully." }
     );
   };
-  const doActivation = async () => {
-    const res = await ActivateUser(userID);
-
-    setUser({
-      // Force dirty state validation.
-      ...user,
-      is_deactivated: !res.error ? false : user.is_deactivated,
-    });
-
-    setActivationStatus(
-      res.error
-        ? { success: false, message: res.error }
-        : { success: true, message: "Account activated successfully." }
-    );
-  };
 
   return (
     <>
-      <Typography variant="h4">Edit User #{user.id}</Typography>
+      <Typography variant="h4">Edit My Profile</Typography>
       <FormCard>
         <CardContent>
           <Typography variant="h5">Name</Typography>
@@ -336,6 +307,22 @@ const AdminProfileEditor = () => {
                 passwordForm.touched.confirm && passwordForm.errors.confirm
               }
             />
+            <TextField
+              variant="outlined"
+              required
+              fullWidth
+              type="password"
+              margin="normal"
+              id="newpwd"
+              name="newpwd"
+              label="New Password"
+              value={passwordForm.values.newpwd}
+              onChange={passwordForm.handleChange}
+              error={Boolean(passwordForm.errors.confirm)}
+              helperText={
+                passwordForm.touched.confirm && passwordForm.errors.confirm
+              }
+            />
             <Button
               type="submit"
               variant="contained"
@@ -364,12 +351,15 @@ const AdminProfileEditor = () => {
             .
           </Typography>
           <Button
-            onClick={user.is_deactivated ? doActivation : doDeactivation}
+            onClick={user.is_deactivated ? false : doDeactivation}
             variant="contained"
             color={user.is_deactivated ? "secondary" : "primary"}
             style={{ marginTop: 15 }} // FIXME
           >
-            {user.is_deactivated ? "activate" : "deactivate"} account
+            {user.is_deactivated
+              ? "contact an administrator to reactivate"
+              : "deactivate"}{" "}
+            account
           </Button>
         </CardContent>
       </FormCard>
@@ -377,4 +367,4 @@ const AdminProfileEditor = () => {
   );
 };
 
-export default AdminProfileEditor;
+export default MyProfileEditor;
