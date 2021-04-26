@@ -35,8 +35,6 @@ const nameValidationSchema = yup.object({
   name: yup
     .string("Enter the new organization name.")
     .required("Organization name is required."),
-});
-const rateValidationSchema = yup.object({
   rate: yup.number().min(1, "Exchange rate must be a positive integer."),
 });
 
