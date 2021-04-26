@@ -342,6 +342,7 @@ func (svr *Server) handleAdminDeleteOrganization(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+
 	pathParams := mux.Vars(r)
 
 	orgID, err := strconv.Atoi(pathParams["orgID"])
