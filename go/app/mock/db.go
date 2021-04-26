@@ -316,6 +316,7 @@ func (db *DB) GetApplicationsForPerson(
 	ctx context.Context,
 	personID int,
 ) ([]app.Application, error) {
+
 	return nil, nil
 }
 
@@ -325,6 +326,7 @@ func (db *DB) GetApplicationsForOrganization(
 	ctx context.Context,
 	orgID int,
 ) ([]app.Application, error) {
+
 	return nil, nil
 }
 
@@ -344,5 +346,6 @@ func (db *DB) UpdateApplicationApproval(
 	status bool,
 	reason string,
 ) error {
+
 	return nil
 }
