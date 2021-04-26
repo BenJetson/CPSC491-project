@@ -1,14 +1,15 @@
 import React from "react";
 import { Route, Switch, useRouteMatch } from "react-router-dom";
 import NotFound from "./components/NotFound";
-import NotImplemented from "./components/NotImplemented";
 
 import { WithUser } from "./api/Auth";
 import Roles from "./api/Roles";
 import AccessDenied from "./components/AccessDenied";
 
 import UserList from "./components/UserList";
+import OrgsList from "./components/OrgsList";
 import AdminProfileEditor from "./components/AdminProfileEditor";
+import AdminOrgEditor from "./components/AdminOrgEditor";
 
 const AppSubrouterAdmin = () => {
   const match = useRouteMatch();
@@ -24,8 +25,11 @@ const AppSubrouterAdmin = () => {
             <Route path={`${match.path}/users/:userID`}>
               <AdminProfileEditor />
             </Route>
-            <Route path={`${match.path}/organizations`}>
-              <NotImplemented feature={"Admin - Manage Organizations"} />
+            <Route exact path={`${match.path}/organizations`}>
+              <OrgsList />
+            </Route>
+            <Route path={`${match.path}/organizations/:orgID`}>
+              <AdminOrgEditor />
             </Route>
             <Route path={"*"}>
               {/* If no route matches, show a not found page. */}

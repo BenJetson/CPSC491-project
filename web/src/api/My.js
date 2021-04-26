@@ -3,35 +3,30 @@ import { GetCurrentUser } from "./Auth";
 
 const GetMyUser = GetCurrentUser;
 
-const UpdateMyName = async (firstName, lastName) => {
-  const res = await Request("POST", `/my/profile/name`, {
+const UpdateUserName = async (firstName, lastName) =>
+  await Request("POST", `/my/profile/name`, {
     first_name: firstName,
     last_name: lastName,
   });
 
-  if (res.error) {
-    throw res.error;
-  }
-};
-
-const UpdateMyEmail = async (email) => {
-  const res = await Request("POST", `/my/profile/email`, {
+const UpdateUserEmail = async (email) =>
+  await Request("POST", `/my/profile/email`, {
     email: email,
   });
 
-  if (res.error) {
-    throw res.error;
-  }
-};
-
-const UpdateMyPassword = async (password) => {
-  const res = await Request("POST", `/my/profile/password`, {
-    new_password: password,
+const UpdateUserPassword = async (currentPassword, newPassword) =>
+  await Request("POST", `/my/profile/password`, {
+    new_password: newPassword,
+    current_password: currentPassword,
   });
 
-  if (res.error) {
-    throw res.error;
-  }
-};
+const DeactivateUser = async () =>
+  await Request("POST", `/my/profile/deactivate`);
 
-export { GetMyUser, UpdateMyName, UpdateMyEmail, UpdateMyPassword };
+export {
+  GetMyUser,
+  UpdateUserName,
+  UpdateUserEmail,
+  UpdateUserPassword,
+  DeactivateUser,
+};

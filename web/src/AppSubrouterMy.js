@@ -1,7 +1,8 @@
 import React from "react";
 import { Route, Switch, useRouteMatch } from "react-router-dom";
 import NotFound from "./components/NotFound";
-import NotImplemented from "./components/NotImplemented";
+
+import ProfileEditor from "./components/ProfileEditor";
 
 const AppSubrouterMy = () => {
   const match = useRouteMatch();
@@ -9,7 +10,7 @@ const AppSubrouterMy = () => {
   return (
     <Switch>
       <Route path={`${match.path}/profile`}>
-        <NotImplemented feature={"My - Profile"} />
+        <ProfileEditor />
       </Route>
       <Route path={"*"}>
         {/* If no route matches, show a not found page. */}
