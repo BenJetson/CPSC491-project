@@ -4,7 +4,7 @@ import {
   GetSponsorOrganization,
   UpdateSponsorOrganization,
 } from "../api/Sponsor";
-import { DeleteOrganization } from "../api/Admin";
+// import { DeleteOrganization } from "../api/Admin";
 import * as yup from "yup";
 import { useFormik } from "formik";
 import {
@@ -83,20 +83,22 @@ const OrgProfileEditor = () => {
     },
   });
 
-  const [activationStatus, setActivationStatus] = useState(null);
-  const doDeactivation = async () => {
-    const res = await DeleteOrganization();
-    setOrg({
-      // Force dirty state validation.
-      ...org,
-      is_deactivated: !res.error ? true : org.is_deactivated,
-    });
-    setActivationStatus(
-      res.error
-        ? { success: false, message: res.error }
-        : { success: true, message: "Account deactivated successfully." }
-    );
-  };
+  // TODO this is broken, so it is disabled.
+  //
+  // const [activationStatus, setActivationStatus] = useState(null);
+  // const doDeactivation = async () => {
+  //   const res = await DeleteOrganization();
+  //   setOrg({
+  //     // Force dirty state validation.
+  //     ...org,
+  //     is_deactivated: !res.error ? true : org.is_deactivated,
+  //   });
+  //   setActivationStatus(
+  //     res.error
+  //       ? { success: false, message: res.error }
+  //       : { success: true, message: "Account deactivated successfully." }
+  //   );
+  // };
 
   return (
     <>
@@ -148,7 +150,9 @@ const OrgProfileEditor = () => {
           </form>
         </CardContent>
       </FormCard>
-      <FormCard>
+
+      {/* TODO this is broken, so it is disabled. */}
+      {/* <FormCard>
         <CardContent>
           <Typography variant="h5">Account Status</Typography>
           {activationStatus && (
@@ -175,7 +179,7 @@ const OrgProfileEditor = () => {
             account
           </Button>
         </CardContent>
-      </FormCard>
+      </FormCard> */}
     </>
   );
 };

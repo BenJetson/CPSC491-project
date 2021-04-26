@@ -6,11 +6,11 @@ import {
   Business as BusinessIcon,
   Assignment as AssignmentIcon,
   LocalAtm as LocalAtmIcon,
-  ShoppingBasket as ShoppingBasketIcon,
-  Receipt as ReceiptIcon,
+  // ShoppingBasket as ShoppingBasketIcon,
+  // Receipt as ReceiptIcon,
   Storefront as StorefrontIcon,
-  AssignmentTurnedIn as AssignmentTurnedInIcon,
-  Face as FaceIcon,
+  // AssignmentTurnedIn as AssignmentTurnedInIcon,
+  // Face as FaceIcon,
   AccountBox as AccountBoxIcon,
   Help as HelpIcon,
   Info as InfoIcon,
@@ -76,16 +76,20 @@ let Navigation = [
         name: "Manage Organization",
         icon: <BusinessIcon />,
       },
-      {
-        link: "/sponsor/applications",
-        name: "Manage Applications",
-        icon: <AssignmentTurnedInIcon />,
-      },
-      {
-        link: "/sponsor/drivers",
-        name: "Manage Drivers",
-        icon: <FaceIcon />,
-      },
+
+      // TODO this is not working, so it is disabled.
+      // {
+      //   link: "/sponsor/applications",
+      //   name: "Manage Applications",
+      //   icon: <AssignmentTurnedInIcon />,
+      // },
+
+      // TODO this is not working, so it is disabled.
+      // {
+      //   link: "/sponsor/drivers",
+      //   name: "Manage Drivers",
+      //   icon: <FaceIcon />,
+      // },
       {
         link: "/sponsor/catalog",
         name: "Manage Catalog",
@@ -107,16 +111,20 @@ let Navigation = [
         name: "View Balance",
         icon: <LocalAtmIcon />,
       },
-      {
-        link: "/driver/shop",
-        name: "Incentive Shop",
-        icon: <ShoppingBasketIcon />,
-      },
-      {
-        link: "/driver/receipts",
-        name: "Receipts",
-        icon: <ReceiptIcon />,
-      },
+
+      // TODO this is not working, so it is disabled.
+      // {
+      //   link: "/driver/shop",
+      //   name: "Incentive Shop",
+      //   icon: <ShoppingBasketIcon />,
+      // },
+
+      // TODO this is not working, so it is disabled.
+      // {
+      //   link: "/driver/receipts",
+      //   name: "Receipts",
+      //   icon: <ReceiptIcon />,
+      // },
     ],
   },
 ];

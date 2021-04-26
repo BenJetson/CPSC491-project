@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from "react";
 
-import { useHistory, Link as RouterLink } from "react-router-dom";
-import { Typography, Button } from "@material-ui/core";
-import { Add as AddIcon } from "@material-ui/icons";
+import {
+  useHistory,
+  // Link as RouterLink,
+} from "react-router-dom";
+import {
+  Typography,
+  // Button,
+} from "@material-ui/core";
+// import { Add as AddIcon } from "@material-ui/icons";
 import { GetOrganizations } from "../api/Admin";
 import DataGrid from "./DataGrid";
 
@@ -46,7 +52,9 @@ const OrgsList = () => {
   return (
     <>
       <Typography variant="h4">Organizations</Typography>
-      <Button
+
+      {/* TODO this is broken, so it is disabled. */}
+      {/* <Button
         variant="contained"
         color="primary"
         component={RouterLink}
@@ -54,7 +62,8 @@ const OrgsList = () => {
         style={{ marginTop: 10 }}
       >
         <AddIcon /> Create Organization
-      </Button>
+      </Button> */}
+
       <DataGrid
         columns={columns}
         rows={rows}

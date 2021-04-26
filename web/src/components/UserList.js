@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from "react";
 
-import { useHistory, Link as RouterLink } from "react-router-dom";
-import { Typography, Button } from "@material-ui/core";
-import { Add as AddIcon } from "@material-ui/icons";
+import {
+  useHistory,
+  // Link as RouterLink,
+} from "react-router-dom";
+import {
+  Typography,
+  // Button,
+} from "@material-ui/core";
+// import { Add as AddIcon } from "@material-ui/icons";
 import { GetAllUsers } from "../api/Admin";
 import DataGrid from "./DataGrid";
 import Roles from "../api/Roles";
@@ -60,7 +66,9 @@ const UserList = () => {
   return (
     <>
       <Typography variant="h4">Users</Typography>
-      <Button
+
+      {/* TODO this is broken, so it is disabled. */}
+      {/* <Button
         variant="contained"
         color="primary"
         component={RouterLink}
@@ -68,7 +76,8 @@ const UserList = () => {
         style={{ marginTop: 10 }}
       >
         <AddIcon /> Create User
-      </Button>
+      </Button> */}
+
       <DataGrid
         columns={columns}
         rows={rows}
