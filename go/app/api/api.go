@@ -63,6 +63,9 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 	router.Path("/logout").Methods("POST").HandlerFunc(svr.handleLogout)
 	router.Path("/whoami").Methods("GET").HandlerFunc(svr.handleWhoAmI)
 
+	// Bogus endpoint. Always returns 501.
+	router.Path("/todo").Methods("GET").HandlerFunc(svr.handleTODO)
+
 	// Account subroutes.
 	accountRouter := router.PathPrefix("/account").Subrouter()
 	accountRouter.Path("/forgot").Methods("POST").
@@ -101,6 +104,8 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 	adminUserRouter := adminRouter.PathPrefix("/users").Subrouter()
 	adminUserRouter.Path("").Methods("GET").
 		HandlerFunc(svr.handleAdminGetAllUsers)
+	adminUserRouter.Path("/create").Methods("POST").
+		HandlerFunc(svr.handleTODO) // TODO
 	adminUserRouter.Path("/{userID}").Methods("GET").
 		HandlerFunc(svr.handleAdminGetUserByID)
 	adminUserRouter.Path("/{userID}/name").Methods("POST").
@@ -118,15 +123,15 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 
 	adminOrgRouter := adminRouter.PathPrefix("/organizations").Subrouter()
 	adminOrgRouter.Path("").Methods("GET").
-		HandlerFunc(svr.handleTODO) // TODO
-	adminOrgRouter.Path("/{orgID}").Methods("GET").
-		HandlerFunc(svr.handleTODO) // TODO
-	adminOrgRouter.Path("/{orgID}/update").Methods("POST").
-		HandlerFunc(svr.handleTODO) // TODO
-	adminOrgRouter.Path("/{orgID}/delete").Methods("POST").
-		HandlerFunc(svr.handleTODO) // TODO
+		HandlerFunc(svr.handleGetAllOrganizations)
 	adminOrgRouter.Path("/create").Methods("POST").
-		HandlerFunc(svr.handleTODO) // TODO
+		HandlerFunc(svr.handleAdminCreateOrganization)
+	adminOrgRouter.Path("/{orgID}").Methods("GET").
+		HandlerFunc(svr.handleAdminGetOrganizationByID)
+	adminOrgRouter.Path("/{orgID}/update").Methods("POST").
+		HandlerFunc(svr.handleAdminUpdateOrganization)
+	adminOrgRouter.Path("/{orgID}/delete").Methods("POST").
+		HandlerFunc(svr.handleAdminDeleteOrganization)
 
 	// Sponsor subroutes.
 	sponsorRouter := router.PathPrefix("/sponsor").Subrouter()
@@ -165,6 +170,8 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 
 	driverRouter.Path("/balances").Methods("GET").
 		HandlerFunc(svr.handleDriverGetBalances)
+	driverRouter.Path("/organizations/all").Methods("GET").
+		HandlerFunc(svr.handleGetAllOrganizations)
 
 	return svr, nil
 }

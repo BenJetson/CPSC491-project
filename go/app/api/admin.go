@@ -236,3 +236,128 @@ func (svr *Server) handleAdminActivateUser(
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (svr *Server) handleAdminGetOrganizationByID(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+
+	pathParams := mux.Vars(r)
+
+	orgID, err := strconv.Atoi(pathParams["orgID"])
+	if err != nil {
+		svr.sendErrorResponse(w, errors.Wrap(err, "orgID must be an integer"),
+			http.StatusBadRequest, "Organization ID must be an integer.")
+		return
+	}
+
+	org, err := svr.db.GetOrganizationByID(r.Context(), orgID)
+	if err != nil {
+		svr.sendErrorResponse(w,
+			errors.Wrap(err, "failed to get organization"),
+			http.StatusInternalServerError, "")
+		return
+	}
+
+	svr.sendJSONResponse(w, org)
+}
+
+func (svr *Server) handleAdminCreateOrganization(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+
+	var data organizationRequest
+	var message string
+	if err := d.Decode(&data); err != nil {
+		svr.sendErrorResponse(w, errors.Wrap(err, "received bad json data"),
+			http.StatusBadRequest, "Bad JSON data.")
+		return
+	} else if message, err = data.validateFields(); err != nil {
+		svr.sendErrorResponse(w, err, http.StatusBadRequest, message)
+		return
+	}
+
+	_, err := svr.db.CreateOrganization(r.Context(), app.Organization{
+		Name:       data.Name,
+		PointValue: data.PointValue,
+	})
+	if err != nil {
+		svr.sendErrorResponse(w,
+			errors.Wrap(err, "failed to create organization"),
+			http.StatusInternalServerError, "")
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (svr *Server) handleAdminUpdateOrganization(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+
+	pathParams := mux.Vars(r)
+
+	orgID, err := strconv.Atoi(pathParams["orgID"])
+	if err != nil {
+		svr.sendErrorResponse(w, errors.Wrap(err, "orgID must be an integer"),
+			http.StatusBadRequest, "Organization ID must be an integer.")
+		return
+	}
+
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+
+	var data organizationRequest
+	var message string
+	if err = d.Decode(&data); err != nil {
+		svr.sendErrorResponse(w, errors.Wrap(err, "received bad json data"),
+			http.StatusBadRequest, "Bad JSON data.")
+		return
+	} else if message, err = data.validateFields(); err != nil {
+		svr.sendErrorResponse(w, err, http.StatusBadRequest, message)
+		return
+	}
+
+	err = svr.db.UpdateOrganization(r.Context(), app.Organization{
+		ID:         orgID,
+		Name:       data.Name,
+		PointValue: data.PointValue,
+	})
+	if err != nil {
+		svr.sendErrorResponse(w,
+			errors.Wrap(err, "failed to update organization"),
+			http.StatusInternalServerError, "")
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (svr *Server) handleAdminDeleteOrganization(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	pathParams := mux.Vars(r)
+
+	orgID, err := strconv.Atoi(pathParams["orgID"])
+	if err != nil {
+		svr.sendErrorResponse(w, errors.Wrap(err, "orgID must be an integer"),
+			http.StatusBadRequest, "Organization ID must be an integer.")
+		return
+	}
+
+	err = svr.db.DeleteOrganization(r.Context(), orgID)
+	if err != nil {
+		svr.sendErrorResponse(w,
+			errors.Wrap(err, "failed to delete organization"),
+			http.StatusInternalServerError, "")
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
