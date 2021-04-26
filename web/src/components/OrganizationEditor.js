@@ -5,7 +5,7 @@ import {
   UpdateSponsorOrganization,
 } from "../api/Sponsor";
 import Roles from "../api/Roles";
-
+import { DeleteOrganization } from "../api/Admin";
 import * as yup from "yup";
 import { useFormik } from "formik";
 import {
@@ -25,11 +25,8 @@ const FormCard = withStyles((theme) => ({
 }))(Card);
 
 const emptyOrg = {
-  id: 0,
   name: "",
-  email: "",
-  role_id: Roles.IDOf.SPONSOR,
-  is_deactivated: false,
+  rate: 1,
 };
 
 const validationSchema = yup.object({
@@ -49,6 +46,7 @@ const OrgProfileEditor = () => {
   useEffect(() => {
     if (!isUpdate) {
       setOrg(emptyOrg);
+      return;
     }
 
     (async () => {
@@ -88,14 +86,12 @@ const OrgProfileEditor = () => {
 
   const [activationStatus, setActivationStatus] = useState(null);
   const doDeactivation = async () => {
-    const res = await DeleteOrg();
-
+    const res = await DeleteOrganization();
     setOrg({
       // Force dirty state validation.
       ...org,
       is_deactivated: !res.error ? true : org.is_deactivated,
     });
-
     setActivationStatus(
       res.error
         ? { success: false, message: res.error }

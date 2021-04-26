@@ -17,7 +17,7 @@ const OrgsList = () => {
       flex: 0.5,
     },
     {
-      field: "rate",
+      field: "point_value",
       headerName: "Exchange Rate",
       flex: 0.5,
     },
@@ -27,8 +27,11 @@ const OrgsList = () => {
 
   useEffect(() => {
     (async () => {
-      const orgs = await GetOrganizations();
-      setRows(orgs);
+      const res = await GetOrganizations();
+      if (res.error) {
+        return;
+      }
+      setRows(res.data);
     })();
   }, []);
 
