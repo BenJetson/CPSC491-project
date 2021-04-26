@@ -294,3 +294,58 @@ func (db *DB) MakeProductUnavailable(
 
 	return nil
 }
+
+//
+//
+// ApplicationStore methods
+//
+//
+
+// GetApplicationByID mocks getting an application by its ID number.
+func (db *DB) GetApplicationByID(
+	ctx context.Context,
+	appID int,
+) (app.Application, error) {
+
+	return app.Application{}, nil
+}
+
+// GetApplicationsForPerson mocks getting all applications submitted by a
+// person.
+func (db *DB) GetApplicationsForPerson(
+	ctx context.Context,
+	personID int,
+) ([]app.Application, error) {
+
+	return nil, nil
+}
+
+// GetApplicationsForOrganization mocks getting all applications submitted for
+// an organization.
+func (db *DB) GetApplicationsForOrganization(
+	ctx context.Context,
+	orgID int,
+) ([]app.Application, error) {
+
+	return nil, nil
+}
+
+// CreateApplication mocks creating an application in the database.
+func (db *DB) CreateApplication(
+	ctx context.Context,
+	a app.Application,
+) (int, error) {
+
+	return 0, nil
+}
+
+// UpdateApplicationApproval mocks setting application approval.
+func (db *DB) UpdateApplicationApproval(
+	ctx context.Context,
+	appID int,
+	status bool,
+	reason string,
+) error {
+
+	return nil
+}

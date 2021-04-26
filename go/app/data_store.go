@@ -13,6 +13,7 @@ type DataStore interface {
 	PersonStore
 	AffiliationStore
 	SessionStore
+	ApplicationStore
 	OrganizationStore
 	CatalogStore
 }
@@ -77,6 +78,32 @@ type SessionStore interface {
 	RevokeSessionsForPersonExcept(
 		ctx context.Context,
 		personID, sessionID int,
+	) error
+}
+
+// ApplicationStore defines methods for working with app.Application objects
+// in the database.
+type ApplicationStore interface {
+	GetApplicationByID(
+		ctx context.Context,
+		appID int,
+	) (Application, error)
+	GetApplicationsForPerson(
+		ctx context.Context,
+		personID int,
+	) ([]Application, error)
+	GetApplicationsForOrganization(
+		ctx context.Context,
+		orgID int,
+	) ([]Application, error)
+
+	CreateApplication(ctx context.Context, a Application) (int, error)
+
+	UpdateApplicationApproval(
+		ctx context.Context,
+		appID int,
+		status bool,
+		reason string,
 	) error
 }
 

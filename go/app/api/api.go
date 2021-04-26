@@ -68,6 +68,9 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 
 	// Account subroutes.
 	accountRouter := router.PathPrefix("/account").Subrouter()
+	accountRouter.Path("/register").HandlerFunc(svr.handleRegistration)
+
+	// adminRouter := router.PathPrefix("/admin").Subrouter()
 	accountRouter.Path("/forgot").Methods("POST").
 		HandlerFunc(svr.handleTODO) // TODO
 	accountRouter.Path("/register").Methods("POST").
@@ -172,11 +175,22 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 	sponsorDriverRouter.Path("/{driverID}/remove").Methods("POST").
 		HandlerFunc(svr.handleTODO) // TODO
 
+	sponsorAppRouter := sponsorRouter.PathPrefix("/applications").Subrouter()
+	sponsorAppRouter.Path("").Methods("GET").
+		HandlerFunc(svr.handleGetApplicationsForOrganization)
+	sponsorAppRouter.Path("/{appID}").Methods("GET").
+		HandlerFunc(svr.handleGetApplicationByID)
+	sponsorAppRouter.Path("{appID}/approve").Methods("POST").
+		HandlerFunc(svr.handleApproveApplication)
+
 	driverRouter := router.PathPrefix("/driver").Subrouter()
-	driverRouter.Use(svr.requireAuthMiddleware(authConfig{
-		requireRole:  true,
-		allowedRoles: []app.Role{app.RoleDriver},
-	}))
+
+	driverRouter.Path("/applications/submit").Methods("POST").
+		HandlerFunc(svr.handleSubmitApplication)
+	driverRouter.Path("/applications/{appID}").Methods("GET").
+		HandlerFunc(svr.handleGetApplicationByID)
+	driverRouter.Path("/applications").Methods("GET").
+		HandlerFunc(svr.handleGetMyApplications)
 
 	driverRouter.Path("/balances").Methods("GET").
 		HandlerFunc(svr.handleDriverGetBalances)
