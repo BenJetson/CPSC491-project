@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
-  DeactivateUser,
-  GetOrgByID,
-  UpdateUserEmail,
-  UpdateUserName,
-  UpdateUserPassword,
-  UpdateConversionRate,
-} from "../api/Organizations";
+  GetSponsorOrganization,
+  UpdateSponsorOrganization,
+} from "../api/Sponsor";
 import Roles from "../api/Roles";
 
 import * as yup from "yup";
@@ -28,7 +24,7 @@ const FormCard = withStyles((theme) => ({
   },
 }))(Card);
 
-const emptyUser = {
+const emptyOrg = {
   id: 0,
   name: "",
   email: "",
@@ -36,149 +32,53 @@ const emptyUser = {
   is_deactivated: false,
 };
 
-const nameValidationSchema = yup.object({
-  lastName: yup
+const validationSchema = yup.object({
+  name: yup
     .string("Enter the new organization name.")
     .required("Organization name is required."),
-});
-const emailValidationSchema = yup.object({
-  email: yup
-    .string("Enter the new email.")
-    .email("Enter a valid email.")
-    .required("Email is required."),
-});
-const passwordValidationSchema = yup.object({
-  password: yup
-    .string("Enter the new password.")
-    .min(8, "Password should be of minimum 8 characters in length.")
-    .required("Password is required."),
-  confirm: yup
-    .string("Re-enter the new password.")
-    .required("Password confirmation is not optional ."),
+  rate: yup.number().min(1, "Exchange rate must be a positive integer."),
 });
 
 const OrgProfileEditor = () => {
   const params = useParams();
-  const userID = parseInt(params["userID"]) ?? false; // FIXME unchecked cast
-  const isUpdate = userID !== false && userID > 0;
+  const orgID = parseInt(params["orgID"]) ?? false; // FIXME unchecked cast
+  const isUpdate = orgID !== false && orgID > 0;
 
-  const [user, setUser] = useState(emptyUser);
+  const [org, setOrg] = useState(emptyOrg);
 
   useEffect(() => {
     if (!isUpdate) {
-      setUser(emptyUser);
+      setOrg(emptyOrg);
     }
 
     (async () => {
-      const data = await GetOrgByID(userID);
-      setUser(data);
+      const data = await GetSponsorOrganization();
+      setOrg(data);
     })();
-  }, [userID, isUpdate]);
+  }, [orgID, isUpdate]);
 
-  const [nameStatus, setNameStatus] = useState(null);
-  const nameForm = useFormik({
+  const [status, setStatus] = useState(null);
+  const formik = useFormik({
     initialValues: {
-      name: user.name,
+      name: org.name,
+      rate: org.point_value,
     },
     enableReinitialize: true,
-    validationSchema: nameValidationSchema,
+    validationSchema: validationSchema,
     onSubmit: async (values) => {
-      const res = await UpdateUserName(userID, values.name);
+      const res = await UpdateSponsorOrganization(
+        orgID,
+        values.name,
+        values.rate
+      );
 
-      setUser({
+      setOrg({
         // Force dirty state validation.
-        ...user,
-        name: !res.error ? values.name : user.name,
+        ...org,
+        name: !res.error ? values.name : org.name,
       });
 
-      setNameStatus(
-        res.error
-          ? { success: false, message: res.error }
-          : { success: true, message: "Name changed successfully." }
-      );
-    },
-  });
-
-  const [emailStatus, setEmailStatus] = useState(null);
-  const emailForm = useFormik({
-    initialValues: {
-      email: user.email,
-    },
-    enableReinitialize: true,
-    validationSchema: emailValidationSchema,
-    onSubmit: async (values) => {
-      const res = await UpdateUserEmail(userID, values.email);
-
-      setUser({
-        // Force dirty state validation.
-        ...user,
-        email: !res.error ? values.email : user.email,
-      });
-
-      setEmailStatus(
-        res.error
-          ? { success: false, message: res.error }
-          : { success: true, message: "Email changed successfully." }
-      );
-    },
-  });
-
-  // Password confirm logic inspired by: https://stackoverflow.com/a/62189211
-  const validateConfirmPassword = (expect, actual) =>
-    expect && actual && expect !== actual ? "Passwords do not match." : "";
-
-  const [passwordStatus, setPasswordStatus] = useState(null);
-  const passwordForm = useFormik({
-    initialValues: {
-      password: "",
-      confirm: "",
-    },
-    validationSchema: passwordValidationSchema,
-    validate: async (values) => {
-      let errors = {};
-
-      let confirmPasswordError = validateConfirmPassword(
-        values.password,
-        values.confirm
-      );
-      if (confirmPasswordError) {
-        errors.confirm = confirmPasswordError;
-      }
-
-      return errors;
-    },
-    onSubmit: async (values) => {
-      const res = await UpdateUserPassword(
-        userID,
-        values.password,
-        values.newpwd
-      );
-
-      setPasswordStatus(
-        res.error
-          ? { success: false, message: res.error }
-          : { success: true, message: "Password changed successfully." }
-      );
-    },
-  });
-
-  const [rateStatus, setConversionRate] = useState(null);
-  const rateForm = useFormik({
-    initialValues: {
-      rate: user.rate,
-    },
-    enableReinitialize: true,
-    validationSchema: nameValidationSchema,
-    onSubmit: async (values) => {
-      const res = await UpdateConversionRate(userID, values.rate);
-
-      setUser({
-        // Force dirty state validation.
-        ...user,
-        rate: !res.error ? values.rate : user.rate,
-      });
-
-      setNameStatus(
+      setStatus(
         res.error
           ? { success: false, message: res.error }
           : { success: true, message: "Name changed successfully." }
@@ -188,12 +88,12 @@ const OrgProfileEditor = () => {
 
   const [activationStatus, setActivationStatus] = useState(null);
   const doDeactivation = async () => {
-    const res = await DeactivateUser();
+    const res = await DeleteOrg();
 
-    setUser({
+    setOrg({
       // Force dirty state validation.
-      ...user,
-      is_deactivated: !res.error ? true : user.is_deactivated,
+      ...org,
+      is_deactivated: !res.error ? true : org.is_deactivated,
     });
 
     setActivationStatus(
@@ -209,12 +109,12 @@ const OrgProfileEditor = () => {
       <FormCard>
         <CardContent>
           <Typography variant="h5">Name</Typography>
-          {nameStatus && (
-            <Alert severity={nameStatus.success ? "success" : "error"}>
-              {nameStatus.message}
+          {status && (
+            <Alert severity={status.success ? "success" : "error"}>
+              {status.message}
             </Alert>
           )}
-          <form noValidate onSubmit={nameForm.handleSubmit}>
+          <form noValidate onSubmit={formik.handleSubmit}>
             <TextField
               variant="outlined"
               required
@@ -223,139 +123,11 @@ const OrgProfileEditor = () => {
               id="orgName"
               name="name"
               label="Organization Name"
-              value={nameForm.values.name}
-              onChange={nameForm.handleChange}
-              error={nameForm.touched.name && Boolean(nameForm.errors.name)}
-              helperText={nameForm.touched.name && nameForm.errors.name}
+              value={formik.values.name}
+              onChange={formik.handleChange}
+              error={formik.touched.name && Boolean(formik.errors.name)}
+              helperText={formik.touched.name && formik.errors.name}
             />
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={!nameForm.dirty}
-            >
-              Save
-            </Button>
-          </form>
-        </CardContent>
-      </FormCard>
-      <FormCard>
-        <CardContent>
-          <Typography variant="h5">Email</Typography>
-          {emailStatus && (
-            <Alert severity={emailStatus.success ? "success" : "error"}>
-              {emailStatus.message}
-            </Alert>
-          )}
-          <form noValidate onSubmit={emailForm.handleSubmit}>
-            <TextField
-              variant="outlined"
-              required
-              fullWidth
-              margin="normal"
-              id="email"
-              name="email"
-              label="Email Address"
-              type="email"
-              value={emailForm.values.email}
-              onChange={emailForm.handleChange}
-              error={emailForm.touched.email && Boolean(emailForm.errors.email)}
-              helperText={emailForm.touched.email && emailForm.errors.email}
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={!emailForm.dirty}
-            >
-              Save
-            </Button>
-          </form>
-        </CardContent>
-      </FormCard>
-      <FormCard>
-        <CardContent>
-          <Typography variant="h5">Password</Typography>
-          {passwordStatus && (
-            <Alert severity={passwordStatus.success ? "success" : "error"}>
-              {passwordStatus.message}
-            </Alert>
-          )}
-          <form noValidate onSubmit={passwordForm.handleSubmit}>
-            <TextField
-              variant="outlined"
-              required
-              fullWidth
-              type="password"
-              margin="normal"
-              id="password"
-              name="password"
-              label="Password"
-              value={passwordForm.values.password}
-              onChange={passwordForm.handleChange}
-              error={
-                passwordForm.touched.password &&
-                Boolean(passwordForm.errors.password)
-              }
-              helperText={
-                passwordForm.touched.password && passwordForm.errors.password
-              }
-            />
-            <TextField
-              variant="outlined"
-              required
-              fullWidth
-              type="password"
-              margin="normal"
-              id="confirm"
-              name="confirm"
-              label="Confirm Password"
-              value={passwordForm.values.confirm}
-              onChange={passwordForm.handleChange}
-              error={
-                passwordForm.touched.confirm &&
-                Boolean(passwordForm.errors.confirm)
-              }
-              helperText={
-                passwordForm.touched.confirm && passwordForm.errors.confirm
-              }
-            />
-            <TextField
-              variant="outlined"
-              required
-              fullWidth
-              type="password"
-              margin="normal"
-              id="newpwd"
-              name="newpwd"
-              label="New Password"
-              value={passwordForm.values.newpwd}
-              onChange={passwordForm.handleChange}
-              error={Boolean(passwordForm.errors.confirm)}
-              helperText={
-                passwordForm.touched.confirm && passwordForm.errors.confirm
-              }
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={!passwordForm.dirty}
-            >
-              Save
-            </Button>
-          </form>
-        </CardContent>
-      </FormCard>
-      <FormCard>
-        <CardContent>
-          <Typography variant="h5">Point Conversion Rate</Typography>
-          {rateStatus && (
-            <Alert severity={rateStatus.success ? "success" : "error"}>
-              {rateStatus.message}
-            </Alert>
-          )}
-          <form noValidate onSubmit={rateForm.handleSubmit}>
             <TextField
               variant="outlined"
               required
@@ -365,16 +137,16 @@ const OrgProfileEditor = () => {
               name="rate"
               label="Points Per US Dollar"
               type="rate"
-              value={rateForm.values.rate}
-              onChange={rateForm.handleChange}
-              error={rateForm.touched.rate && Boolean(rateForm.errors.rate)}
-              helperText={rateForm.touched.rate && rateForm.errors.rate}
+              value={formik.values.rate}
+              onChange={formik.handleChange}
+              error={formik.touched.rate && Boolean(formik.errors.rate)}
+              helperText={formik.touched.rate && formik.errors.rate}
             />
             <Button
               type="submit"
               variant="contained"
               color="primary"
-              disabled={!rateForm.dirty}
+              disabled={!formik.dirty}
             >
               Save
             </Button>
@@ -394,16 +166,15 @@ const OrgProfileEditor = () => {
             style={{ marginTop: 15 }} // FIXME
           >
             This account is currently{" "}
-            <strong>{user.is_deactivated ? "deactivated" : "activated"}</strong>
-            .
+            <strong>{org.is_deactivated ? "deactivated" : "activated"}</strong>.
           </Typography>
           <Button
-            onClick={user.is_deactivated ? false : doDeactivation}
+            onClick={org.is_deactivated ? false : doDeactivation}
             variant="contained"
-            color={user.is_deactivated ? "secondary" : "primary"}
+            color={org.is_deactivated ? "secondary" : "primary"}
             style={{ marginTop: 15 }} // FIXME
           >
-            {user.is_deactivated
+            {org.is_deactivated
               ? "contact an administrator to reactivate"
               : "deactivate"}{" "}
             account

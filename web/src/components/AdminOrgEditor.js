@@ -33,12 +33,9 @@ const emptyOrg = {
 };
 
 const nameValidationSchema = yup.object({
-  firstName: yup
-    .string("Enter the new first name.")
-    .required("First name is required."),
-  lastName: yup
-    .string("Enter the new last name.")
-    .required("Last name is required."),
+  name: yup
+    .string("Enter the new organization name.")
+    .required("Organization name is required."),
 });
 const rateValidationSchema = yup.object({
   rate: yup.number().min(1, "Exchange rate must be a positive integer."),
