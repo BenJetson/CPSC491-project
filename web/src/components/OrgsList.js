@@ -46,7 +46,9 @@ const OrgsList = () => {
   return (
     <>
       <Typography variant="h4">Organizations</Typography>
-      <Button
+
+      {/* TODO this is broken, so it is disabled. */}
+      {/* <Button
         variant="contained"
         color="primary"
         component={RouterLink}
@@ -54,7 +56,8 @@ const OrgsList = () => {
         style={{ marginTop: 10 }}
       >
         <AddIcon /> Create Organization
-      </Button>
+      </Button> */}
+
       <DataGrid
         columns={columns}
         rows={rows}

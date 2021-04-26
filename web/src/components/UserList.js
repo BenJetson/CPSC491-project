@@ -60,7 +60,9 @@ const UserList = () => {
   return (
     <>
       <Typography variant="h4">Users</Typography>
-      <Button
+
+      {/* TODO this is broken, so it is disabled. */}
+      {/* <Button
         variant="contained"
         color="primary"
         component={RouterLink}
@@ -68,7 +70,8 @@ const UserList = () => {
         style={{ marginTop: 10 }}
       >
         <AddIcon /> Create User
-      </Button>
+      </Button> */}
+
       <DataGrid
         columns={columns}
         rows={rows}
