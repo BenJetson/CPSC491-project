@@ -8,6 +8,7 @@ import Roles from "./api/Roles";
 import AccessDenied from "./components/AccessDenied";
 import ApplicationList from "./components/ApplicationList";
 import ApplicationForm from "./components/ApplicationForm";
+import DriverBalances from "./components/DriverBalances";
 
 const AppSubrouterDriver = () => {
   const match = useRouteMatch();
@@ -27,7 +28,7 @@ const AppSubrouterDriver = () => {
               <NotImplemented feature={"Driver - View Application"} />
             </Route>
             <Route path={`${match.path}/balance`}>
-              <NotImplemented feature={"Driver - View Balance"} />
+              <DriverBalances />
             </Route>
             <Route path={`${match.path}/shop`}>
               <NotImplemented feature={"Driver - Incentive Shop"} />

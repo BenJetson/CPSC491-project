@@ -79,7 +79,7 @@ func (db *database) GetBalancesForPerson(
 			p.first_name,
 			p.last_name,
 			o.organization_id,
-			o.title,
+			o.name,
 			a.points
 		FROM affiliation a
 		JOIN person p

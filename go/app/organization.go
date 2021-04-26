@@ -3,10 +3,10 @@ package app
 // An Organization contains information about a particular sponsor organization.
 type Organization struct {
 	// ID uniquely identifies this organization.
-	ID int `db:"organization_id"`
+	ID int `db:"organization_id" json:"id"`
 	// Name is a human-readable alias for this organization.
-	Name string `db:"name"`
+	Name string `db:"name" json:"name"`
 	// PointValue describes the ratio between points and real dollars.
 	// Each point is worth a PointValue amount of Money.
-	PointValue Money `db:"point_value"`
+	PointValue Money `db:"point_value" json:"point_value"`
 }

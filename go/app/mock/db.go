@@ -223,6 +223,29 @@ func (db *DB) GetOrganizationByID(
 	return app.Organization{}, nil
 }
 
+// CreateOrganization mocks creating a new organization.
+func (db *DB) CreateOrganization(
+	ctx context.Context,
+	org app.Organization,
+) (int, error) {
+
+	return -1, nil
+}
+
+// UpdateOrganization mocks updating an organization.
+func (db *DB) UpdateOrganization(
+	ctx context.Context,
+	org app.Organization,
+) error {
+
+	return nil
+}
+
+// DeleteOrganization mocks deleting an organization.
+func (db *DB) DeleteOrganization(ctx context.Context, orgID int) error {
+	return nil
+}
+
 //
 //
 // CatalogStore methods
