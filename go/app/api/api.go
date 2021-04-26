@@ -52,8 +52,11 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 	router.Use(svr.panicRecoveryMiddleware)
 	router.Use(svr.authContextMiddleware)
 
-	// Set not found handler.
-	router.NotFoundHandler = http.HandlerFunc(svr.handleNotFound)
+	// Set custom error handlers.
+	router.NotFoundHandler = http.
+		HandlerFunc(svr.handleNotFound)
+	router.MethodNotAllowedHandler = http.
+		HandlerFunc(svr.handleMethodNotAllowed)
 
 	// Define routes.
 	router.Path("/login").Methods("POST").HandlerFunc(svr.handleLogin)
@@ -261,7 +264,6 @@ type apiError struct {
 
 // sendErrorResponse sends a completed apiError back to the user as JSON and
 // logs the error.
-// nolint: unparam // FIXME remove this later once user message gets used.
 func (svr *Server) sendErrorResponse(w http.ResponseWriter, err error,
 	statusCode int, userMessage string, args ...interface{}) {
 
