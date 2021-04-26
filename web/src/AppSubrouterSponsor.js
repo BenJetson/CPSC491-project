@@ -7,6 +7,8 @@ import NotFound from "./components/NotFound";
 import { WithUser } from "./api/Auth";
 import Roles from "./api/Roles";
 import AccessDenied from "./components/AccessDenied";
+import VendorSearch from "./components/VendorSearch";
+import SponsorCatalog from "./components/SponsorCatalog";
 
 const AppSubrouterSponsor = () => {
   const match = useRouteMatch();
@@ -14,7 +16,7 @@ const AppSubrouterSponsor = () => {
   return (
     <WithUser>
       {({ isOneOfRoles }) =>
-        (isOneOfRoles([Roles.SPONSOR]) && (
+        (isOneOfRoles([Roles.IDOf.SPONSOR]) && (
           <Switch>
             <Route path={`${match.path}/orgmgt`}>
               <NotImplemented feature={"Sponsor - Manage Organization"} />
@@ -26,8 +28,11 @@ const AppSubrouterSponsor = () => {
             <Route path={`${match.path}/drivers`}>
               <NotImplemented feature={"Sponsor - Manage Drivers"} />
             </Route>
-            <Route path={`${match.path}/catalog`}>
-              <NotImplemented feature={"Sponsor - Manage Catalog"} />
+            <Route exact path={`${match.path}/catalog`}>
+              <SponsorCatalog />
+            </Route>
+            <Route exact path={`${match.path}/catalog/vendor`}>
+              <VendorSearch />
             </Route>
             <Route path={"*"}>
               {/* If no route matches, show a not found page. */}

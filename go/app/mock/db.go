@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"gopkg.in/guregu/null.v4"
 
 	"github.com/BenJetson/CPSC491-project/go/app"
 )
@@ -24,6 +25,11 @@ type DB struct{}
 // PersonStore methods
 //
 //
+
+// GetAllPeople mocks retrieving all people from the database.
+func (db *DB) GetAllPeople(ctx context.Context) ([]app.Person, error) {
+	return nil, nil
+}
 
 // GetPersonByID mocks fetching a person by their ID.
 func (db *DB) GetPersonByID(
@@ -53,6 +59,16 @@ func (db *DB) UpdatePersonName(
 	ctx context.Context,
 	personID int,
 	firstName, lastName string,
+) error {
+
+	return nil
+}
+
+// UpdatePersonEmail mocks updating a person's email.
+func (db *DB) UpdatePersonEmail(
+	ctx context.Context,
+	personID int,
+	email string,
 ) error {
 
 	return nil
@@ -135,6 +151,145 @@ func (db *DB) RevokeSession(ctx context.Context, sessionID int) error {
 func (db *DB) RevokeSessionsForPersonExcept(
 	ctx context.Context,
 	personID, sessionID int,
+) error {
+
+	return nil
+}
+
+//
+//
+// AffiliationStore methods
+//
+//
+
+// AddPersonAffiliation mocks adding an affiliation for a person.
+func (db *DB) AddPersonAffiliation(
+	ctx context.Context,
+	personID, orgID int,
+	role app.Role,
+) error {
+
+	return nil
+}
+
+// RemovePersonAffiliation mocks removing a person's affiliation.
+func (db *DB) RemovePersonAffiliation(
+	ctx context.Context,
+	personID, orgID int,
+) error {
+
+	return nil
+}
+
+// SetPointsForAffiliation mocks setting points for an affiliation.
+func (db *DB) SetPointsForAffiliation(
+	ctx context.Context,
+	personID, orgID int,
+	points null.Int,
+) error {
+
+	return nil
+}
+
+// GetBalancesForPerson mocks fetching a person's balances.
+func (db *DB) GetBalancesForPerson(
+	ctx context.Context,
+	personID int,
+) ([]app.Balance, error) {
+
+	return nil, nil
+}
+
+//
+//
+// OrganizationStore methods
+//
+//
+
+// GetAllOrganizations mocks fetching all organizations.
+func (db *DB) GetAllOrganizations(
+	ctx context.Context,
+) ([]app.Organization, error) {
+
+	return nil, nil
+}
+
+// GetOrganizationByID mocks fetching an organization by its ID number.
+func (db *DB) GetOrganizationByID(
+	ctx context.Context,
+	orgID int,
+) (app.Organization, error) {
+
+	return app.Organization{}, nil
+}
+
+// CreateOrganization mocks creating a new organization.
+func (db *DB) CreateOrganization(
+	ctx context.Context,
+	org app.Organization,
+) (int, error) {
+
+	return -1, nil
+}
+
+// UpdateOrganization mocks updating an organization.
+func (db *DB) UpdateOrganization(
+	ctx context.Context,
+	org app.Organization,
+) error {
+
+	return nil
+}
+
+// DeleteOrganization mocks deleting an organization.
+func (db *DB) DeleteOrganization(ctx context.Context, orgID int) error {
+	return nil
+}
+
+//
+//
+// CatalogStore methods
+//
+//
+
+// GetProductsForOrganization mocks fetching all products for an organization.
+func (db *DB) GetProductsForOrganization(
+	ctx context.Context,
+	orgID int,
+) ([]app.CatalogProduct, error) {
+
+	return nil, nil
+}
+
+// SearchProductCatalog mocks searching the product catalog.
+func (db *DB) SearchProductCatalog(
+	ctx context.Context,
+	orgID int,
+	keywords string,
+) ([]app.CatalogProduct, error) {
+
+	return nil, nil
+}
+
+// GetProductByID mocks fetching a product by its matching product ID and
+// organization ID numbers.
+func (db *DB) GetProductByID(
+	ctx context.Context,
+	productID, orgID int,
+) (app.CatalogProduct, error) {
+
+	return app.CatalogProduct{}, nil
+}
+
+// AddProduct mocks adding a product to the catalog.
+func (db *DB) AddProduct(ctx context.Context, p app.Product) (int, error) {
+	return -1, nil
+}
+
+// MakeProductUnavailable mocks making a product unavailable in the catalog.
+func (db *DB) MakeProductUnavailable(
+	ctx context.Context,
+	productID, orgID int,
 ) error {
 
 	return nil

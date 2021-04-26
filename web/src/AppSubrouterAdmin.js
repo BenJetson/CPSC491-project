@@ -7,16 +7,22 @@ import { WithUser } from "./api/Auth";
 import Roles from "./api/Roles";
 import AccessDenied from "./components/AccessDenied";
 
+import UserList from "./components/UserList";
+import AdminProfileEditor from "./components/AdminProfileEditor";
+
 const AppSubrouterAdmin = () => {
   const match = useRouteMatch();
 
   return (
     <WithUser>
       {({ isOneOfRoles }) =>
-        (isOneOfRoles([Roles.ADMIN]) && (
+        (isOneOfRoles([Roles.IDOf.ADMIN]) && (
           <Switch>
-            <Route path={`${match.path}/users`}>
-              <NotImplemented feature={"Admin - Manage Users"} />
+            <Route exact path={`${match.path}/users`}>
+              <UserList />
+            </Route>
+            <Route path={`${match.path}/users/:userID`}>
+              <AdminProfileEditor />
             </Route>
             <Route path={`${match.path}/organizations`}>
               <NotImplemented feature={"Admin - Manage Organizations"} />

@@ -52,17 +52,138 @@ func NewServer(logger *logrus.Logger, db app.DataStore, cv app.CommerceVendor,
 	router.Use(svr.panicRecoveryMiddleware)
 	router.Use(svr.authContextMiddleware)
 
-	// Set not found handler.
-	router.NotFoundHandler = http.HandlerFunc(svr.handleNotFound)
+	// Set custom error handlers.
+	router.NotFoundHandler = http.
+		HandlerFunc(svr.handleNotFound)
+	router.MethodNotAllowedHandler = http.
+		HandlerFunc(svr.handleMethodNotAllowed)
 
 	// Define routes.
 	router.Path("/login").Methods("POST").HandlerFunc(svr.handleLogin)
 	router.Path("/logout").Methods("POST").HandlerFunc(svr.handleLogout)
 	router.Path("/whoami").Methods("GET").HandlerFunc(svr.handleWhoAmI)
 
+	// Bogus endpoint. Always returns 501.
+	router.Path("/todo").Methods("GET").HandlerFunc(svr.handleTODO)
+
 	// Account subroutes.
 	accountRouter := router.PathPrefix("/account").Subrouter()
-	accountRouter.Path("/register").HandlerFunc(svr.handleRegistration)
+	accountRouter.Path("/forgot").Methods("POST").
+		HandlerFunc(svr.handleTODO) // TODO
+	accountRouter.Path("/register").Methods("POST").
+		HandlerFunc(svr.handleRegistration)
+
+	// My subroutes.
+	myRouter := router.PathPrefix("/my").Subrouter()
+	myRouter.Use(svr.requireAuthMiddleware(authConfig{
+		requireRole: true,
+		allowedRoles: []app.Role{
+			app.RoleAdmin,
+			app.RoleSponsor,
+			app.RoleDriver,
+		},
+	}))
+
+	myProfileRouter := myRouter.PathPrefix("/profile").Subrouter()
+	myProfileRouter.Path("/name").Methods("POST").
+		HandlerFunc(svr.handleMyProfileUpdateName)
+	myProfileRouter.Path("/email").Methods("POST").
+		HandlerFunc(svr.handleMyProfileUpdateEmail)
+	myProfileRouter.Path("/password").Methods("POST").
+		HandlerFunc(svr.handleMyProfileUpdatePassword)
+	myProfileRouter.Path("/deactivate").Methods("POST").
+		HandlerFunc(svr.handleMyProfileDeactivate)
+
+	// Admin subroutes.
+	adminRouter := router.PathPrefix("/admin").Subrouter()
+	adminRouter.Use(svr.requireAuthMiddleware(authConfig{
+		requireRole:  true,
+		allowedRoles: []app.Role{app.RoleAdmin},
+	}))
+
+	adminUserRouter := adminRouter.PathPrefix("/users").Subrouter()
+	adminUserRouter.Path("").Methods("GET").
+		HandlerFunc(svr.handleAdminGetAllUsers)
+	adminUserRouter.Path("/create").Methods("POST").
+		HandlerFunc(svr.handleTODO) // TODO
+	adminUserRouter.Path("/{userID}").Methods("GET").
+		HandlerFunc(svr.handleAdminGetUserByID)
+	adminUserRouter.Path("/{userID}/name").Methods("POST").
+		HandlerFunc(svr.handleAdminUpdateUserName)
+	adminUserRouter.Path("/{userID}/email").Methods("POST").
+		HandlerFunc(svr.handleAdminUpdateUserEmail)
+	adminUserRouter.Path("/{userID}/affiliations").Methods("POST").
+		HandlerFunc(svr.handleTODO) // TODO
+	adminUserRouter.Path("/{userID}/password").Methods("POST").
+		HandlerFunc(svr.handleAdminUpdateUserPassword)
+	adminUserRouter.Path("/{userID}/activate").Methods("POST").
+		HandlerFunc(svr.handleAdminActivateUser)
+	adminUserRouter.Path("/{userID}/deactivate").Methods("POST").
+		HandlerFunc(svr.handleAdminDeactivateUser)
+
+	adminOrgRouter := adminRouter.PathPrefix("/organizations").Subrouter()
+	adminOrgRouter.Path("").Methods("GET").
+		HandlerFunc(svr.handleGetAllOrganizations)
+	adminOrgRouter.Path("/create").Methods("POST").
+		HandlerFunc(svr.handleAdminCreateOrganization)
+	adminOrgRouter.Path("/{orgID}").Methods("GET").
+		HandlerFunc(svr.handleAdminGetOrganizationByID)
+	adminOrgRouter.Path("/{orgID}/update").Methods("POST").
+		HandlerFunc(svr.handleAdminUpdateOrganization)
+	adminOrgRouter.Path("/{orgID}/delete").Methods("POST").
+		HandlerFunc(svr.handleAdminDeleteOrganization)
+
+	// Sponsor subroutes.
+	sponsorRouter := router.PathPrefix("/sponsor").Subrouter()
+	sponsorRouter.Use(svr.requireAuthMiddleware(authConfig{
+		requireRole:  true,
+		allowedRoles: []app.Role{app.RoleSponsor},
+	}))
+
+	sponsorVendorRouter := sponsorRouter.PathPrefix("/vendor").Subrouter()
+	sponsorVendorRouter.Path("/search").Methods("GET").
+		HandlerFunc(svr.handleSponsorVendorSearch)
+	sponsorVendorRouter.Path("/products/{productID}").Methods("GET").
+		HandlerFunc(svr.handleSponsorVendorProductByID)
+	sponsorVendorRouter.Path("/products/{productID}/add").Methods("POST").
+		HandlerFunc(svr.handleSponsorAddVendorProduct)
+
+	sponsorCatalogRouter := sponsorRouter.PathPrefix("/catalog").Subrouter()
+	sponsorCatalogRouter.Path("").Methods("GET").
+		HandlerFunc(svr.handleGetSponsorCatalog)
+	sponsorCatalogRouter.Path("/products/{productID}").Methods("GET").
+		HandlerFunc(svr.handleGetSponsorCatalogProduct)
+	sponsorCatalogRouter.Path("/products/{productID}/remove").Methods("POST").
+		HandlerFunc(svr.handleSponsorRemoveProduct)
+
+	sponsorOrgRouter := sponsorRouter.PathPrefix("/organization").Subrouter()
+	sponsorOrgRouter.Path("").Methods("GET").
+		HandlerFunc(svr.handleSponsorGetOwnOrganization)
+	sponsorOrgRouter.Path("/update").Methods("POST").
+		HandlerFunc(svr.handleSponsorUpdateOwnOrganization)
+
+	sponsorDriverRouter := sponsorRouter.PathPrefix("/drivers").Subrouter()
+	sponsorDriverRouter.Path("").Methods("GET").
+		HandlerFunc(svr.handleTODO) // TODO
+	sponsorDriverRouter.Path("/{driverID}").Methods("GET").
+		HandlerFunc(svr.handleTODO) // TODO
+	sponsorDriverRouter.Path("/{driverID}/points").Methods("POST").
+		HandlerFunc(svr.handleTODO) // TODO
+	sponsorDriverRouter.Path("/{driverID}/remove").Methods("POST").
+		HandlerFunc(svr.handleTODO) // TODO
+
+	driverRouter := router.PathPrefix("/driver").Subrouter()
+	driverRouter.Use(svr.requireAuthMiddleware(authConfig{
+		requireRole:  true,
+		allowedRoles: []app.Role{app.RoleDriver},
+	}))
+
+	driverRouter.Path("/balances").Methods("GET").
+		HandlerFunc(svr.handleDriverGetBalances)
+	driverRouter.Path("/organizations/all").Methods("GET").
+		HandlerFunc(svr.handleGetAllOrganizations)
+	driverRouter.Path("/catalog/{orgID}/search").Methods("GET").
+		HandlerFunc(svr.handleTODO) // TODO
 
 	return svr, nil
 }
@@ -129,7 +250,6 @@ type apiError struct {
 
 // sendErrorResponse sends a completed apiError back to the user as JSON and
 // logs the error.
-// nolint: unparam // FIXME remove this later once user message gets used.
 func (svr *Server) sendErrorResponse(w http.ResponseWriter, err error,
 	statusCode int, userMessage string, args ...interface{}) {
 

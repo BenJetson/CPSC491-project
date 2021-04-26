@@ -43,6 +43,11 @@ const Request = async (method, endpoint, data = undefined, options = {}) => {
   // Attach the body data, marshaling to JSON.
   if (data !== undefined) {
     options.body = JSON.stringify(data);
+    options.header = {
+      ...options?.header,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
   }
 
   // Request the data from the backend.
@@ -92,6 +97,11 @@ const Request = async (method, endpoint, data = undefined, options = {}) => {
       sentData: data,
       url: url,
     });
+  }
+
+  // XXX Force the user to login again if unauthorized status is received.
+  if (res.status === HTTPStatus.UNAUTHORIZED) {
+    window.location.href = "/";
   }
 
   return {

@@ -25,7 +25,6 @@ const validationSchema = yup.object({
     .required("Email is required."),
   password: yup
     .string("Enter your password.")
-    // .min(8, "Password should be of minimum 8 characters length")
     .required("Password is required."),
   remember: yup.boolean("Select to remember your email address."),
 });

@@ -42,7 +42,7 @@ let Navigation = [
   },
   {
     title: "My Tools",
-    roles: [Roles.ADMIN, Roles.SPONSOR, Roles.DRIVER],
+    roles: [Roles.IDOf.ADMIN, Roles.IDOf.SPONSOR, Roles.IDOf.DRIVER],
     items: [
       {
         link: "/my/profile",
@@ -53,7 +53,7 @@ let Navigation = [
   },
   {
     title: "Administrative Tools",
-    roles: [Roles.ADMIN],
+    roles: [Roles.IDOf.ADMIN],
     items: [
       {
         link: "/admin/users",
@@ -69,7 +69,7 @@ let Navigation = [
   },
   {
     title: "Sponsor Tools",
-    roles: [Roles.SPONSOR],
+    roles: [Roles.IDOf.SPONSOR],
     items: [
       {
         link: "/sponsor/orgmgt",
@@ -95,7 +95,7 @@ let Navigation = [
   },
   {
     title: "Driver Tools",
-    roles: [Roles.DRIVER],
+    roles: [Roles.IDOf.DRIVER],
     items: [
       {
         link: "/driver/applications",
