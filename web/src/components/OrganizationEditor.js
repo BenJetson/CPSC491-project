@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   DeactivateUser,
-  GetUserByID,
+  GetOrgByID,
   UpdateUserEmail,
   UpdateUserName,
   UpdateUserPassword,
-} from "../api/Organization";
+  UpdateConversionRate,
+} from "../api/Organizations";
 import Roles from "../api/Roles";
 
 import * as yup from "yup";
@@ -69,7 +70,7 @@ const OrgProfileEditor = () => {
     }
 
     (async () => {
-      const data = await GetUserByID(userID);
+      const data = await GetOrgByID(userID);
       setUser(data);
     })();
   }, [userID, isUpdate]);
@@ -147,12 +148,40 @@ const OrgProfileEditor = () => {
       return errors;
     },
     onSubmit: async (values) => {
-      const res = await UpdateUserPassword(userID, values.password);
+      const res = await UpdateUserPassword(
+        userID,
+        values.password,
+        values.newpwd
+      );
 
       setPasswordStatus(
         res.error
           ? { success: false, message: res.error }
           : { success: true, message: "Password changed successfully." }
+      );
+    },
+  });
+
+  const [rateStatus, setConversionRate] = useState(null);
+  const rateForm = useFormik({
+    initialValues: {
+      rate: user.rate,
+    },
+    enableReinitialize: true,
+    validationSchema: nameValidationSchema,
+    onSubmit: async (values) => {
+      const res = await UpdateConversionRate(userID, values.rate);
+
+      setUser({
+        // Force dirty state validation.
+        ...user,
+        rate: !res.error ? values.rate : user.rate,
+      });
+
+      setNameStatus(
+        res.error
+          ? { success: false, message: res.error }
+          : { success: true, message: "Name changed successfully." }
       );
     },
   });
@@ -191,7 +220,7 @@ const OrgProfileEditor = () => {
               required
               fullWidth
               margin="normal"
-              id="firstName"
+              id="orgName"
               name="name"
               label="Organization Name"
               value={nameForm.values.name}
@@ -291,11 +320,61 @@ const OrgProfileEditor = () => {
                 passwordForm.touched.confirm && passwordForm.errors.confirm
               }
             />
+            <TextField
+              variant="outlined"
+              required
+              fullWidth
+              type="password"
+              margin="normal"
+              id="newpwd"
+              name="newpwd"
+              label="New Password"
+              value={passwordForm.values.newpwd}
+              onChange={passwordForm.handleChange}
+              error={Boolean(passwordForm.errors.confirm)}
+              helperText={
+                passwordForm.touched.confirm && passwordForm.errors.confirm
+              }
+            />
             <Button
               type="submit"
               variant="contained"
               color="primary"
               disabled={!passwordForm.dirty}
+            >
+              Save
+            </Button>
+          </form>
+        </CardContent>
+      </FormCard>
+      <FormCard>
+        <CardContent>
+          <Typography variant="h5">Point Conversion Rate</Typography>
+          {rateStatus && (
+            <Alert severity={rateStatus.success ? "success" : "error"}>
+              {rateStatus.message}
+            </Alert>
+          )}
+          <form noValidate onSubmit={rateForm.handleSubmit}>
+            <TextField
+              variant="outlined"
+              required
+              fullWidth
+              margin="normal"
+              id="rate"
+              name="rate"
+              label="Points Per US Dollar"
+              type="rate"
+              value={rateForm.values.rate}
+              onChange={rateForm.handleChange}
+              error={rateForm.touched.rate && Boolean(rateForm.errors.rate)}
+              helperText={rateForm.touched.rate && rateForm.errors.rate}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={!rateForm.dirty}
             >
               Save
             </Button>
@@ -319,12 +398,15 @@ const OrgProfileEditor = () => {
             .
           </Typography>
           <Button
-            onClick={user.is_deactivated ? doActivation : doDeactivation}
+            onClick={user.is_deactivated ? false : doDeactivation}
             variant="contained"
             color={user.is_deactivated ? "secondary" : "primary"}
             style={{ marginTop: 15 }} // FIXME
           >
-            {user.is_deactivated ? "activate" : "deactivate"} account
+            {user.is_deactivated
+              ? "contact an administrator to reactivate"
+              : "deactivate"}{" "}
+            account
           </Button>
         </CardContent>
       </FormCard>

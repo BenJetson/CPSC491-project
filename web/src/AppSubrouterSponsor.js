@@ -9,6 +9,7 @@ import Roles from "./api/Roles";
 import AccessDenied from "./components/AccessDenied";
 import VendorSearch from "./components/VendorSearch";
 import SponsorCatalog from "./components/SponsorCatalog";
+import OrgProfileEditor from "./components/OrganizationEditor";
 
 const AppSubrouterSponsor = () => {
   const match = useRouteMatch();
@@ -19,8 +20,7 @@ const AppSubrouterSponsor = () => {
         (isOneOfRoles([Roles.IDOf.SPONSOR]) && (
           <Switch>
             <Route path={`${match.path}/orgmgt`}>
-              <NotImplemented feature={"Sponsor - Manage Organization"} />
-              {/* update organization name and update points conversion rate */}
+              <OrgProfileEditor />
             </Route>
             <Route path={`${match.path}/applications`}>
               <NotImplemented feature={"Sponsor - Manage Applications"} />

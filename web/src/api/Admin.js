@@ -61,10 +61,14 @@ const CreateOrganization = async (name, point_value) =>
     point_value: point_value,
   });
 
-const UpdateOrganization = async (orgID, name, point_value) =>
-  await Request("POST", `/admin/organizations/${orgID}/update`, {
+const UpdateOrgName = async (orgID, name) =>
+  await Request("POST", `/admin/users/${orgID}/name`, {
     name: name,
-    point_value: point_value,
+  });
+
+const UpdateOrgRate = async (orgID, rate) =>
+  await Request("POST", `/admin/users/${orgID}/rate`, {
+    rate: rate,
   });
 
 const DeleteOrganization = async (orgID) =>
@@ -82,6 +86,7 @@ export {
   GetOrganizations,
   GetOrganizationByID,
   CreateOrganization,
-  UpdateOrganization,
+  UpdateOrgName,
+  UpdateOrgRate,
   DeleteOrganization,
 };

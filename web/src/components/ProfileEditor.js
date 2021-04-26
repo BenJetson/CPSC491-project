@@ -359,7 +359,10 @@ const MyProfileEditor = () => {
             color={user.is_deactivated ? "secondary" : "primary"}
             style={{ marginTop: 15 }} // FIXME
           >
-            {user.is_deactivated ? "activate" : "deactivate"} account
+            {user.is_deactivated
+              ? "contact an administrator to reactivate"
+              : "deactivate"}{" "}
+            account
           </Button>
         </CardContent>
       </FormCard>
