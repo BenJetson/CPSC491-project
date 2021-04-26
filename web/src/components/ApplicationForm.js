@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import { useHistory } from "react-router-dom";
-import { GetOrganizations } from "../api/Organizations";
 import * as yup from "yup";
 import {
   Button,
@@ -12,7 +11,7 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import { Alert, AlertTitle } from "@material-ui/lab";
-import { SubmitApplication } from "../api/Driver";
+import { GetAllOrganizations, SubmitApplication } from "../api/Driver";
 
 const useStyles = makeStyles((theme) => ({
   privacyWarning: {
@@ -60,12 +59,15 @@ const ApplicationForm = () => {
   useEffect(
     () => {
       (async () => {
-        try {
-          const foundOrgs = await GetOrganizations();
-          setOrganizations(foundOrgs);
-        } catch {
-          setError("Failed to fetch list of organizations.");
+        const res = await GetAllOrganizations();
+        if (res.error) {
+          setError(
+            `Failed to fetch list of organizations. Reason: ${res.error}`
+          );
+          return;
         }
+
+        setOrganizations(res.data);
       })();
     },
     [

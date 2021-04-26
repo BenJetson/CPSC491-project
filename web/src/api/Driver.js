@@ -14,6 +14,9 @@ const SubmitApplication = async (organizationID, comment) =>
 const GetMyOrganizations = async () =>
   await Request("GET", "/driver/organizations");
 
+const GetAllOrganizations = async () =>
+  await Request("GET", "/driver/organizations/all");
+
 const SearchOrganizationCatalog = async (organizationID, keywords) => {
   const params = new URLSearchParams();
   params.set("q", keywords);
@@ -30,6 +33,7 @@ export {
   GetBalances,
   GetApplications,
   SubmitApplication,
+  GetAllOrganizations,
   GetMyOrganizations,
   SearchOrganizationCatalog,
 };
