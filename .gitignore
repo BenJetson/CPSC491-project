@@ -7,3 +7,6 @@
 
 # Make CERTAIN node_modules don't get into the repo.
 /node_modules
+
+# Environment files
+.env

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 
 	"github.com/BenJetson/CPSC491-project/go/app"
@@ -31,13 +32,13 @@ func (svr *Server) authContextMiddleware(next http.Handler) http.Handler {
 
 			s, err := svr.db.GetSessionByToken(r.Context(), token)
 			if errors.Is(err, app.ErrNotFound) {
-				svr.sendErrorResponse(
-					w,
-					errors.Wrapf(err, "no session with token %s", token),
-					http.StatusUnauthorized,
-					"",
-				)
-				return
+				svr.logger.
+					WithField("token", token).
+					Info("received unknown session token; destroying cookie")
+				svr.destroySessionCookie(w)
+
+				// Attach an invalid session so it is not attached to context.
+				s = app.Session{IsRevoked: true}
 			} else if err != nil {
 				svr.sendErrorResponse(
 					w,
@@ -73,7 +74,6 @@ func getSessionFromContext(ctx context.Context) *app.Session {
 
 // An authConfig specifies what authentication parameters are required for an
 // endpoint.
-// nolint: unused // FIXME: remove this once it gets used
 type authConfig struct {
 	// requireRole determines whether or not required roles are enforced.
 	requireRole bool
@@ -84,7 +84,6 @@ type authConfig struct {
 
 // requireAuth is a middleware that may be applied to a route or subrouter that
 // will enforce authentication requirements.
-// nolint: unused // FIXME: remove this once it gets used
 func (svr *Server) requireAuth(
 	cfg authConfig,
 	handler http.HandlerFunc,
@@ -112,8 +111,8 @@ func (svr *Server) requireAuth(
 
 		if cfg.requireRole {
 			hasRole := false
-			for _, r := range cfg.allowedRoles {
-				if r == s.Person.Role {
+			for _, role := range cfg.allowedRoles {
+				if role == s.Person.Role {
 					hasRole = true
 					break
 				}
@@ -123,8 +122,8 @@ func (svr *Server) requireAuth(
 				svr.sendErrorResponse(
 					w,
 					errors.Errorf(
-						"endpoint does not allow role %v",
-						s.Person.Role,
+						"endpoint at path %v allows roles %v but person has %v",
+						r.URL.Path, cfg.allowedRoles, s.Person.Role,
 					),
 					http.StatusForbidden,
 					"",
@@ -136,6 +135,12 @@ func (svr *Server) requireAuth(
 		// User passed the auth check. Call the handler.
 		handler(w, r)
 	})
+}
+
+func (svr *Server) requireAuthMiddleware(cfg authConfig) mux.MiddlewareFunc {
+	return func(h http.Handler) http.Handler {
+		return svr.requireAuth(cfg, h.ServeHTTP)
+	}
 }
 
 // nolint: unused // TODO remove this when it gets used
@@ -249,7 +254,6 @@ func (svr *Server) requireIdentity(
 	return true
 }
 
-// nolint: unused // TODO remove this when it gets used
 type orgConfig struct {
 	// orgID is the target organization ID that the current user must be
 	// affiliated with for this check to pass.
@@ -271,8 +275,6 @@ type orgConfig struct {
 //
 // Upon failure of this check, this method will write an appropriate
 // authorization or internal server error to the ResponseWriter for you.
-//
-// nolint: unused // TODO remove this when it gets used
 func (svr *Server) requireOrganization(
 	cfg orgConfig,
 	w http.ResponseWriter,
@@ -301,7 +303,7 @@ func (svr *Server) requireOrganization(
 		if orgID == cfg.orgID {
 			// PASS: Current user's Person is affiliated with the target
 			// organization.
-			return true
+			return false
 		}
 	}
 
@@ -312,5 +314,5 @@ func (svr *Server) requireOrganization(
 		http.StatusForbidden,
 		"",
 	)
-	return false
+	return true
 }

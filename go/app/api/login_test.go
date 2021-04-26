@@ -198,7 +198,7 @@ func TestHandleLogin(t *testing.T) {
 				}
 			`,
 			dbPersonByEmail: p,
-			expectCode:      http.StatusOK,
+			expectCode:      http.StatusNoContent,
 			expectCookie:    true,
 		},
 	}
@@ -297,13 +297,13 @@ func TestHandleLogout(t *testing.T) {
 		{
 			alias:               "NoSessionButRevokeErr",
 			dbRevokeSessionErr:  errors.New("this should not matter"),
-			expectCode:          http.StatusOK,
+			expectCode:          http.StatusNoContent,
 			expectCookie:        true,
 			expectDestroyCookie: true,
 		},
 		{
 			alias:               "NoSession",
-			expectCode:          http.StatusOK,
+			expectCode:          http.StatusNoContent,
 			expectCookie:        true,
 			expectDestroyCookie: true,
 		},
@@ -311,7 +311,7 @@ func TestHandleLogout(t *testing.T) {
 			alias:               "Success",
 			sessionToken:        s.Token,
 			dbSessionByToken:    *s,
-			expectCode:          http.StatusOK,
+			expectCode:          http.StatusNoContent,
 			expectCookie:        true,
 			expectDestroyCookie: true,
 		},
