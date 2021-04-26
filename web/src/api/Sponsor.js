@@ -39,4 +39,6 @@ export {
   GetCatalog,
   GetCatalogProduct,
   RemoveCatalogProduct,
+  GetSponsorOrganization,
+  UpdateSponsorOrganization,
 };
