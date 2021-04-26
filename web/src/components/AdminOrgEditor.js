@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   GetOrganizationByID,
-  CreateOrganization,
+  //CreateOrganization,
   UpdateOrgName,
   UpdateOrgRate,
-  DeleteOrganization,
+  //DeleteOrganization,
 } from "../api/Admin";
 
 import * as yup from "yup";

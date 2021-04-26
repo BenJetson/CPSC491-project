@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import {
   DeactivateUser,
   GetMyUser,
@@ -61,8 +60,6 @@ const passwordValidationSchema = yup.object({
 });
 
 const MyProfileEditor = () => {
-  const params = useParams();
-
   const [user, setUser] = useState(emptyUser);
 
   useEffect(() => {

@@ -4,7 +4,6 @@ import {
   GetSponsorOrganization,
   UpdateSponsorOrganization,
 } from "../api/Sponsor";
-import Roles from "../api/Roles";
 import { DeleteOrganization } from "../api/Admin";
 import * as yup from "yup";
 import { useFormik } from "formik";
